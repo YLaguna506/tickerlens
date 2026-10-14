@@ -3,6 +3,9 @@
 # macOS and Linux.
 version: "3"
 
+# Load API keys and settings for tasks that run on the host (e.g. `task cli`).
+dotenv: [".env"]
+
 tasks:
   default:
     cmds:
@@ -43,6 +46,16 @@ tasks:
     cmds:
       - docker compose logs -f {{.CLI_ARGS}}
 
+  cli:
+    desc: Run the TickerLens CLI (e.g. `task cli -- fetch V`)
+    dir: backend
+    env:
+      # The CLI runs on the host, so it reaches Postgres through the published
+      # port instead of the `postgres` hostname used inside Docker.
+      DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable"
+    cmds:
+      - go run ./cmd/cli {{.CLI_ARGS}}
+
   # --- Tests --------------------------------------------------------------
   test:
     desc: Run all tests
@@ -52,8 +65,10 @@ tasks:
       - task: test:web
 
   test:go:
-    desc: Run Go tests
+    desc: Run Go tests (Postgres tests run when the stack is up)
     dir: backend
+    env:
+      TEST_DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable"
     cmds:
       - go test ./...
 

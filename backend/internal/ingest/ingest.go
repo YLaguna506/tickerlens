@@ -1,0 +1,123 @@
+// Package ingest gathers everything TickerLens knows about a ticker from its
+// data providers: SEC financials, Tiingo prices and Alpha Vantage earnings.
+package ingest
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"golang.org/x/sync/errgroup"
+
+	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
+	"github.com/YLaguna506/tickerlens/backend/internal/estimates"
+	"github.com/YLaguna506/tickerlens/backend/internal/financials"
+	"github.com/YLaguna506/tickerlens/backend/internal/prices"
+)
+
+// The provider interfaces are declared here, where they are used. Any type
+// with these methods qualifies (the real clients, or fakes in tests), which is
+// also how a paid provider would be swapped in later.
+
+// Fundamentals provides company identity and XBRL facts (SEC EDGAR).
+type Fundamentals interface {
+	LookupTicker(ctx context.Context, ticker string) (edgar.Company, error)
+	CompanyFacts(ctx context.Context, cik string) (*edgar.CompanyFacts, error)
+}
+
+// PriceSource provides daily price history (Tiingo).
+type PriceSource interface {
+	DailyPrices(ctx context.Context, ticker string, start time.Time) ([]prices.Bar, error)
+}
+
+// EarningsSource provides EPS actuals vs estimates (Alpha Vantage).
+type EarningsSource interface {
+	Earnings(ctx context.Context, ticker string) ([]estimates.QuarterlyEarnings, error)
+}
+
+// Fetcher gathers a Bundle. Prices and Earnings may be nil when no API key is
+// configured; the bundle then says so in Warnings.
+type Fetcher struct {
+	Fundamentals Fundamentals
+	Prices       PriceSource
+	Earnings     EarningsSource
+	PriceYears   int              // history to fetch; default 5
+	Now          func() time.Time // default time.Now
+}
+
+// Bundle is the raw material for a report.
+type Bundle struct {
+	Company    edgar.Company                 `json:"company"`
+	Financials financials.Financials         `json:"financials"`
+	Prices     []prices.Bar                  `json:"prices"`
+	Earnings   []estimates.QuarterlyEarnings `json:"earnings"`
+	// Warnings lists data sources that failed or were skipped. Financials are
+	// required; prices and earnings are best-effort so a report can still be
+	// produced (marked partial).
+	Warnings []string `json:"warnings,omitempty"`
+}
+
+// Fetch resolves the ticker and fetches all sources concurrently.
+func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
+	co, err := f.Fundamentals.LookupTicker(ctx, ticker)
+	if err != nil {
+		return nil, err
+	}
+	b := &Bundle{Company: co}
+
+	now := time.Now
+	if f.Now != nil {
+		now = f.Now
+	}
+	years := f.PriceYears
+	if years <= 0 {
+		years = 5
+	}
+
+	// errgroup runs functions in goroutines and waits for all of them, like
+	// Task.WhenAll. If one returns an error, ctx is cancelled for the others.
+	// Only the financials return errors; price and earnings failures are kept
+	// as warnings so they do not cancel the rest.
+	var (
+		facts       *edgar.CompanyFacts
+		priceErr    error
+		earningsErr error
+	)
+	g, gctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		var err error
+		facts, err = f.Fundamentals.CompanyFacts(gctx, co.CIK)
+		return err
+	})
+	if f.Prices != nil {
+		g.Go(func() error {
+			b.Prices, priceErr = f.Prices.DailyPrices(gctx, co.Ticker, now().AddDate(-years, 0, 0))
+			return nil
+		})
+	}
+	if f.Earnings != nil {
+		g.Go(func() error {
+			b.Earnings, earningsErr = f.Earnings.Earnings(gctx, co.Ticker)
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return nil, fmt.Errorf("financials for %s: %w", co.Ticker, err)
+	}
+
+	b.Financials = financials.Normalize(co, facts)
+
+	switch {
+	case f.Prices == nil:
+		b.Warnings = append(b.Warnings, "prices: skipped (TIINGO_API_KEY not set)")
+	case priceErr != nil:
+		b.Warnings = append(b.Warnings, "prices: "+priceErr.Error())
+	}
+	switch {
+	case f.Earnings == nil:
+		b.Warnings = append(b.Warnings, "earnings: skipped (ALPHA_VANTAGE_API_KEY not set)")
+	case earningsErr != nil:
+		b.Warnings = append(b.Warnings, "earnings: "+earningsErr.Error())
+	}
+	return b, nil
+}
