@@ -47,6 +47,9 @@ func logRequests(logger *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)
-		logger.Info("request", "method", r.Method, "path", r.URL.Path, "duration", time.Since(start))
+		// slog's JSON handler writes a time.Duration as integer nanoseconds,
+		// so log milliseconds explicitly for readability.
+		elapsedMs := float64(time.Since(start).Microseconds()) / 1000
+		logger.Info("request", "method", r.Method, "path", r.URL.Path, "duration_ms", elapsedMs)
 	})
 }

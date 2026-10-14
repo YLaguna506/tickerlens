@@ -27,7 +27,9 @@ func TestHealthEndpoints(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			req := httptest.NewRequest(tc.method, tc.path, nil)
+			// t.Context() is cancelled when the test ends; every request
+			// carries a context, like passing a CancellationToken.
+			req := httptest.NewRequestWithContext(t.Context(), tc.method, tc.path, nil)
 			rec := httptest.NewRecorder()
 
 			router.ServeHTTP(rec, req)
