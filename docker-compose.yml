@@ -1,0 +1,102 @@
+name: tickerlens
+
+# Shared settings for our own services. `.env` is optional so `docker compose up`
+# works on a fresh clone (Taskfile's `up` also creates it from .env.example).
+x-app-env: &app-env
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: ${DATABASE_URL:-postgres://tickerlens:tickerlens@postgres:5432/tickerlens?sslmode=disable}
+    REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    NATS_URL: ${NATS_URL:-nats://nats:4222}
+    OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:4317}
+
+services:
+  # --- Infrastructure -------------------------------------------------------
+  postgres:
+    image: postgres:16.15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tickerlens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tickerlens}
+      POSTGRES_DB: ${POSTGRES_DB:-tickerlens}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7.4.11-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  nats:
+    image: nats:2.15.1-alpine
+    # -js enables JetStream (durable streams); -sd is where it stores them;
+    # -m exposes the monitoring endpoint used by the healthcheck.
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    ports:
+      - "${NATS_PORT:-4222}:4222"
+      - "${NATS_MONITOR_PORT:-8222}:8222"
+    volumes:
+      - natsdata:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8222/healthz?js-enabled-only=true"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  jaeger:
+    image: jaegertracing/jaeger:2.22.0
+    environment:
+      # Listen on all interfaces so other containers can send OTLP traces.
+      JAEGER_LISTEN_HOST: 0.0.0.0
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686" # UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+
+  # --- TickerLens services --------------------------------------------------
+  api:
+    <<: *app-env
+    build: ./backend
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      nats: { condition: service_healthy }
+
+  agents:
+    <<: *app-env
+    build: ./agents
+    ports:
+      - "${AGENTS_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      nats: { condition: service_healthy }
+
+  web:
+    build: ./web
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  natsdata:

@@ -1,0 +1,115 @@
+# https://taskfile.dev — run `task --list` to see everything.
+# Task runs commands with a built-in shell, so these work the same on Windows,
+# macOS and Linux.
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  env:
+    desc: Create .env from .env.example if it does not exist
+    cmds:
+      - cp .env.example .env
+    status:
+      - test -f .env
+
+  up:
+    desc: Build and start every service, waiting until they are healthy
+    deps: [env]
+    cmds:
+      - docker compose up -d --build --wait
+
+  down:
+    desc: Stop every service (data volumes are kept)
+    cmds:
+      - docker compose down
+
+  reset:
+    desc: Stop every service and delete Postgres and NATS data
+    prompt: This deletes all local data. Continue?
+    cmds:
+      - docker compose down -v
+
+  ps:
+    desc: Show service status
+    cmds:
+      - docker compose ps
+
+  logs:
+    desc: Follow logs (e.g. `task logs -- api`)
+    cmds:
+      - docker compose logs -f {{.CLI_ARGS}}
+
+  # --- Tests --------------------------------------------------------------
+  test:
+    desc: Run all tests
+    cmds:
+      - task: test:go
+      - task: test:py
+      - task: test:web
+
+  test:go:
+    desc: Run Go tests
+    dir: backend
+    cmds:
+      - go test ./...
+
+  test:py:
+    desc: Run Python tests
+    dir: agents
+    cmds:
+      - uv run pytest
+
+  test:web:
+    desc: Type-check and build the web app (no unit tests yet)
+    dir: web
+    cmds:
+      - npm run build
+
+  # --- Lint ---------------------------------------------------------------
+  lint:
+    desc: Run all linters
+    cmds:
+      - task: lint:go
+      - task: lint:py
+      - task: lint:web
+
+  lint:go:
+    desc: Lint Go code (needs golangci-lint v2)
+    dir: backend
+    cmds:
+      - golangci-lint run
+
+  lint:py:
+    desc: Lint, format-check and type-check Python code
+    dir: agents
+    cmds:
+      - uv run ruff check .
+      - uv run ruff format --check .
+      - uv run mypy .
+
+  lint:web:
+    desc: Lint the web app
+    dir: web
+    cmds:
+      - npm run lint
+
+  # --- Setup --------------------------------------------------------------
+  setup:
+    desc: Install local dev dependencies for Python and the web app
+    cmds:
+      - task: setup:py
+      - task: setup:web
+
+  setup:py:
+    dir: agents
+    cmds:
+      - uv sync
+
+  setup:web:
+    dir: web
+    cmds:
+      - npm install
