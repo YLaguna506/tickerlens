@@ -3,7 +3,7 @@ FROM golang:1.27-alpine AS build
 WORKDIR /src
 
 # Download modules first so this layer is cached when only code changes.
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .

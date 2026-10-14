@@ -6,7 +6,7 @@ Enter a US ticker and TickerLens runs a multi-stage research pipeline (data inge
 
 > **Educational project. Not financial advice.** Nothing here is a recommendation to buy or sell any security.
 
-**Status:** early development. The repo skeleton, Docker setup and CI are in place; the data pipeline comes next.
+**Status:** early development. The data layer works: SEC financials, Tiingo prices and Alpha Vantage EPS estimates, available from a CLI. Metrics and scoring come next.
 
 ## Design principles
 
@@ -63,6 +63,20 @@ task lint    # golangci-lint, ruff + mypy, eslint
 ```
 
 Run `task --list` to see every task.
+
+### Fetch data from the command line
+
+With the stack running (`task up`) and keys in `.env`:
+
+```bash
+task cli -- fetch V
+```
+
+This prints normalized annual, quarterly and trailing-twelve-month financials from SEC filings, along with which XBRL concept each number came from. It also prints a 5-year price summary and the last 8 quarters of EPS versus analyst estimates. Add `-json` for the full data, or `-no-cache` to run without Postgres.
+
+Responses are cached in Postgres (SEC data and prices for a day, earnings for a week). Alpha Vantage's 25-requests-per-day free quota is tracked so it is never exceeded.
+
+**How the financials are built:** each value is the most recently filed figure for its period, so restatements win. Quarters that companies only report as year-to-date totals are derived by subtraction (for example, Q4 = full year − nine months), and the source says so. Values that can't be found or derived are left empty, never guessed. Test fixtures for Visa, Apple and Snowflake are recorded with `go run ./tools/fixturegen` (in `backend/`) and checked against numbers from the companies' filings.
 
 ## Repository layout
 
