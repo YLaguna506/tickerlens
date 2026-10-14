@@ -8,6 +8,13 @@ linters:
     - errorlint # use errors.Is/As instead of == or type assertions on errors
     - misspell
     - noctx # outgoing HTTP requests must carry a context.Context
+  settings:
+    errcheck:
+      # Errors from writing CLI output to the terminal are not actionable.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
 
 formatters:
   enable:
