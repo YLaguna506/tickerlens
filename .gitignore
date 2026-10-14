@@ -1,0 +1,30 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Go
+backend/bin/
+*.exe
+*.test
+coverage.out
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Web
+node_modules/
+web/dist/
+*.tsbuildinfo
+
+# Tooling
+.task/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
