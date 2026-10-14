@@ -1,0 +1,15 @@
+version: "2"
+
+linters:
+  # "standard" = errcheck, govet, ineffassign, staticcheck, unused.
+  default: standard
+  enable:
+    - bodyclose # HTTP response bodies must be closed
+    - errorlint # use errors.Is/As instead of == or type assertions on errors
+    - misspell
+    - noctx # outgoing HTTP requests must carry a context.Context
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
