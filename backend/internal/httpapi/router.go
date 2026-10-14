@@ -10,7 +10,7 @@ import (
 
 // NewRouter wires every route and returns a single http.Handler.
 //
-// C# note: there is no DI container here. Dependencies (stores, queues) will be
+// C# note: there is no DI container here. Dependencies (the store, the agents client) will be
 // passed in as constructor arguments and wired by hand in cmd/api/main.go.
 func NewRouter(logger *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
@@ -18,7 +18,7 @@ func NewRouter(logger *slog.Logger) http.Handler {
 	// Since Go 1.22 the standard mux supports method + path patterns,
 	// similar to [HttpGet("/healthz")] in ASP.NET.
 	mux.HandleFunc("GET /healthz", handleHealth)
-	// Readiness will check Postgres, Redis and NATS once the API uses them (M3).
+	// Readiness will check Postgres and the agents service once the API uses them (M3).
 	mux.HandleFunc("GET /readyz", handleHealth)
 
 	return logRequests(logger, mux)

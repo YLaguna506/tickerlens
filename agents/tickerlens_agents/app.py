@@ -1,7 +1,7 @@
-"""Health endpoints for the agent service.
+"""HTTP service for the TickerLens AI agents.
 
-The agents do their real work as NATS consumers (added in M4); this small
-FastAPI app only lets Docker and operators check that the process is alive.
+The Go API calls `POST /analyze/{section}` for each report section (added in
+M4). For now it only exposes a health check.
 """
 
 from fastapi import FastAPI

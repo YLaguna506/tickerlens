@@ -6,24 +6,22 @@ Enter a US ticker and TickerLens runs a multi-stage research pipeline (data inge
 
 > **Educational project. Not financial advice.** Nothing here is a recommendation to buy or sell any security.
 
-**Status:** early development. The repo skeleton, local infrastructure and CI are in place; the data pipeline comes next.
+**Status:** early development. The repo skeleton, Docker setup and CI are in place; the data pipeline comes next.
 
 ## Design principles
 
 - **Numbers are computed, never generated.** Every figure shown comes from source data (SEC filings, price history) and is calculated in Go. AI agents only interpret and explain, and must cite filing text.
-- **Message-driven pipeline.** Stages communicate through a durable queue, so a crashed worker resumes where it left off.
-- **Swappable providers.** Data sources, the queue and the LLM sit behind interfaces.
+- **Simple by design.** One Go process runs the API and the report pipeline. It calls a small Python service for the AI analysis and stores everything in Postgres. There's no queue or cache server to run.
+- **Swappable providers.** Data sources and the LLM sit behind interfaces.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| API, pipeline workers, metrics | Go |
-| AI agents | Python, FastAPI, Pydantic |
-| Queue | NATS JetStream |
-| Storage and cache | PostgreSQL, Redis |
+| API, report pipeline, metrics | Go |
+| AI agents (HTTP service) | Python, FastAPI, Pydantic |
+| Storage and cache | PostgreSQL |
 | Frontend | React, Vite, TypeScript |
-| Tracing | OpenTelemetry, Jaeger |
 
 Data comes from free sources: SEC EDGAR (financials and filings), Tiingo (prices) and Alpha Vantage (EPS estimates).
 
@@ -53,8 +51,6 @@ The first run creates `.env` from `.env.example`. Add your API keys there. Then 
 | Web app | http://localhost:3000 |
 | API health | http://localhost:8080/healthz |
 | Agents health | http://localhost:8000/healthz |
-| Jaeger (traces) | http://localhost:16686 |
-| NATS monitoring | http://localhost:8222 |
 
 Stop everything with `task down`.
 

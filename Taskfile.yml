@@ -28,7 +28,7 @@ tasks:
       - docker compose down
 
   reset:
-    desc: Stop every service and delete Postgres and NATS data
+    desc: Stop every service and delete Postgres data
     prompt: This deletes all local data. Continue?
     cmds:
       - docker compose down -v
