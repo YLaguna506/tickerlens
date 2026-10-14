@@ -40,7 +40,8 @@ jobs:
         working-directory: agents
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      # setup-uv publishes only exact version tags (no floating @v10).
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           working-directory: agents
           enable-cache: true
