@@ -51,6 +51,10 @@ type FinancialPeriod struct {
 	// Sources records where each value came from: an XBRL concept name, or a
 	// description of how it was derived.
 	Sources map[string]string `json:"sources"`
+	// Filed records the filing date of each value. Per-share values filed
+	// before a stock split are in pre-split shares; metrics uses this to
+	// adjust them.
+	Filed map[string]string `json:"filed,omitempty"`
 }
 
 // Financials is the full normalized history for one company.

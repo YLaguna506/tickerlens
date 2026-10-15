@@ -38,6 +38,18 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-11-20",
+        "capex": "2015-11-20",
+        "cash": "2016-11-15",
+        "debtRepaid": "2013-11-22",
+        "dividendsPaid": "2015-11-20",
+        "netIncome": "2015-11-20",
+        "operatingCashFlow": "2015-11-20",
+        "operatingIncome": "2015-11-20",
+        "revenue": "2015-11-20",
+        "totalEquity": "2016-11-15"
       }
     },
     {
@@ -78,6 +90,18 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-11-20",
+        "capex": "2016-11-15",
+        "cash": "2017-11-17",
+        "debtIssued": "2016-11-15",
+        "dividendsPaid": "2016-11-15",
+        "netIncome": "2016-11-15",
+        "operatingCashFlow": "2016-11-15",
+        "operatingIncome": "2016-11-15",
+        "revenue": "2016-11-15",
+        "totalEquity": "2017-11-17"
       }
     },
     {
@@ -119,6 +143,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-11-20",
+        "capex": "2017-11-17",
+        "cash": "2018-11-16",
+        "debtIssued": "2017-11-17",
+        "dividendsPaid": "2017-11-17",
+        "netIncome": "2017-11-17",
+        "operatingCashFlow": "2017-11-17",
+        "operatingIncome": "2017-11-17",
+        "revenue": "2017-11-17",
+        "totalEquity": "2018-11-16"
       }
     },
     {
@@ -160,6 +196,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt + ShortTermBorrowings",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "capex": "2018-11-16",
+        "cash": "2018-11-16",
+        "debtIssued": "2018-11-16",
+        "debtRepaid": "2018-11-16",
+        "dividendsPaid": "2018-11-16",
+        "netIncome": "2018-11-16",
+        "operatingCashFlow": "2018-11-16",
+        "operatingIncome": "2018-11-16",
+        "revenue": "2018-11-16",
+        "totalEquity": "2019-11-14"
       }
     },
     {
@@ -202,6 +250,19 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2019-11-14",
+        "capex": "2019-11-14",
+        "cash": "2019-11-14",
+        "debtIssued": "2019-11-14",
+        "debtRepaid": "2019-11-14",
+        "dividendsPaid": "2019-11-14",
+        "netIncome": "2019-11-14",
+        "operatingCashFlow": "2019-11-14",
+        "operatingIncome": "2019-11-14",
+        "revenue": "2019-11-14",
+        "totalEquity": "2020-11-19"
       }
     },
     {
@@ -245,6 +306,20 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2020-11-19",
+        "capex": "2020-11-19",
+        "cash": "2020-11-19",
+        "debtIssued": "2020-11-19",
+        "debtRepaid": "2020-11-19",
+        "dividendsPaid": "2020-11-19",
+        "netIncome": "2020-11-19",
+        "operatingCashFlow": "2020-11-19",
+        "operatingIncome": "2020-11-19",
+        "revenue": "2020-11-19",
+        "shortTermInvestments": "2019-11-14",
+        "totalEquity": "2021-11-18"
       }
     },
     {
@@ -288,6 +363,20 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebt + CommercialPaper",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2021-11-18",
+        "capex": "2021-11-18",
+        "cash": "2020-11-19",
+        "debtIssued": "2021-11-18",
+        "debtRepaid": "2021-11-18",
+        "dividendsPaid": "2021-11-18",
+        "netIncome": "2021-11-18",
+        "operatingCashFlow": "2021-11-18",
+        "operatingIncome": "2021-11-18",
+        "revenue": "2020-11-19",
+        "shortTermInvestments": "2020-11-19",
+        "totalEquity": "2022-11-16"
       }
     },
     {
@@ -331,6 +420,20 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2022-11-16",
+        "capex": "2022-11-16",
+        "cash": "2021-11-18",
+        "debtIssued": "2022-11-16",
+        "debtRepaid": "2022-11-16",
+        "dividendsPaid": "2022-11-16",
+        "netIncome": "2022-11-16",
+        "operatingCashFlow": "2022-11-16",
+        "operatingIncome": "2022-11-16",
+        "revenue": "2020-11-19",
+        "shortTermInvestments": "2020-11-19",
+        "totalEquity": "2023-11-15"
       }
     },
     {
@@ -373,6 +476,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2023-11-15",
+        "capex": "2023-11-15",
+        "cash": "2022-11-16",
+        "debtIssued": "2023-11-15",
+        "debtRepaid": "2023-11-15",
+        "dividendsPaid": "2023-11-15",
+        "netIncome": "2023-11-15",
+        "operatingCashFlow": "2023-11-15",
+        "operatingIncome": "2023-11-15",
+        "revenue": "2023-11-15",
+        "totalEquity": "2024-11-13"
       }
     },
     {
@@ -416,6 +532,20 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2024-11-13",
+        "capex": "2024-11-13",
+        "cash": "2023-11-15",
+        "debtIssued": "2024-11-13",
+        "debtRepaid": "2024-11-13",
+        "dividendsPaid": "2024-11-13",
+        "interestExpense": "2024-11-13",
+        "netIncome": "2024-11-13",
+        "operatingCashFlow": "2024-11-13",
+        "operatingIncome": "2024-11-13",
+        "revenue": "2024-11-13",
+        "totalEquity": "2025-11-06"
       }
     },
     {
@@ -459,6 +589,20 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-11-06",
+        "capex": "2025-11-06",
+        "cash": "2024-11-13",
+        "debtIssued": "2025-11-06",
+        "debtRepaid": "2025-11-06",
+        "dividendsPaid": "2025-11-06",
+        "interestExpense": "2025-11-06",
+        "netIncome": "2025-11-06",
+        "operatingCashFlow": "2025-11-06",
+        "operatingIncome": "2025-11-06",
+        "revenue": "2025-11-06",
+        "totalEquity": "2025-11-06"
       }
     },
     {
@@ -502,6 +646,20 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-11-06",
+        "capex": "2025-11-06",
+        "cash": "2025-11-06",
+        "debtIssued": "2025-11-06",
+        "debtRepaid": "2025-11-06",
+        "dividendsPaid": "2025-11-06",
+        "interestExpense": "2025-11-06",
+        "netIncome": "2025-11-06",
+        "operatingCashFlow": "2025-11-06",
+        "operatingIncome": "2025-11-06",
+        "revenue": "2025-11-06",
+        "totalEquity": "2026-04-29"
       }
     },
     {
@@ -545,6 +703,20 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-11-06",
+        "capex": "2025-11-06",
+        "cash": "2026-04-29",
+        "debtIssued": "2025-11-06",
+        "debtRepaid": "2025-11-06",
+        "dividendsPaid": "2025-11-06",
+        "interestExpense": "2025-11-06",
+        "netIncome": "2025-11-06",
+        "operatingCashFlow": "2025-11-06",
+        "operatingIncome": "2025-11-06",
+        "revenue": "2025-11-06",
+        "totalEquity": "2026-04-29"
       }
     }
   ],
@@ -582,6 +754,13 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "cash": "2014-04-24",
+        "netIncome": "2013-05-01",
+        "operatingIncome": "2014-04-24",
+        "revenue": "2014-04-24",
+        "totalEquity": "2013-05-01"
       }
     },
     {
@@ -622,6 +801,17 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2014-07-24",
+        "capex": "2014-07-24",
+        "cash": "2014-07-24",
+        "dividendsPaid": "2014-07-24",
+        "netIncome": "2013-07-24",
+        "operatingCashFlow": "2014-07-24",
+        "operatingIncome": "2014-07-24",
+        "revenue": "2014-07-24",
+        "totalEquity": "2013-07-24"
       }
     },
     {
@@ -662,6 +852,17 @@
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2013-09-30 minus YTD to 2013-06-30)",
         "revenue": "Revenues (derived: YTD to 2013-09-30 minus YTD to 2013-06-30)",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-11-20",
+        "capex": "2015-11-20",
+        "cash": "2016-11-15",
+        "dividendsPaid": "2015-11-20",
+        "netIncome": "2015-11-20",
+        "operatingCashFlow": "2015-11-20",
+        "operatingIncome": "2015-11-20",
+        "revenue": "2015-11-20",
+        "totalEquity": "2016-11-15"
       }
     },
     {
@@ -702,6 +903,17 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-01-29",
+        "capex": "2015-01-29",
+        "cash": "2015-01-29",
+        "dividendsPaid": "2015-01-29",
+        "netIncome": "2015-01-29",
+        "operatingCashFlow": "2015-01-29",
+        "operatingIncome": "2015-01-29",
+        "revenue": "2015-01-29",
+        "totalEquity": "2014-01-30"
       }
     },
     {
@@ -742,6 +954,17 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-04-30",
+        "capex": "2015-04-30",
+        "cash": "2015-04-30",
+        "dividendsPaid": "2015-04-30",
+        "netIncome": "2015-04-30",
+        "operatingCashFlow": "2015-04-30",
+        "operatingIncome": "2015-04-30",
+        "revenue": "2015-04-30",
+        "totalEquity": "2014-04-24"
       }
     },
     {
@@ -782,6 +1005,17 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-07-23",
+        "capex": "2015-07-23",
+        "cash": "2015-07-23",
+        "dividendsPaid": "2015-07-23",
+        "netIncome": "2015-07-23",
+        "operatingCashFlow": "2015-07-23",
+        "operatingIncome": "2015-07-23",
+        "revenue": "2015-07-23",
+        "totalEquity": "2014-07-24"
       }
     },
     {
@@ -822,6 +1056,17 @@
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2014-09-30 minus YTD to 2014-06-30)",
         "revenue": "Revenues (derived: YTD to 2014-09-30 minus YTD to 2014-06-30)",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-11-20",
+        "capex": "2016-11-15",
+        "cash": "2017-11-17",
+        "dividendsPaid": "2016-11-15",
+        "netIncome": "2016-11-15",
+        "operatingCashFlow": "2016-11-15",
+        "operatingIncome": "2016-11-15",
+        "revenue": "2016-11-15",
+        "totalEquity": "2017-11-17"
       }
     },
     {
@@ -863,6 +1108,18 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2016-01-28",
+        "capex": "2016-01-28",
+        "cash": "2016-01-28",
+        "dividendsPaid": "2016-01-28",
+        "interestExpense": "2016-01-28",
+        "netIncome": "2016-01-28",
+        "operatingCashFlow": "2016-01-28",
+        "operatingIncome": "2016-01-28",
+        "revenue": "2016-01-28",
+        "totalEquity": "2015-01-29"
       }
     },
     {
@@ -904,6 +1161,18 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2016-04-25",
+        "capex": "2016-04-25",
+        "cash": "2016-04-25",
+        "dividendsPaid": "2016-04-25",
+        "interestExpense": "2016-04-25",
+        "netIncome": "2016-04-25",
+        "operatingCashFlow": "2016-04-25",
+        "operatingIncome": "2016-04-25",
+        "revenue": "2016-04-25",
+        "totalEquity": "2015-04-30"
       }
     },
     {
@@ -944,6 +1213,17 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-07-23",
+        "capex": "2016-07-25",
+        "cash": "2016-07-25",
+        "dividendsPaid": "2016-07-25",
+        "netIncome": "2016-07-25",
+        "operatingCashFlow": "2016-07-25",
+        "operatingIncome": "2016-07-25",
+        "revenue": "2016-07-25",
+        "totalEquity": "2015-07-23"
       }
     },
     {
@@ -985,6 +1265,17 @@
         "revenue": "Revenues (derived: YTD to 2015-09-30 minus YTD to 2015-06-30)",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2015-11-20",
+        "capex": "2017-11-17",
+        "cash": "2018-11-16",
+        "dividendsPaid": "2017-11-17",
+        "netIncome": "2017-11-17",
+        "operatingCashFlow": "2017-11-17",
+        "operatingIncome": "2017-11-17",
+        "revenue": "2017-11-17",
+        "totalEquity": "2018-11-16"
       }
     },
     {
@@ -1027,6 +1318,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2016-01-28",
+        "capex": "2017-02-02",
+        "cash": "2017-02-02",
+        "dividendsPaid": "2017-02-02",
+        "interestExpense": "2016-01-28",
+        "netIncome": "2017-02-02",
+        "operatingCashFlow": "2017-02-02",
+        "operatingIncome": "2017-02-02",
+        "revenue": "2017-02-02",
+        "totalEquity": "2016-01-28"
       }
     },
     {
@@ -1069,6 +1372,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2016-04-25",
+        "capex": "2017-04-21",
+        "cash": "2017-04-21",
+        "dividendsPaid": "2017-04-21",
+        "interestExpense": "2016-04-25",
+        "netIncome": "2017-04-21",
+        "operatingCashFlow": "2017-04-21",
+        "operatingIncome": "2017-04-21",
+        "revenue": "2017-04-21",
+        "totalEquity": "2016-04-25"
       }
     },
     {
@@ -1109,6 +1424,16 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "capex": "2017-07-20",
+        "cash": "2017-07-20",
+        "dividendsPaid": "2017-07-20",
+        "netIncome": "2017-07-20",
+        "operatingCashFlow": "2017-07-20",
+        "operatingIncome": "2017-07-20",
+        "revenue": "2017-07-20",
+        "totalEquity": "2016-07-25"
       }
     },
     {
@@ -1149,6 +1474,16 @@
         "revenue": "Revenues (derived: YTD to 2016-09-30 minus YTD to 2016-06-30)",
         "totalDebt": "derived: LongTermDebt + ShortTermBorrowings",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "capex": "2018-11-16",
+        "cash": "2018-11-16",
+        "dividendsPaid": "2018-11-16",
+        "netIncome": "2018-11-16",
+        "operatingCashFlow": "2018-11-16",
+        "operatingIncome": "2018-11-16",
+        "revenue": "2018-11-16",
+        "totalEquity": "2019-11-14"
       }
     },
     {
@@ -1190,6 +1525,17 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt + ShortTermBorrowings",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "capex": "2018-02-01",
+        "cash": "2018-02-01",
+        "debtRepaid": "2018-02-01",
+        "dividendsPaid": "2018-02-01",
+        "netIncome": "2018-02-01",
+        "operatingCashFlow": "2018-02-01",
+        "operatingIncome": "2018-02-01",
+        "revenue": "2018-02-01",
+        "totalEquity": "2017-02-02"
       }
     },
     {
@@ -1231,6 +1577,17 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt + ShortTermBorrowings",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "capex": "2018-04-27",
+        "cash": "2018-04-27",
+        "debtRepaid": "2018-04-27",
+        "dividendsPaid": "2018-04-27",
+        "netIncome": "2018-04-27",
+        "operatingCashFlow": "2018-04-27",
+        "operatingIncome": "2018-04-27",
+        "revenue": "2018-04-27",
+        "totalEquity": "2017-04-21"
       }
     },
     {
@@ -1272,6 +1629,17 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt + ShortTermBorrowings",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "capex": "2018-07-27",
+        "cash": "2018-07-27",
+        "debtRepaid": "2018-07-27",
+        "dividendsPaid": "2018-07-27",
+        "netIncome": "2018-07-27",
+        "operatingCashFlow": "2018-07-27",
+        "operatingIncome": "2018-07-27",
+        "revenue": "2018-07-27",
+        "totalEquity": "2017-07-20"
       }
     },
     {
@@ -1314,6 +1682,18 @@
         "revenue": "Revenues (derived: YTD to 2017-09-30 minus YTD to 2017-06-30)",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2019-11-14",
+        "capex": "2019-11-14",
+        "cash": "2019-11-14",
+        "debtRepaid": "2019-11-14",
+        "dividendsPaid": "2019-11-14",
+        "netIncome": "2019-11-14",
+        "operatingCashFlow": "2019-11-14",
+        "operatingIncome": "2019-11-14",
+        "revenue": "2019-11-14",
+        "totalEquity": "2020-11-19"
       }
     },
     {
@@ -1356,6 +1736,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2019-01-31",
+        "capex": "2019-01-31",
+        "cash": "2019-01-31",
+        "debtRepaid": "2019-01-31",
+        "dividendsPaid": "2019-01-31",
+        "netIncome": "2019-01-31",
+        "operatingCashFlow": "2019-01-31",
+        "operatingIncome": "2019-01-31",
+        "revenue": "2019-01-31",
+        "totalEquity": "2019-04-26"
       }
     },
     {
@@ -1398,6 +1790,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2019-04-26",
+        "capex": "2019-04-26",
+        "cash": "2019-04-26",
+        "debtRepaid": "2019-04-26",
+        "dividendsPaid": "2019-04-26",
+        "netIncome": "2019-04-26",
+        "operatingCashFlow": "2019-04-26",
+        "operatingIncome": "2019-04-26",
+        "revenue": "2019-04-26",
+        "totalEquity": "2019-07-26"
       }
     },
     {
@@ -1440,6 +1844,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2019-07-26",
+        "capex": "2019-07-26",
+        "cash": "2019-07-26",
+        "debtRepaid": "2019-07-26",
+        "dividendsPaid": "2019-07-26",
+        "netIncome": "2019-07-26",
+        "operatingCashFlow": "2019-07-26",
+        "operatingIncome": "2019-07-26",
+        "revenue": "2019-07-26",
+        "totalEquity": "2019-07-26"
       }
     },
     {
@@ -1483,6 +1899,19 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2020-11-19",
+        "capex": "2020-11-19",
+        "cash": "2020-11-19",
+        "debtRepaid": "2020-11-19",
+        "dividendsPaid": "2020-11-19",
+        "netIncome": "2020-11-19",
+        "operatingCashFlow": "2020-11-19",
+        "operatingIncome": "2020-11-19",
+        "revenue": "2020-11-19",
+        "shortTermInvestments": "2019-11-14",
+        "totalEquity": "2021-11-18"
       }
     },
     {
@@ -1525,6 +1954,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2020-01-31",
+        "capex": "2020-01-31",
+        "cash": "2019-01-31",
+        "debtRepaid": "2019-01-31",
+        "dividendsPaid": "2020-01-31",
+        "netIncome": "2020-01-31",
+        "operatingCashFlow": "2020-01-31",
+        "operatingIncome": "2020-01-31",
+        "revenue": "2019-01-31",
+        "totalEquity": "2020-05-04"
       }
     },
     {
@@ -1567,6 +2008,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2020-05-04",
+        "capex": "2020-05-04",
+        "cash": "2019-04-26",
+        "debtRepaid": "2019-04-26",
+        "dividendsPaid": "2020-05-04",
+        "netIncome": "2020-05-04",
+        "operatingCashFlow": "2020-05-04",
+        "operatingIncome": "2020-05-04",
+        "revenue": "2019-04-26",
+        "totalEquity": "2020-07-31"
       }
     },
     {
@@ -1609,6 +2062,18 @@
         "revenue": "Revenues",
         "totalDebt": "derived: LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2020-07-31",
+        "capex": "2020-07-31",
+        "cash": "2019-07-26",
+        "debtRepaid": "2019-07-26",
+        "dividendsPaid": "2020-07-31",
+        "netIncome": "2020-07-31",
+        "operatingCashFlow": "2020-07-31",
+        "operatingIncome": "2020-07-31",
+        "revenue": "2019-07-26",
+        "totalEquity": "2020-07-31"
       }
     },
     {
@@ -1652,6 +2117,19 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebt + CommercialPaper",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2021-11-18",
+        "capex": "2021-11-18",
+        "cash": "2020-11-19",
+        "debtRepaid": "2021-11-18",
+        "dividendsPaid": "2021-11-18",
+        "netIncome": "2021-11-18",
+        "operatingCashFlow": "2021-11-18",
+        "operatingIncome": "2021-11-18",
+        "revenue": "2020-11-19",
+        "shortTermInvestments": "2020-11-19",
+        "totalEquity": "2022-11-16"
       }
     },
     {
@@ -1694,6 +2172,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2021-01-29",
+        "capex": "2021-01-29",
+        "cash": "2020-01-31",
+        "debtRepaid": "2021-01-29",
+        "dividendsPaid": "2021-01-29",
+        "netIncome": "2021-01-29",
+        "operatingCashFlow": "2021-01-29",
+        "operatingIncome": "2021-01-29",
+        "revenue": "2021-01-29",
+        "totalEquity": "2021-04-29"
       }
     },
     {
@@ -1736,6 +2226,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2021-04-29",
+        "capex": "2021-04-29",
+        "cash": "2020-05-04",
+        "debtRepaid": "2021-04-29",
+        "dividendsPaid": "2021-04-29",
+        "netIncome": "2021-04-29",
+        "operatingCashFlow": "2021-04-29",
+        "operatingIncome": "2021-04-29",
+        "revenue": "2021-04-29",
+        "totalEquity": "2021-07-29"
       }
     },
     {
@@ -1778,6 +2280,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebt + CommercialPaper",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2021-07-29",
+        "capex": "2021-07-29",
+        "cash": "2020-07-31",
+        "debtRepaid": "2021-07-29",
+        "dividendsPaid": "2021-07-29",
+        "netIncome": "2021-07-29",
+        "operatingCashFlow": "2021-07-29",
+        "operatingIncome": "2021-07-29",
+        "revenue": "2021-07-29",
+        "totalEquity": "2021-07-29"
       }
     },
     {
@@ -1821,6 +2335,19 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2022-11-16",
+        "capex": "2022-11-16",
+        "cash": "2021-11-18",
+        "debtRepaid": "2022-11-16",
+        "dividendsPaid": "2022-11-16",
+        "netIncome": "2022-11-16",
+        "operatingCashFlow": "2022-11-16",
+        "operatingIncome": "2022-11-16",
+        "revenue": "2022-11-16",
+        "shortTermInvestments": "2020-11-19",
+        "totalEquity": "2023-11-15"
       }
     },
     {
@@ -1863,6 +2390,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2022-01-28",
+        "capex": "2022-01-28",
+        "cash": "2021-01-29",
+        "debtRepaid": "2022-01-28",
+        "dividendsPaid": "2022-01-28",
+        "netIncome": "2022-01-28",
+        "operatingCashFlow": "2022-01-28",
+        "operatingIncome": "2022-01-28",
+        "revenue": "2022-01-28",
+        "totalEquity": "2022-04-28"
       }
     },
     {
@@ -1905,6 +2444,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2022-04-28",
+        "capex": "2022-04-28",
+        "cash": "2021-04-29",
+        "debtRepaid": "2022-04-28",
+        "dividendsPaid": "2022-04-28",
+        "netIncome": "2022-04-28",
+        "operatingCashFlow": "2022-04-28",
+        "operatingIncome": "2022-04-28",
+        "revenue": "2022-04-28",
+        "totalEquity": "2022-07-28"
       }
     },
     {
@@ -1947,6 +2498,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2022-07-28",
+        "capex": "2022-07-28",
+        "cash": "2021-07-29",
+        "debtRepaid": "2022-07-28",
+        "dividendsPaid": "2022-07-28",
+        "netIncome": "2022-07-28",
+        "operatingCashFlow": "2022-07-28",
+        "operatingIncome": "2022-07-28",
+        "revenue": "2022-07-28",
+        "totalEquity": "2022-07-28"
       }
     },
     {
@@ -1989,6 +2552,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2021-09-30 minus YTD to 2021-06-30)",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2023-11-15",
+        "capex": "2023-11-15",
+        "cash": "2022-11-16",
+        "debtRepaid": "2023-11-15",
+        "dividendsPaid": "2023-11-15",
+        "netIncome": "2023-11-15",
+        "operatingCashFlow": "2023-11-15",
+        "operatingIncome": "2023-11-15",
+        "revenue": "2023-11-15",
+        "totalEquity": "2024-11-13"
       }
     },
     {
@@ -2031,6 +2606,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebt",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2023-01-27",
+        "capex": "2023-01-27",
+        "cash": "2022-01-28",
+        "debtRepaid": "2023-01-27",
+        "dividendsPaid": "2023-01-27",
+        "netIncome": "2023-01-27",
+        "operatingCashFlow": "2023-01-27",
+        "operatingIncome": "2023-01-27",
+        "revenue": "2023-01-27",
+        "totalEquity": "2023-04-27"
       }
     },
     {
@@ -2073,6 +2660,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2023-04-27",
+        "capex": "2023-04-27",
+        "cash": "2022-04-28",
+        "debtRepaid": "2023-04-27",
+        "dividendsPaid": "2023-04-27",
+        "netIncome": "2023-04-27",
+        "operatingCashFlow": "2023-04-27",
+        "operatingIncome": "2023-04-27",
+        "revenue": "2023-04-27",
+        "totalEquity": "2023-07-26"
       }
     },
     {
@@ -2115,6 +2714,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2023-07-26",
+        "capex": "2023-07-26",
+        "cash": "2022-07-28",
+        "debtRepaid": "2023-07-26",
+        "dividendsPaid": "2023-07-26",
+        "netIncome": "2023-07-26",
+        "operatingCashFlow": "2023-07-26",
+        "operatingIncome": "2023-07-26",
+        "revenue": "2023-07-26",
+        "totalEquity": "2023-07-26"
       }
     },
     {
@@ -2158,6 +2769,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2022-09-30 minus YTD to 2022-06-30)",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2024-11-13",
+        "capex": "2024-11-13",
+        "cash": "2023-11-15",
+        "debtIssued": "2024-11-13",
+        "debtRepaid": "2024-11-13",
+        "dividendsPaid": "2024-11-13",
+        "netIncome": "2024-11-13",
+        "operatingCashFlow": "2024-11-13",
+        "operatingIncome": "2024-11-13",
+        "revenue": "2024-11-13",
+        "totalEquity": "2025-11-06"
       }
     },
     {
@@ -2200,6 +2824,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2024-01-26",
+        "capex": "2024-01-26",
+        "cash": "2023-01-27",
+        "debtRepaid": "2024-01-26",
+        "dividendsPaid": "2024-01-26",
+        "netIncome": "2024-01-26",
+        "operatingCashFlow": "2024-01-26",
+        "operatingIncome": "2024-01-26",
+        "revenue": "2024-01-26",
+        "totalEquity": "2024-04-24"
       }
     },
     {
@@ -2242,6 +2878,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2024-04-24",
+        "capex": "2024-04-24",
+        "cash": "2023-04-27",
+        "debtRepaid": "2024-04-24",
+        "dividendsPaid": "2024-04-24",
+        "netIncome": "2024-04-24",
+        "operatingCashFlow": "2024-04-24",
+        "operatingIncome": "2024-04-24",
+        "revenue": "2024-04-24",
+        "totalEquity": "2024-07-24"
       }
     },
     {
@@ -2285,6 +2933,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2024-07-24",
+        "capex": "2024-07-24",
+        "cash": "2023-07-26",
+        "debtRepaid": "2024-07-24",
+        "dividendsPaid": "2024-07-24",
+        "interestExpense": "2024-07-24",
+        "netIncome": "2024-07-24",
+        "operatingCashFlow": "2024-07-24",
+        "operatingIncome": "2024-07-24",
+        "revenue": "2024-07-24",
+        "totalEquity": "2024-07-24"
       }
     },
     {
@@ -2329,6 +2990,20 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2023-09-30 minus YTD to 2023-06-30)",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-11-06",
+        "capex": "2025-11-06",
+        "cash": "2024-11-13",
+        "debtIssued": "2025-11-06",
+        "debtRepaid": "2025-11-06",
+        "dividendsPaid": "2025-11-06",
+        "interestExpense": "2025-11-06",
+        "netIncome": "2025-11-06",
+        "operatingCashFlow": "2025-11-06",
+        "operatingIncome": "2025-11-06",
+        "revenue": "2025-11-06",
+        "totalEquity": "2025-11-06"
       }
     },
     {
@@ -2372,6 +3047,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-01-31",
+        "capex": "2025-01-31",
+        "cash": "2024-01-26",
+        "debtRepaid": "2024-01-26",
+        "dividendsPaid": "2025-01-31",
+        "interestExpense": "2025-01-31",
+        "netIncome": "2025-01-31",
+        "operatingCashFlow": "2025-01-31",
+        "operatingIncome": "2025-01-31",
+        "revenue": "2025-01-31",
+        "totalEquity": "2025-04-30"
       }
     },
     {
@@ -2415,6 +3103,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-04-30",
+        "capex": "2025-04-30",
+        "cash": "2024-04-24",
+        "debtRepaid": "2024-04-24",
+        "dividendsPaid": "2025-04-30",
+        "interestExpense": "2025-04-30",
+        "netIncome": "2025-04-30",
+        "operatingCashFlow": "2025-04-30",
+        "operatingIncome": "2025-04-30",
+        "revenue": "2025-04-30",
+        "totalEquity": "2025-07-30"
       }
     },
     {
@@ -2458,6 +3159,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-07-30",
+        "capex": "2025-07-30",
+        "cash": "2024-07-24",
+        "debtRepaid": "2024-07-24",
+        "dividendsPaid": "2025-07-30",
+        "interestExpense": "2025-07-30",
+        "netIncome": "2025-07-30",
+        "operatingCashFlow": "2025-07-30",
+        "operatingIncome": "2025-07-30",
+        "revenue": "2025-07-30",
+        "totalEquity": "2025-07-30"
       }
     },
     {
@@ -2502,6 +3216,20 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2024-09-30 minus YTD to 2024-06-30)",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-11-06",
+        "capex": "2025-11-06",
+        "cash": "2025-11-06",
+        "debtIssued": "2025-11-06",
+        "debtRepaid": "2025-11-06",
+        "dividendsPaid": "2025-11-06",
+        "interestExpense": "2025-11-06",
+        "netIncome": "2025-11-06",
+        "operatingCashFlow": "2025-11-06",
+        "operatingIncome": "2025-11-06",
+        "revenue": "2025-11-06",
+        "totalEquity": "2026-04-29"
       }
     },
     {
@@ -2545,6 +3273,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2026-01-30",
+        "capex": "2026-01-30",
+        "cash": "2025-01-31",
+        "debtRepaid": "2026-01-30",
+        "dividendsPaid": "2026-01-30",
+        "interestExpense": "2026-01-30",
+        "netIncome": "2026-01-30",
+        "operatingCashFlow": "2026-01-30",
+        "operatingIncome": "2026-01-30",
+        "revenue": "2026-01-30",
+        "totalEquity": "2026-04-29"
       }
     },
     {
@@ -2588,6 +3329,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2026-04-29",
+        "capex": "2026-04-29",
+        "cash": "2025-04-30",
+        "debtRepaid": "2026-04-29",
+        "dividendsPaid": "2026-04-29",
+        "interestExpense": "2026-04-29",
+        "netIncome": "2026-04-29",
+        "operatingCashFlow": "2026-04-29",
+        "operatingIncome": "2026-04-29",
+        "revenue": "2026-04-29",
+        "totalEquity": "2026-04-29"
       }
     },
     {
@@ -2631,6 +3385,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-07-30",
+        "capex": "2025-07-30",
+        "cash": "2025-07-30",
+        "debtIssued": "2025-07-30",
+        "dividendsPaid": "2025-07-30",
+        "interestExpense": "2025-07-30",
+        "netIncome": "2025-07-30",
+        "operatingCashFlow": "2025-07-30",
+        "operatingIncome": "2025-07-30",
+        "revenue": "2025-07-30",
+        "totalEquity": "2025-07-30"
       }
     },
     {
@@ -2674,6 +3441,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2025-09-30 minus YTD to 2025-06-30)",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2025-11-06",
+        "capex": "2025-11-06",
+        "cash": "2026-04-29",
+        "debtIssued": "2025-11-06",
+        "dividendsPaid": "2025-11-06",
+        "interestExpense": "2025-11-06",
+        "netIncome": "2025-11-06",
+        "operatingCashFlow": "2025-11-06",
+        "operatingIncome": "2025-11-06",
+        "revenue": "2025-11-06",
+        "totalEquity": "2026-04-29"
       }
     },
     {
@@ -2717,6 +3497,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2026-01-30",
+        "capex": "2026-01-30",
+        "cash": "2026-01-30",
+        "debtRepaid": "2026-01-30",
+        "dividendsPaid": "2026-01-30",
+        "interestExpense": "2026-01-30",
+        "netIncome": "2026-01-30",
+        "operatingCashFlow": "2026-01-30",
+        "operatingIncome": "2026-01-30",
+        "revenue": "2026-01-30",
+        "totalEquity": "2026-04-29"
       }
     },
     {
@@ -2760,6 +3553,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2026-04-29",
+        "capex": "2026-04-29",
+        "cash": "2026-04-29",
+        "debtRepaid": "2026-04-29",
+        "dividendsPaid": "2026-04-29",
+        "interestExpense": "2026-04-29",
+        "netIncome": "2026-04-29",
+        "operatingCashFlow": "2026-04-29",
+        "operatingIncome": "2026-04-29",
+        "revenue": "2026-04-29",
+        "totalEquity": "2026-04-29"
       }
     }
   ],

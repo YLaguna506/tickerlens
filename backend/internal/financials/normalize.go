@@ -240,6 +240,7 @@ func (r *resolver) period(co edgar.Company, pt PeriodType, fy, fq int, start, en
 		StartDate:     formatDate(start),
 		EndDate:       formatDate(end),
 		Sources:       map[string]string{},
+		Filed:         map[string]string{},
 	}
 	endKey := formatDate(end)
 
@@ -247,6 +248,7 @@ func (r *resolver) period(co edgar.Company, pt PeriodType, fy, fq int, start, en
 		if v, ok := r.get(spec.name, pt, endKey); ok {
 			*p.field(spec.name) = ptr(v.val)
 			p.Sources[spec.name] = v.source
+			p.Filed[spec.name] = v.filed
 		}
 	}
 	for _, name := range []string{"revenue", "netIncome"} {

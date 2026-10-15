@@ -37,6 +37,17 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2021-03-31",
+        "capex": "2021-03-31",
+        "cash": "2021-03-31",
+        "grossProfit": "2021-03-31",
+        "netIncome": "2021-03-31",
+        "operatingCashFlow": "2021-03-31",
+        "operatingIncome": "2021-03-31",
+        "revenue": "2021-03-31",
+        "totalEquity": "2022-03-30"
       }
     },
     {
@@ -79,6 +90,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2021-03-31",
+        "capex": "2022-03-30",
+        "cash": "2022-03-30",
+        "epsDiluted": "2022-03-30",
+        "grossProfit": "2022-03-30",
+        "netIncome": "2022-03-30",
+        "operatingCashFlow": "2022-03-30",
+        "operatingIncome": "2022-03-30",
+        "revenue": "2022-03-30",
+        "sharesDiluted": "2022-03-30",
+        "shortTermInvestments": "2021-03-31",
+        "totalEquity": "2022-03-30"
       }
     },
     {
@@ -121,6 +146,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2021-03-31",
+        "capex": "2023-03-29",
+        "cash": "2023-03-29",
+        "epsDiluted": "2023-03-29",
+        "grossProfit": "2023-03-29",
+        "netIncome": "2023-03-29",
+        "operatingCashFlow": "2023-03-29",
+        "operatingIncome": "2023-03-29",
+        "revenue": "2023-03-29",
+        "sharesDiluted": "2023-03-29",
+        "shortTermInvestments": "2022-03-30",
+        "totalEquity": "2022-09-01"
       }
     },
     {
@@ -163,6 +202,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2024-03-26",
+        "capex": "2024-03-26",
+        "cash": "2024-03-26",
+        "epsDiluted": "2024-03-26",
+        "grossProfit": "2024-03-26",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2024-03-26",
+        "operatingIncome": "2024-03-26",
+        "revenue": "2024-03-26",
+        "sharesDiluted": "2024-03-26",
+        "shortTermInvestments": "2023-03-29",
+        "totalEquity": "2023-03-29"
       }
     },
     {
@@ -207,6 +260,22 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2025-03-21",
+        "capex": "2025-03-21",
+        "cash": "2025-03-21",
+        "debtIssued": "2025-03-21",
+        "epsDiluted": "2025-03-21",
+        "grossProfit": "2025-03-21",
+        "interestExpense": "2025-03-21",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2025-03-21",
+        "operatingIncome": "2025-03-21",
+        "revenue": "2025-03-21",
+        "sharesDiluted": "2025-03-21",
+        "shortTermInvestments": "2024-03-26",
+        "totalEquity": "2024-03-26"
       }
     },
     {
@@ -252,6 +321,22 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-03-20",
+        "capex": "2026-03-20",
+        "cash": "2026-03-20",
+        "debtIssued": "2026-03-20",
+        "epsDiluted": "2026-03-20",
+        "grossProfit": "2026-03-20",
+        "interestExpense": "2026-03-20",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2026-03-20",
+        "operatingIncome": "2026-03-20",
+        "revenue": "2026-03-20",
+        "sharesDiluted": "2026-03-20",
+        "shortTermInvestments": "2025-03-21",
+        "totalEquity": "2025-03-21"
       }
     },
     {
@@ -297,6 +382,22 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-03-20",
+        "capex": "2026-03-20",
+        "cash": "2026-03-20",
+        "debtIssued": "2026-03-20",
+        "epsDiluted": "2026-03-20",
+        "grossProfit": "2026-03-20",
+        "interestExpense": "2026-03-20",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2026-03-20",
+        "operatingIncome": "2026-03-20",
+        "revenue": "2026-03-20",
+        "sharesDiluted": "2026-03-20",
+        "shortTermInvestments": "2026-03-20",
+        "totalEquity": "2026-03-20"
       }
     },
     {
@@ -342,6 +443,22 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-03-20",
+        "capex": "2026-03-20",
+        "cash": "2026-09-04",
+        "debtIssued": "2026-03-20",
+        "epsDiluted": "2026-03-20",
+        "grossProfit": "2026-03-20",
+        "interestExpense": "2026-03-20",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2026-03-20",
+        "operatingIncome": "2026-03-20",
+        "revenue": "2026-03-20",
+        "sharesDiluted": "2026-03-20",
+        "shortTermInvestments": "2026-09-04",
+        "totalEquity": "2026-03-20"
       }
     }
   ],
@@ -380,6 +497,14 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "cash": "2020-12-03",
+        "grossProfit": "2020-12-03",
+        "netIncome": "2020-12-03",
+        "operatingIncome": "2020-12-03",
+        "revenue": "2020-12-03",
+        "totalEquity": "2020-12-03"
       }
     },
     {
@@ -420,6 +545,17 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2020-01-31 minus YTD to 2019-10-31)",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2022-03-30",
+        "cash": "2022-03-30",
+        "grossProfit": "2022-03-30",
+        "netIncome": "2022-03-30",
+        "operatingCashFlow": "2022-03-30",
+        "operatingIncome": "2022-03-30",
+        "revenue": "2022-03-30",
+        "shortTermInvestments": "2021-03-31",
+        "totalEquity": "2022-03-30"
       }
     },
     {
@@ -459,6 +595,16 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2021-06-04",
+        "cash": "2021-06-04",
+        "grossProfit": "2021-06-04",
+        "netIncome": "2021-06-04",
+        "operatingCashFlow": "2021-06-04",
+        "operatingIncome": "2021-06-04",
+        "revenue": "2021-06-04",
+        "totalEquity": "2021-09-02"
       }
     },
     {
@@ -500,6 +646,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2021-09-02",
+        "cash": "2021-09-02",
+        "epsDiluted": "2021-09-02",
+        "grossProfit": "2021-09-02",
+        "netIncome": "2021-09-02",
+        "operatingCashFlow": "2021-09-02",
+        "operatingIncome": "2021-09-02",
+        "revenue": "2021-09-02",
+        "sharesDiluted": "2021-09-02",
+        "totalEquity": "2021-12-03"
       }
     },
     {
@@ -542,6 +700,19 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2021-12-03",
+        "cash": "2021-12-03",
+        "epsDiluted": "2021-12-03",
+        "grossProfit": "2021-12-03",
+        "netIncome": "2021-12-03",
+        "operatingCashFlow": "2021-12-03",
+        "operatingIncome": "2021-12-03",
+        "revenue": "2021-12-03",
+        "sharesDiluted": "2021-12-03",
+        "shortTermInvestments": "2020-12-03",
+        "totalEquity": "2021-12-03"
       }
     },
     {
@@ -583,6 +754,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2021-01-31 minus YTD to 2020-10-31)",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2023-03-29",
+        "cash": "2023-03-29",
+        "epsDiluted": "2023-03-29",
+        "grossProfit": "2023-03-29",
+        "netIncome": "2023-03-29",
+        "operatingCashFlow": "2023-03-29",
+        "operatingIncome": "2023-03-29",
+        "revenue": "2023-03-29",
+        "shortTermInvestments": "2022-03-30",
+        "totalEquity": "2022-09-01"
       }
     },
     {
@@ -625,6 +808,19 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2022-06-03",
+        "cash": "2022-06-03",
+        "epsDiluted": "2022-06-03",
+        "grossProfit": "2022-06-03",
+        "netIncome": "2022-06-03",
+        "operatingCashFlow": "2022-06-03",
+        "operatingIncome": "2022-06-03",
+        "revenue": "2022-06-03",
+        "sharesDiluted": "2022-06-03",
+        "shortTermInvestments": "2021-06-04",
+        "totalEquity": "2022-09-01"
       }
     },
     {
@@ -667,6 +863,19 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2022-09-01",
+        "cash": "2022-09-01",
+        "epsDiluted": "2022-09-01",
+        "grossProfit": "2022-09-01",
+        "netIncome": "2022-09-01",
+        "operatingCashFlow": "2022-09-01",
+        "operatingIncome": "2022-09-01",
+        "revenue": "2022-09-01",
+        "sharesDiluted": "2022-09-01",
+        "shortTermInvestments": "2021-09-02",
+        "totalEquity": "2022-09-01"
       }
     },
     {
@@ -709,6 +918,19 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2022-12-02",
+        "cash": "2022-12-02",
+        "epsDiluted": "2022-12-02",
+        "grossProfit": "2022-12-02",
+        "netIncome": "2022-12-02",
+        "operatingCashFlow": "2022-12-02",
+        "operatingIncome": "2022-12-02",
+        "revenue": "2022-12-02",
+        "sharesDiluted": "2022-12-02",
+        "shortTermInvestments": "2021-12-03",
+        "totalEquity": "2021-12-03"
       }
     },
     {
@@ -750,6 +972,18 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2022-01-31 minus YTD to 2021-10-31)",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "capex": "2024-03-26",
+        "cash": "2024-03-26",
+        "epsDiluted": "2024-03-26",
+        "grossProfit": "2024-03-26",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2024-03-26",
+        "operatingIncome": "2024-03-26",
+        "revenue": "2024-03-26",
+        "shortTermInvestments": "2023-03-29",
+        "totalEquity": "2023-03-29"
       }
     },
     {
@@ -793,6 +1027,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2023-06-02",
+        "capex": "2023-06-02",
+        "cash": "2023-06-02",
+        "epsDiluted": "2023-06-02",
+        "grossProfit": "2023-06-02",
+        "netIncome": "2023-06-02",
+        "operatingCashFlow": "2023-06-02",
+        "operatingIncome": "2023-06-02",
+        "revenue": "2023-06-02",
+        "sharesDiluted": "2023-06-02",
+        "shortTermInvestments": "2022-06-03",
+        "totalEquity": "2022-09-01"
       }
     },
     {
@@ -836,6 +1084,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2023-08-31",
+        "capex": "2023-08-31",
+        "cash": "2023-08-31",
+        "epsDiluted": "2023-08-31",
+        "grossProfit": "2023-08-31",
+        "netIncome": "2023-08-31",
+        "operatingCashFlow": "2023-08-31",
+        "operatingIncome": "2023-08-31",
+        "revenue": "2023-08-31",
+        "sharesDiluted": "2023-08-31",
+        "shortTermInvestments": "2022-09-01",
+        "totalEquity": "2022-09-01"
       }
     },
     {
@@ -879,6 +1141,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2023-12-01",
+        "capex": "2023-12-01",
+        "cash": "2023-12-01",
+        "epsDiluted": "2023-12-01",
+        "grossProfit": "2023-12-01",
+        "netIncome": "2023-12-01",
+        "operatingCashFlow": "2023-12-01",
+        "operatingIncome": "2023-12-01",
+        "revenue": "2023-12-01",
+        "sharesDiluted": "2023-12-01",
+        "shortTermInvestments": "2022-12-02",
+        "totalEquity": "2022-12-02"
       }
     },
     {
@@ -921,6 +1197,19 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2023-01-31 minus YTD to 2022-10-31)",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2025-03-21",
+        "capex": "2025-03-21",
+        "cash": "2025-03-21",
+        "epsDiluted": "2025-03-21",
+        "grossProfit": "2025-03-21",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2025-03-21",
+        "operatingIncome": "2025-03-21",
+        "revenue": "2025-03-21",
+        "shortTermInvestments": "2024-03-26",
+        "totalEquity": "2024-03-26"
       }
     },
     {
@@ -964,6 +1253,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2024-05-31",
+        "capex": "2024-05-31",
+        "cash": "2024-05-31",
+        "epsDiluted": "2024-05-31",
+        "grossProfit": "2024-05-31",
+        "netIncome": "2024-05-31",
+        "operatingCashFlow": "2024-05-31",
+        "operatingIncome": "2024-05-31",
+        "revenue": "2024-05-31",
+        "sharesDiluted": "2023-06-02",
+        "shortTermInvestments": "2023-06-02",
+        "totalEquity": "2023-06-02"
       }
     },
     {
@@ -1007,6 +1310,20 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2024-08-29",
+        "capex": "2024-08-29",
+        "cash": "2024-08-29",
+        "epsDiluted": "2024-08-29",
+        "grossProfit": "2024-08-29",
+        "netIncome": "2024-08-29",
+        "operatingCashFlow": "2024-08-29",
+        "operatingIncome": "2024-08-29",
+        "revenue": "2024-08-29",
+        "sharesDiluted": "2023-08-31",
+        "shortTermInvestments": "2023-08-31",
+        "totalEquity": "2023-08-31"
       }
     },
     {
@@ -1051,6 +1368,21 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2023-12-01",
+        "capex": "2024-11-27",
+        "cash": "2024-11-27",
+        "epsDiluted": "2024-11-27",
+        "grossProfit": "2024-11-27",
+        "interestExpense": "2024-11-27",
+        "netIncome": "2024-11-27",
+        "operatingCashFlow": "2024-11-27",
+        "operatingIncome": "2024-11-27",
+        "revenue": "2024-11-27",
+        "sharesDiluted": "2023-12-01",
+        "shortTermInvestments": "2023-12-01",
+        "totalEquity": "2023-12-01"
       }
     },
     {
@@ -1096,6 +1428,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-03-20",
+        "capex": "2026-03-20",
+        "cash": "2026-03-20",
+        "debtIssued": "2026-03-20",
+        "epsDiluted": "2026-03-20",
+        "grossProfit": "2026-03-20",
+        "interestExpense": "2026-03-20",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2026-03-20",
+        "operatingIncome": "2026-03-20",
+        "revenue": "2026-03-20",
+        "shortTermInvestments": "2025-03-21",
+        "totalEquity": "2025-03-21"
       }
     },
     {
@@ -1139,6 +1486,20 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2025-05-30",
+        "capex": "2025-05-30",
+        "cash": "2025-05-30",
+        "epsDiluted": "2025-05-30",
+        "grossProfit": "2025-05-30",
+        "interestExpense": "2025-05-30",
+        "netIncome": "2025-05-30",
+        "operatingCashFlow": "2025-05-30",
+        "operatingIncome": "2025-05-30",
+        "revenue": "2025-05-30",
+        "shortTermInvestments": "2024-05-31",
+        "totalEquity": "2024-05-31"
       }
     },
     {
@@ -1183,6 +1544,21 @@
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2024-08-29",
+        "capex": "2025-09-05",
+        "cash": "2025-09-05",
+        "epsDiluted": "2025-09-05",
+        "grossProfit": "2025-09-05",
+        "interestExpense": "2025-09-05",
+        "netIncome": "2025-09-05",
+        "operatingCashFlow": "2025-09-05",
+        "operatingIncome": "2025-09-05",
+        "revenue": "2025-09-05",
+        "sharesDiluted": "2025-09-05",
+        "shortTermInvestments": "2024-08-29",
+        "totalEquity": "2024-08-29"
       }
     },
     {
@@ -1228,6 +1604,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2025-12-05",
+        "capex": "2025-12-05",
+        "cash": "2025-12-05",
+        "epsDiluted": "2025-12-05",
+        "grossProfit": "2025-12-05",
+        "interestExpense": "2025-12-05",
+        "netIncome": "2025-12-05",
+        "operatingCashFlow": "2025-12-05",
+        "operatingIncome": "2025-12-05",
+        "revenue": "2025-12-05",
+        "sharesDiluted": "2025-12-05",
+        "shortTermInvestments": "2024-11-27",
+        "totalEquity": "2024-11-27"
       }
     },
     {
@@ -1273,6 +1664,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-03-20",
+        "capex": "2026-03-20",
+        "cash": "2026-03-20",
+        "debtIssued": "2026-03-20",
+        "epsDiluted": "2026-03-20",
+        "grossProfit": "2026-03-20",
+        "interestExpense": "2026-03-20",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2026-03-20",
+        "operatingIncome": "2026-03-20",
+        "revenue": "2026-03-20",
+        "shortTermInvestments": "2026-03-20",
+        "totalEquity": "2026-03-20"
       }
     },
     {
@@ -1318,6 +1724,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-05-29",
+        "capex": "2026-05-29",
+        "cash": "2026-05-29",
+        "epsDiluted": "2026-05-29",
+        "grossProfit": "2026-05-29",
+        "interestExpense": "2026-05-29",
+        "netIncome": "2026-05-29",
+        "operatingCashFlow": "2026-05-29",
+        "operatingIncome": "2026-05-29",
+        "revenue": "2026-05-29",
+        "sharesDiluted": "2026-05-29",
+        "shortTermInvestments": "2025-05-30",
+        "totalEquity": "2025-05-30"
       }
     },
     {
@@ -1363,6 +1784,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-09-04",
+        "capex": "2026-09-04",
+        "cash": "2026-09-04",
+        "epsDiluted": "2026-09-04",
+        "grossProfit": "2026-09-04",
+        "interestExpense": "2026-09-04",
+        "netIncome": "2026-09-04",
+        "operatingCashFlow": "2026-09-04",
+        "operatingIncome": "2026-09-04",
+        "revenue": "2026-09-04",
+        "sharesDiluted": "2026-09-04",
+        "shortTermInvestments": "2025-09-05",
+        "totalEquity": "2025-09-05"
       }
     },
     {
@@ -1408,6 +1844,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2025-12-05",
+        "capex": "2025-12-05",
+        "cash": "2025-12-05",
+        "epsDiluted": "2025-12-05",
+        "grossProfit": "2025-12-05",
+        "interestExpense": "2025-12-05",
+        "netIncome": "2025-12-05",
+        "operatingCashFlow": "2025-12-05",
+        "operatingIncome": "2025-12-05",
+        "revenue": "2025-12-05",
+        "sharesDiluted": "2025-12-05",
+        "shortTermInvestments": "2025-12-05",
+        "totalEquity": "2025-12-05"
       }
     },
     {
@@ -1453,6 +1904,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquity"
+      },
+      "filed": {
+        "buybacks": "2026-03-20",
+        "capex": "2026-03-20",
+        "cash": "2026-09-04",
+        "debtIssued": "2026-03-20",
+        "epsDiluted": "2026-03-20",
+        "grossProfit": "2026-03-20",
+        "interestExpense": "2026-03-20",
+        "netIncome": "2026-05-18",
+        "operatingCashFlow": "2026-03-20",
+        "operatingIncome": "2026-03-20",
+        "revenue": "2026-03-20",
+        "shortTermInvestments": "2026-09-04",
+        "totalEquity": "2026-03-20"
       }
     },
     {
@@ -1498,6 +1964,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2026-05-29",
+        "capex": "2026-05-29",
+        "cash": "2026-05-29",
+        "epsDiluted": "2026-05-29",
+        "grossProfit": "2026-05-29",
+        "interestExpense": "2026-05-29",
+        "netIncome": "2026-05-29",
+        "operatingCashFlow": "2026-05-29",
+        "operatingIncome": "2026-05-29",
+        "revenue": "2026-05-29",
+        "sharesDiluted": "2026-05-29",
+        "shortTermInvestments": "2026-05-29",
+        "totalEquity": "2026-09-04"
       }
     },
     {
@@ -1543,6 +2024,21 @@
         "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
         "totalDebt": "derived: ConvertibleDebtNoncurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      },
+      "filed": {
+        "buybacks": "2026-09-04",
+        "capex": "2026-09-04",
+        "cash": "2026-09-04",
+        "epsDiluted": "2026-09-04",
+        "grossProfit": "2026-09-04",
+        "interestExpense": "2026-09-04",
+        "netIncome": "2026-09-04",
+        "operatingCashFlow": "2026-09-04",
+        "operatingIncome": "2026-09-04",
+        "revenue": "2026-09-04",
+        "sharesDiluted": "2026-09-04",
+        "shortTermInvestments": "2026-09-04",
+        "totalEquity": "2026-09-04"
       }
     }
   ],

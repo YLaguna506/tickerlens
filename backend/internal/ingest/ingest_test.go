@@ -87,7 +87,7 @@ func TestFetchAllSources(t *testing.T) {
 	if len(b.Warnings) != 0 {
 		t.Errorf("unexpected warnings: %v", b.Warnings)
 	}
-	if p.gotTicker != "V" || !p.gotStart.Equal(fixedNow().AddDate(-5, 0, 0)) {
+	if p.gotTicker != "V" || !p.gotStart.Equal(fixedNow().AddDate(-11, 0, 0)) {
 		t.Errorf("prices called with %s from %s", p.gotTicker, p.gotStart)
 	}
 }

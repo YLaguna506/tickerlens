@@ -48,7 +48,7 @@ type Fetcher struct {
 	ClassFacts   ClassFactsSource // optional
 	Prices       PriceSource
 	Earnings     EarningsSource
-	PriceYears   int              // history to fetch; default 5
+	PriceYears   int              // history to fetch; default 11
 	Now          func() time.Time // default time.Now
 }
 
@@ -66,9 +66,9 @@ type Bundle struct {
 	Notes []string `json:"notes,omitempty"`
 }
 
-// lacksRecentEPS reports whether companyfacts has no diluted EPS within
+// LacksRecentEPS reports whether companyfacts has no diluted EPS within
 // ~7 months of the latest net income figure.
-func lacksRecentEPS(cf *edgar.CompanyFacts) bool {
+func LacksRecentEPS(cf *edgar.CompanyFacts) bool {
 	gaap := cf.Facts["us-gaap"]
 	latest := func(concept, unit string) string {
 		var max string
@@ -104,9 +104,12 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 	if f.Now != nil {
 		now = f.Now
 	}
+	// 11 years of prices: charts and valuation bands use the last 5, but the
+	// full span is needed to know every stock split behind a 10-year growth
+	// rate (old EPS is reported in pre-split shares).
 	years := f.PriceYears
 	if years <= 0 {
-		years = 5
+		years = 11
 	}
 
 	// errgroup runs functions in goroutines and waits for all of them, like
@@ -142,7 +145,7 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 
 	// Only companies whose companyfacts lack recent EPS (several share
 	// classes) need their filing documents read; for most, this is skipped.
-	if f.ClassFacts != nil && lacksRecentEPS(facts) {
+	if f.ClassFacts != nil && LacksRecentEPS(facts) {
 		eps, shares, notes, err := f.ClassFacts.ClassFacts(ctx, co.CIK, now())
 		if err != nil {
 			b.Warnings = append(b.Warnings, "per-class EPS: "+err.Error())
