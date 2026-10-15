@@ -1,5 +1,7 @@
 package financials
 
+import "github.com/YLaguna506/tickerlens/backend/internal/edgar"
+
 // fieldKind says how a field's values behave over time.
 type fieldKind int
 
@@ -40,8 +42,10 @@ var fields = []fieldSpec{
 		"ProfitLoss",    // includes non-controlling interests
 		"NetIncomeLossAvailableToCommonStockholdersBasic",
 	}},
-	{"epsDiluted", flow, "USD/shares", []string{"EarningsPerShareDiluted"}},
-	{"sharesDiluted", average, "shares", []string{"WeightedAverageNumberOfDilutedSharesOutstanding"}},
+	// The per-class concepts are filled in by ingest from filing documents when
+	// companyfacts has no EPS (companies with several share classes).
+	{"epsDiluted", flow, "USD/shares", []string{"EarningsPerShareDiluted", edgar.ClassEPSConcept}},
+	{"sharesDiluted", average, "shares", []string{"WeightedAverageNumberOfDilutedSharesOutstanding", edgar.ClassSharesConcept}},
 	{"operatingCashFlow", flow, "USD", []string{
 		"NetCashProvidedByUsedInOperatingActivities",
 		"NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",

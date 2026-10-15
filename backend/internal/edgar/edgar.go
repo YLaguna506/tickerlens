@@ -55,6 +55,9 @@ type Fact struct {
 type Options struct {
 	WWWBaseURL  string // default https://www.sec.gov
 	DataBaseURL string // default https://data.sec.gov
+	// Cache, if set, stores parsed per-class facts from filing documents
+	// (small) instead of the raw documents (several MB each).
+	Cache fetch.Cache
 }
 
 // Client talks to SEC EDGAR. The fetch.Client passed in must send a

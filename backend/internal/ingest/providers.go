@@ -41,7 +41,8 @@ func NewFetcher(cfg Config, cache fetch.Cache, budget estimates.Budget, logger *
 		Header:  http.Header{"User-Agent": {cfg.SECUserAgent}},
 		Logger:  logger,
 	})
-	f := &Fetcher{Fundamentals: edgar.NewClient(sec, edgar.Options{})}
+	secClient := edgar.NewClient(sec, edgar.Options{Cache: cache})
+	f := &Fetcher{Fundamentals: secClient, ClassFacts: secClient}
 
 	if cfg.TiingoKey != "" {
 		tiingo := fetch.New(fetch.Options{

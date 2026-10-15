@@ -40,6 +40,14 @@ func printBundle(w io.Writer, b *ingest.Bundle, years, quarters int) {
 	printPrices(w, b)
 	printEarnings(w, b)
 
+	if len(b.Notes) > 0 {
+		fmt.Fprintln(w, "Notes")
+		for _, msg := range b.Notes {
+			fmt.Fprintln(w, "  -", msg)
+		}
+		fmt.Fprintln(w)
+	}
+
 	warnings := append(append([]string{}, b.Financials.Warnings...), b.Warnings...)
 	if len(warnings) > 0 {
 		fmt.Fprintln(w, "Warnings")

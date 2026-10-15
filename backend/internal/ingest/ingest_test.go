@@ -124,6 +124,65 @@ func TestFetchUnknownTicker(t *testing.T) {
 	}
 }
 
+type fakeClassFacts struct{ calls int }
+
+func (f *fakeClassFacts) ClassFacts(context.Context, string, time.Time) ([]edgar.Fact, []edgar.Fact, []string, error) {
+	f.calls++
+	eps := []edgar.Fact{{Start: "2024-10-01", End: "2025-09-30", Val: 10.20, Accn: "a", Form: "10-K", Filed: "2025-11-06"}}
+	shares := []edgar.Fact{{Start: "2024-10-01", End: "2025-09-30", Val: 1966e6, Accn: "a", Form: "10-K", Filed: "2025-11-06"}}
+	return eps, shares, []string{"per-class EPS and diluted shares read from filing XBRL: Class A"}, nil
+}
+
+func loadFacts(t *testing.T, ticker string) *edgar.CompanyFacts {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("..", "..", "testdata", "edgar", "companyfacts_"+ticker+".json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var facts edgar.CompanyFacts
+	if err := json.Unmarshal(raw, &facts); err != nil {
+		t.Fatal(err)
+	}
+	return &facts
+}
+
+func TestFetchFillsPerClassEPS(t *testing.T) {
+	cf := &fakeClassFacts{}
+	f := &Fetcher{Fundamentals: fakeSEC{facts: visaFacts(t)}, ClassFacts: cf, Now: fixedNow}
+
+	b, err := f.Fetch(t.Context(), "V")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cf.calls != 1 {
+		t.Fatalf("class facts called %d times, want 1 (Visa has no plain EPS)", cf.calls)
+	}
+	var fy25 *float64
+	for _, p := range b.Financials.Annual {
+		if p.EndDate == "2025-09-30" {
+			fy25 = p.EPSDiluted
+		}
+	}
+	if fy25 == nil || *fy25 != 10.20 {
+		t.Errorf("Visa FY2025 EPS = %v, want 10.20", fy25)
+	}
+	if len(b.Notes) != 1 {
+		t.Errorf("notes = %v", b.Notes)
+	}
+}
+
+func TestFetchSkipsPerClassWhenEPSExists(t *testing.T) {
+	cf := &fakeClassFacts{}
+	f := &Fetcher{Fundamentals: fakeSEC{facts: loadFacts(t, "AAPL")}, ClassFacts: cf, Now: fixedNow}
+
+	if _, err := f.Fetch(t.Context(), "V"); err != nil {
+		t.Fatal(err)
+	}
+	if cf.calls != 0 {
+		t.Errorf("class facts called %d times; companies with plain EPS must not need filing documents", cf.calls)
+	}
+}
+
 func TestConfigValidate(t *testing.T) {
 	tests := map[string]bool{
 		"":                                 false,
