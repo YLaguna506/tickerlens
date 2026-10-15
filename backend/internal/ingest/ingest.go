@@ -44,6 +44,9 @@ type ClassFactsSource interface {
 // Fetcher gathers a Bundle. Prices and Earnings may be nil when no API key is
 // configured; the bundle then says so in Warnings.
 type Fetcher struct {
+	// SEC is the EDGAR client NewFetcher built, shared so other code (the
+	// ticker search) uses the same rate limiter. Nil in tests.
+	SEC          *edgar.Client
 	Fundamentals Fundamentals
 	ClassFacts   ClassFactsSource // optional
 	Prices       PriceSource
@@ -62,6 +65,9 @@ type Bundle struct {
 	// required; prices and earnings are best-effort so a report can still be
 	// produced (marked partial).
 	Warnings []string `json:"warnings,omitempty"`
+	// Failed names the sources behind those warnings ("prices", "earnings",
+	// "per-class-eps"), for callers that track sections.
+	Failed []string `json:"failed,omitempty"`
 	// Notes explain unusual but successful data handling.
 	Notes []string `json:"notes,omitempty"`
 }
@@ -149,6 +155,7 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 		eps, shares, notes, err := f.ClassFacts.ClassFacts(ctx, co.CIK, now())
 		if err != nil {
 			b.Warnings = append(b.Warnings, "per-class EPS: "+err.Error())
+			b.Failed = append(b.Failed, "per-class-eps")
 		} else {
 			edgar.MergeClassFacts(facts, eps, shares)
 			b.Notes = append(b.Notes, notes...)
@@ -160,14 +167,18 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 	switch {
 	case f.Prices == nil:
 		b.Warnings = append(b.Warnings, "prices: skipped (TIINGO_API_KEY not set)")
+		b.Failed = append(b.Failed, "prices")
 	case priceErr != nil:
 		b.Warnings = append(b.Warnings, "prices: "+priceErr.Error())
+		b.Failed = append(b.Failed, "prices")
 	}
 	switch {
 	case f.Earnings == nil:
 		b.Warnings = append(b.Warnings, "earnings: skipped (ALPHA_VANTAGE_API_KEY not set)")
+		b.Failed = append(b.Failed, "earnings")
 	case earningsErr != nil:
 		b.Warnings = append(b.Warnings, "earnings: "+earningsErr.Error())
+		b.Failed = append(b.Failed, "earnings")
 	}
 	return b, nil
 }
