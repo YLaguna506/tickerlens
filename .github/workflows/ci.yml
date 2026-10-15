@@ -90,10 +90,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      # The API needs a SEC contact at startup; CI makes no SEC requests.
+      - name: Create .env
+        run: |
+          cp .env.example .env
+          sed -i 's/^SEC_USER_AGENT=.*/SEC_USER_AGENT=TickerLens-CI ci@tickerlens.invalid/' .env
       - run: docker compose up -d --build --wait --wait-timeout 180
       - name: Check health endpoints
         run: |
           curl --fail --silent http://localhost:8080/healthz
+          curl --fail --silent http://localhost:8080/readyz
           curl --fail --silent http://localhost:8000/healthz
           curl --fail --silent http://localhost:3000/ > /dev/null
       - name: Show logs on failure
