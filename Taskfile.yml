@@ -56,6 +56,14 @@ tasks:
     cmds:
       - go run ./cmd/cli {{.CLI_ARGS}}
 
+  fixtures:
+    desc: Re-record test fixtures for V, AAPL and SNOW (uses the Postgres cache)
+    dir: backend
+    env:
+      DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable"
+    cmds:
+      - go run ./tools/fixturegen V AAPL SNOW
+
   # --- Tests --------------------------------------------------------------
   test:
     desc: Run all tests
