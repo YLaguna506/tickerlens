@@ -6,7 +6,7 @@ Enter a US ticker and TickerLens runs a multi-stage research pipeline (data inge
 
 > **Educational project. Not financial advice.** Nothing here is a recommendation to buy or sell any security.
 
-**Status:** early development. The data layer and computed analysis work from a CLI: SEC financials, prices and EPS estimates feed margins, growth, financial health, valuation versus the company's own history, a lifecycle phase, and 1–5 scores. The API pipeline, AI agents and web report come next.
+**Status:** early development. The data layer, computed analysis and report API work. SEC financials, prices and EPS estimates feed margins, growth, financial health, valuation versus the company's own history, a lifecycle phase and 1–5 scores. A report can be requested over HTTP and its progress watched live. The AI agents and the web report come next.
 
 ## Design principles
 
@@ -63,6 +63,28 @@ task lint    # golangci-lint, ruff + mypy, eslint
 ```
 
 Run `task --list` to see every task.
+
+### Request a report over the API
+
+```bash
+curl -X POST http://localhost:8080/api/reports -H "Content-Type: application/json" -d '{"ticker": "MSFT"}'
+```
+
+This returns `{"id": "...", "status": "queued"}` and runs the report in the background. To watch it live, open the event stream (Server-Sent Events):
+
+```bash
+curl -N http://localhost:8080/api/reports/<id>/events
+```
+
+Each stage sends events (`stage.started`, `section.ready`, `section.failed`, `job.done`), and `GET /api/reports/<id>` returns the report, even partway through. If a data source fails, the rest of the report still finishes and is marked `partial`. A report requested again within 12 hours is returned instantly; send `"refresh": true` to rebuild it.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/tickers?q=micro` | Search companies by ticker or name |
+| `POST /api/reports` | Start a report (`{"ticker": "V", "refresh": false}`) |
+| `GET /api/reports/{id}` | Report status and JSON |
+| `GET /api/reports/{id}/events` | Live progress (SSE) |
+| `GET /api/reports?ticker=V` | Report history for a ticker |
 
 ### Fetch data from the command line
 
