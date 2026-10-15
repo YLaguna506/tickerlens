@@ -6,7 +6,7 @@ Enter a US ticker and TickerLens runs a multi-stage research pipeline (data inge
 
 > **Educational project. Not financial advice.** Nothing here is a recommendation to buy or sell any security.
 
-**Status:** early development. The data layer works: SEC financials, Tiingo prices and Alpha Vantage EPS estimates, available from a CLI. Metrics and scoring come next.
+**Status:** early development. The data layer and computed analysis work from a CLI: SEC financials, prices and EPS estimates feed margins, growth, financial health, valuation versus the company's own history, a lifecycle phase, and 1–5 scores. The API pipeline, AI agents and web report come next.
 
 ## Design principles
 
@@ -72,11 +72,28 @@ With the stack running (`task up`) and keys in `.env`:
 task cli -- fetch V
 ```
 
-This prints normalized annual, quarterly and trailing-twelve-month financials from SEC filings, along with which XBRL concept each number came from. It also prints a 5-year price summary and the last 8 quarters of EPS versus analyst estimates. Add `-json` for the full data, or `-no-cache` to run without Postgres.
+This prints normalized annual, quarterly and trailing-twelve-month financials from SEC filings, along with which XBRL concept each number came from. It also prints a price summary and the last 8 quarters of EPS versus analyst estimates. Add `-json` for the full data, or `-no-cache` to run without Postgres.
+
+```bash
+task cli -- metrics V
+```
+
+This prints the Financial overview:
+
+- profitability, growth (1/3/5/10-year CAGRs), financial health, valuation multiples and shareholder yields;
+- the company's lifecycle phase, with its three checks (growing? profitable? returning capital?);
+- growth, health and valuation scores (1–5), each with its reasons;
+- valuation bands: today's multiple against its own 5-year history, translated into cheap and expensive share prices.
+
+Every metric in the `-json` output lists its inputs, period and formula.
 
 Responses are cached in Postgres (SEC data and prices for a day, earnings for a week). Alpha Vantage's 25-requests-per-day free quota is tracked so it is never exceeded.
 
-**How the financials are built:** each value is the most recently filed figure for its period, so restatements win. Quarters that companies only report as year-to-date totals are derived by subtraction (for example, Q4 = full year − nine months), and the source says so. Values that can't be found or derived are left empty, never guessed. Test fixtures for Visa, Apple and Snowflake are recorded with `go run ./tools/fixturegen` (in `backend/`) and checked against numbers from the companies' filings.
+**How the financials are built:** each value is the most recently filed figure for its period, so restatements win. Quarters that companies only report as year-to-date totals are derived by subtraction (for example, Q4 = full year − nine months), and the source says so. Values that can't be found or derived are left empty, never guessed. Companies with several share classes (such as Visa) have no plain EPS in SEC's company-facts feed. For those, the per-class figures are read from the filings' XBRL documents.
+
+**How valuation works:** per-share figures are converted to today's share count using the split history, so a 10-for-1 split doesn't distort P/E. Each day's historical multiple only uses results that were public by then. A company's phase picks the multiple: P/S for fast-growing companies, P/FCF while margins expand, P/E once profits are returned to shareholders.
+
+Test fixtures for Visa, Apple and Snowflake are recorded with `task fixtures`. Tests check them against numbers from the companies' filings.
 
 ## Repository layout
 
