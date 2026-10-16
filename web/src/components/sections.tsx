@@ -229,8 +229,8 @@ export function PhaseSection({ m, body }: { m?: MetricsReport; body?: ReportBody
           {PHASES.map((p, i) => {
             const on = i + 1 === m.phase.number;
             return (
-              <li key={p} className={`rounded-xl border-2 p-3 text-center ${on ? "border-good bg-good-soft" : "border-line"}`}>
-                <p className={`font-display text-sm font-bold ${on ? "text-good-strong" : "text-muted"}`}>
+              <li key={p} className={`rounded-xl border-2 px-1.5 py-3 text-center sm:p-3 ${on ? "border-good bg-good-soft" : "border-line"}`}>
+                <p className={`font-display text-xs font-bold break-words sm:text-sm ${on ? "text-good-strong" : "text-muted"}`}>
                   {i + 1}: {p}
                 </p>
                 {on && <p className="mt-1 text-xs font-semibold text-good">◆ {m.ticker}</p>}

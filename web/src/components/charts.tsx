@@ -60,15 +60,16 @@ export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: n
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer>
-        <LineChart data={rows} margin={{ top: 28, right: 24, left: 24, bottom: 0 }}>
-          <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
+        <LineChart data={rows} margin={{ top: 28, right: 24, left: 24, bottom: 4 }}>
+          <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} tickMargin={12} />
           <YAxis hide domain={[(min: number) => Math.min(0, min), "auto"]} />
           <ReferenceLine y={0} stroke="#c9c5bb" strokeDasharray="4 4" />
           <Line dataKey="revenue" name="Revenue" stroke={GREEN} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
             <LabelList dataKey="revenue" position="top" formatter={(v) => usd(Number(v))} style={{ fontSize: 12, fill: INK }} />
           </Line>
           <Line dataKey="netIncome" name="Net income" stroke="#7fb889" strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
-            <LabelList dataKey="netIncome" position="bottom" formatter={(v) => usd(Number(v))} style={{ fontSize: 12, fill: INK }} />
+            {/* Above the point: below it, small profits collide with the year labels. */}
+            <LabelList dataKey="netIncome" position="top" offset={10} formatter={(v) => usd(Number(v))} style={{ fontSize: 12, fill: INK }} />
           </Line>
           <Tooltip formatter={(v) => usd(Number(v))} />
         </LineChart>
