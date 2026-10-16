@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
 	"github.com/YLaguna506/tickerlens/backend/internal/httpapi"
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
@@ -21,8 +22,9 @@ import (
 )
 
 // jobTimeout bounds one report. The first report for a multi-class company
-// reads ~30 filings from SEC; later ones hit the cache.
-const jobTimeout = 3 * time.Minute
+// reads ~30 filings from SEC, and the AI agents can take a few minutes on a
+// free model; later reports hit the caches.
+const jobTimeout = 8 * time.Minute
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -67,9 +69,25 @@ func run(logger *slog.Logger) error {
 		logger.Warn("marked reports interrupted by the last shutdown as failed", "count", n)
 	}
 
-	fetcher := ingest.NewFetcher(cfg, store.NewPGCache(pool), store.NewUsage(pool), logger)
+	cache := store.NewPGCache(pool)
+	fetcher := ingest.NewFetcher(cfg, cache, store.NewUsage(pool), logger)
 	broker := pipeline.NewBroker()
 	runner := pipeline.NewRunner(reports, fetcher, broker, scoring.Default(), logger, jobTimeout)
+
+	// The AI agents stage runs only when the agents service is configured.
+	if url := os.Getenv("AGENTS_URL"); url != "" {
+		runner.Agents = &pipeline.Agents{
+			Filings:       fetcher.SEC,
+			Service:       agentclient.New(url),
+			Cache:         cache,
+			FastModel:     os.Getenv("LLM_MODEL_FAST"),
+			PromptVersion: "v1",
+			MaxDocChars:   40_000,
+		}
+		logger.Info("AI agents enabled", "url", url, "model", os.Getenv("LLM_MODEL_FAST"))
+	} else {
+		logger.Warn("AGENTS_URL not set: reports will not include AI analysis")
+	}
 
 	router := httpapi.NewRouter(httpapi.Deps{
 		Logger:  logger,

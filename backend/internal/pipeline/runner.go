@@ -21,7 +21,7 @@ import (
 
 // BodyVersion changes whenever the report body's shape or computation
 // changes, so old reports are not reused for new requests.
-const BodyVersion = "m3.1"
+const BodyVersion = "m4.1"
 
 // Stages, in order.
 const (
@@ -62,10 +62,20 @@ type Body struct {
 	Notes      []string                      `json:"notes,omitempty"`
 	Warnings   []string                      `json:"warnings,omitempty"`
 	TimingsMs  map[string]int64              `json:"timingsMs"`
+
+	// Filled by the analyzing stage (AI agents).
+	Filing          *FilingRef               `json:"filing,omitempty"`
+	Agents          map[string]*AgentSection `json:"agents,omitempty"`
+	BusinessQuality *QualityScore            `json:"businessQuality,omitempty"`
+	Segments        *SegmentBreakdown        `json:"segments,omitempty"`
+	CostUSD         float64                  `json:"costUsd"`
 }
 
 // Runner executes report jobs in background goroutines.
 type Runner struct {
+	// Agents enables the analyzing stage; nil skips it (e.g. no LLM configured).
+	Agents *Agents
+
 	store   Store
 	fetcher Fetcher
 	broker  *Broker
@@ -115,13 +125,15 @@ func (r *Runner) Shutdown(ctx context.Context) error {
 // job holds one run's state.
 type job struct {
 	*Runner
+	agents     *Agents
 	id, ticker string
 	body       Body
+	mu         sync.Mutex // guards body.TimingsMs while agents run in parallel
 	log        *slog.Logger
 }
 
 func (r *Runner) run(reportID, ticker string, refresh bool) {
-	j := &job{Runner: r, id: reportID, ticker: ticker, log: r.logger.With("report", reportID, "ticker", ticker)}
+	j := &job{Runner: r, agents: r.Agents, id: reportID, ticker: ticker, log: r.logger.With("report", reportID, "ticker", ticker)}
 	j.body = Body{Version: BodyVersion, Sections: map[string]string{}, TimingsMs: map[string]int64{}}
 
 	ctx, cancel := context.WithTimeout(r.ctx, r.timeout)
@@ -158,7 +170,7 @@ func (r *Runner) run(reportID, ticker string, refresh bool) {
 
 	// Reuse an identical finished report (same filing, same price day, same
 	// scoring rules) instead of recomputing it.
-	key := cacheKey(bundle, r.cfg)
+	key := cacheKey(bundle, r.cfg, r.Agents)
 	if !refresh && len(failed) == 0 {
 		if prev, err := r.store.FindByCacheKey(ctx, bundle.Company.Ticker, key, reportID); err == nil {
 			if err := r.store.SaveBody(ctx, reportID, prev.Body); err == nil {
@@ -185,6 +197,21 @@ func (r *Runner) run(reportID, ticker string, refresh bool) {
 	}
 	j.body.Metrics = report
 	j.section("metrics", true, "")
+	if !j.save(ctx) {
+		return
+	}
+
+	// Stage 3: AI agents read the 10-K and judge the business.
+	if j.agents != nil {
+		agentFailures, _ := timed(j, StageAnalyzing, func() ([]string, error) {
+			return j.analyze(ctx, bundle, report), nil
+		})
+		failed = append(failed, agentFailures...)
+		if ctx.Err() != nil {
+			j.fail(ctx.Err())
+			return
+		}
+	}
 	j.body.TimingsMs["total"] = time.Since(start).Milliseconds()
 	if !j.save(ctx) {
 		return
@@ -270,7 +297,11 @@ func (j *job) fail(err error) {
 }
 
 // cacheKey identifies the data a report is built from.
-func cacheKey(b *ingest.Bundle, cfg scoring.Config) string {
+func cacheKey(b *ingest.Bundle, cfg scoring.Config, agents *Agents) string {
+	ai := "no-agents"
+	if agents != nil {
+		ai = agents.PromptVersion + "/" + agents.FastModel
+	}
 	accession := ""
 	if b.Financials.TTM != nil {
 		accession = b.Financials.TTM.Accession
@@ -281,7 +312,7 @@ func cacheKey(b *ingest.Bundle, cfg scoring.Config) string {
 	if n := len(b.Prices); n > 0 {
 		priceDate = b.Prices[n-1].Date
 	}
-	return fmt.Sprintf("%s|%s|%s|%s", BodyVersion, accession, priceDate, cfg.Version)
+	return fmt.Sprintf("%s|%s|%s|%s|%s", BodyVersion, accession, priceDate, cfg.Version, ai)
 }
 
 func warningFor(warnings []string, section string) string {
