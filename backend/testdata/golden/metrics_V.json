@@ -105,140 +105,140 @@
     {
       "key": "revenueCagr1y",
       "label": "Revenue CAGR 1y",
-      "value": 0.11339976618604908,
+      "value": 0.14369633981021246,
       "unit": "percent",
-      "period": "FY2024 → FY2025",
+      "period": "TTM to 2025-03-31 → TTM to 2026-03-31",
       "formula": "(end ÷ start)^(1/1) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 35926000000,
-          "period": "FY2024"
+          "value": 37621000000,
+          "period": "TTM to 2025-03-31"
         },
         {
           "name": "end",
-          "value": 40000000000,
-          "period": "FY2025"
+          "value": 43027000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     },
     {
       "key": "revenueCagr3y",
       "label": "Revenue CAGR 3y",
-      "value": 0.10921242130254294,
+      "value": 0.11567884905704995,
       "unit": "percent",
-      "period": "FY2022 → FY2025",
+      "period": "TTM to 2023-03-31 → TTM to 2026-03-31",
       "formula": "(end ÷ start)^(1/3) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 29310000000,
-          "period": "FY2022"
+          "value": 30983000000,
+          "period": "TTM to 2023-03-31"
         },
         {
           "name": "end",
-          "value": 40000000000,
-          "period": "FY2025"
+          "value": 43027000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     },
     {
       "key": "revenueCagr5y",
       "label": "Revenue CAGR 5y",
-      "value": 0.12859367600424232,
+      "value": 0.1504092515401647,
       "unit": "percent",
-      "period": "FY2020 → FY2025",
+      "period": "TTM to 2021-03-31 → TTM to 2026-03-31",
       "formula": "(end ÷ start)^(1/5) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 21846000000,
-          "period": "FY2020"
+          "value": 21354000000,
+          "period": "TTM to 2021-03-31"
         },
         {
           "name": "end",
-          "value": 40000000000,
-          "period": "FY2025"
+          "value": 43027000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     },
     {
       "key": "revenueCagr10y",
       "label": "Revenue CAGR 10y",
-      "value": 0.11164738964897603,
+      "value": 0.11660941630143484,
       "unit": "percent",
-      "period": "FY2015 → FY2025",
+      "period": "TTM to 2016-03-31 → TTM to 2026-03-31",
       "formula": "(end ÷ start)^(1/10) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 13880000000,
-          "period": "FY2015"
+          "value": 14280000000,
+          "period": "TTM to 2016-03-31"
         },
         {
           "name": "end",
-          "value": 40000000000,
-          "period": "FY2025"
+          "value": 43027000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     },
     {
       "key": "epsCagr1y",
       "label": "EPS CAGR 1y",
-      "value": 0.048304213771839466,
+      "value": 0.1474609375,
       "unit": "percent",
-      "period": "FY2024 → FY2025",
+      "period": "TTM to 2025-06-30 → TTM to 2026-06-30",
       "formula": "(end ÷ start)^(1/1) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 9.73,
-          "period": "FY2024"
+          "value": 10.24,
+          "period": "TTM to 2025-06-30"
         },
         {
           "name": "end",
-          "value": 10.2,
-          "period": "FY2025"
+          "value": 11.75,
+          "period": "TTM to 2026-06-30"
         }
       ]
     },
     {
       "key": "epsCagr3y",
       "label": "EPS CAGR 3y",
-      "value": 0.13370669304847693,
+      "value": 0.14245003780105536,
       "unit": "percent",
-      "period": "FY2022 → FY2025",
+      "period": "TTM to 2023-06-30 → TTM to 2026-06-30",
       "formula": "(end ÷ start)^(1/3) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 7,
-          "period": "FY2022"
+          "value": 7.88,
+          "period": "TTM to 2023-06-30"
         },
         {
           "name": "end",
-          "value": 10.2,
-          "period": "FY2025"
+          "value": 11.75,
+          "period": "TTM to 2026-06-30"
         }
       ]
     },
     {
       "key": "epsCagr5y",
       "label": "EPS CAGR 5y",
-      "value": 0.1583992362803075,
+      "value": 0.1887390610830213,
       "unit": "percent",
-      "period": "FY2020 → FY2025",
+      "period": "TTM to 2021-06-30 → TTM to 2026-06-30",
       "formula": "(end ÷ start)^(1/5) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 4.89,
-          "period": "FY2020"
+          "value": 4.95,
+          "period": "TTM to 2021-06-30"
         },
         {
           "name": "end",
-          "value": 10.2,
-          "period": "FY2025"
+          "value": 11.75,
+          "period": "TTM to 2026-06-30"
         }
       ]
     },
@@ -265,60 +265,60 @@
     {
       "key": "fcfCagr3y",
       "label": "FCF CAGR 3y",
-      "value": 0.06467227726661684,
+      "value": 0.05250583856601909,
       "unit": "percent",
-      "period": "FY2022 → FY2025",
+      "period": "TTM to 2023-03-31 → TTM to 2026-03-31",
       "formula": "(end ÷ start)^(1/3) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 17879000000,
-          "period": "FY2022"
+          "value": 18170000000,
+          "period": "TTM to 2023-03-31"
         },
         {
           "name": "end",
-          "value": 21577000000,
-          "period": "FY2025"
+          "value": 21185000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     },
     {
       "key": "fcfCagr5y",
       "label": "FCF CAGR 5y",
-      "value": 0.17329725534435858,
+      "value": 0.13408035645606176,
       "unit": "percent",
-      "period": "FY2020 → FY2025",
+      "period": "TTM to 2021-03-31 → TTM to 2026-03-31",
       "formula": "(end ÷ start)^(1/5) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 9704000000,
-          "period": "FY2020"
+          "value": 11293000000,
+          "period": "TTM to 2021-03-31"
         },
         {
           "name": "end",
-          "value": 21577000000,
-          "period": "FY2025"
+          "value": 21185000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     },
     {
       "key": "fcfCagr10y",
       "label": "FCF CAGR 10y",
-      "value": 0.13336706921341834,
+      "value": 0.1307059320985171,
       "unit": "percent",
-      "period": "FY2015 → FY2025",
+      "period": "TTM to 2016-03-31 → TTM to 2026-03-31",
       "formula": "(end ÷ start)^(1/10) − 1",
       "inputs": [
         {
           "name": "start",
-          "value": 6170000000,
-          "period": "FY2015"
+          "value": 6202000000,
+          "period": "TTM to 2016-03-31"
         },
         {
           "name": "end",
-          "value": 21577000000,
-          "period": "FY2025"
+          "value": 21185000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     }
@@ -570,6 +570,26 @@
   ],
   "priceChange5y": {
     "key": "priceChange5y",
+    "label": "5-year price change",
+    "value": 0.7382982502886579,
+    "unit": "percent",
+    "period": "2021-10-14 → 2026-10-14",
+    "formula": "split-adjusted close today ÷ split-adjusted close 5 years ago − 1",
+    "inputs": [
+      {
+        "name": "start",
+        "value": 225.18,
+        "period": "2021-10-14"
+      },
+      {
+        "name": "end",
+        "value": 391.43,
+        "period": "2026-10-14"
+      }
+    ]
+  },
+  "totalReturn5y": {
+    "key": "totalReturn5y",
     "label": "5-year total return",
     "value": 0.8055711378188699,
     "unit": "percent",
@@ -625,11 +645,11 @@
     "value": 4,
     "max": 5,
     "reasons": [
-      "EPS CAGR 3y: 13.4%",
-      "EPS CAGR 5y: 15.8%",
-      "revenue CAGR 3y: 10.9%",
-      "revenue CAGR 5y: 12.9%",
-      "average 13.2% → 4/5"
+      "EPS CAGR 3y: 14.2%",
+      "EPS CAGR 5y: 18.9%",
+      "revenue CAGR 3y: 11.6%",
+      "revenue CAGR 5y: 15.0%",
+      "average 14.9% → 4/5"
     ]
   },
   "healthScore": {
@@ -658,6 +678,7 @@
     "days": 1255,
     "current": 33.3132,
     "cheapBelow": 30.5249,
+    "median": 31.9853,
     "expensiveAbove": 33.6941,
     "percentile": 0.7036,
     "zone": "fair",
@@ -666,6 +687,7 @@
     "basisPeriod": "TTM to 2026-06-30",
     "price": 391.43,
     "cheapPrice": 358.67,
+    "medianPrice": 375.83,
     "expensivePrice": 395.91
   },
   "charts": {

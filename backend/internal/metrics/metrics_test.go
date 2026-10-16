@@ -141,11 +141,12 @@ func TestHandCheckedApple(t *testing.T) {
 	// EPS TTM = Q4 FY25 1.84 + Q1 FY26 2.84 + Q2 2.01 + Q3 2.02 = 8.71;
 	// P/E = close 342.96 ÷ 8.71.
 	near(t, "P/E", metric(t, r.Valuation, "pe").Value, 342.96/8.71, 1e-9)
-	// Revenue FY2022 394,328 → FY2025 416,161.
-	near(t, "revenue CAGR 3y", metric(t, r.Growth, "revenueCagr3y").Value, math.Pow(416_161.0/394_328, 1.0/3)-1, 1e-9)
-	// EPS FY2015 9.22 was filed before the 4-for-1 split of 2020-08-31, so it
-	// is 2.305 in today's shares; FY2025 7.46.
-	near(t, "EPS CAGR 10y", metric(t, r.Growth, "epsCagr10y").Value, math.Pow(7.46/2.305, 0.1)-1, 1e-6)
+	// CAGRs use TTM endpoints. Revenue TTM to 2026-06-27 = 466,823; TTM to
+	// 2023-07-01 = 90,146 + 117,154 + 94,836 + 81,797 = 383,933.
+	near(t, "revenue CAGR 3y", metric(t, r.Growth, "revenueCagr3y").Value, math.Pow(466_823.0/383_933, 1.0/3)-1, 1e-6)
+	// EPS TTM to 2016-06-25 = 1.96 + 3.28 + 1.90 + 1.42 = 8.56, filed before the
+	// 4-for-1 split of 2020-08-31, so 2.14 in today's shares; TTM now 8.71.
+	near(t, "EPS CAGR 10y", metric(t, r.Growth, "epsCagr10y").Value, math.Pow(8.71/(8.56/4), 0.1)-1, 1e-4)
 	// Interest expense stopped being reported separately after FY2023.
 	if m := metric(t, r.Health, "interestCoverage"); m.Value != nil || m.Note == "" {
 		t.Errorf("interest coverage should be unknown with a note, got %+v", m)
@@ -161,8 +162,9 @@ func TestHandCheckedVisa(t *testing.T) {
 	// Class A diluted EPS read from the filings: TTM to 2026-06-30 =
 	// 2.61 (Q4 FY25) + 3.03 + 3.14 + 2.97 = 11.75.
 	near(t, "P/E", metric(t, r.Valuation, "pe").Value, 391.43/11.75, 1e-9)
-	// Revenue FY2022 29,310 → FY2025 40,000.
-	near(t, "revenue CAGR 3y", metric(t, r.Growth, "revenueCagr3y").Value, math.Pow(40_000.0/29_310, 1.0/3)-1, 1e-9)
+	// Revenue TTM to 2026-03-31 = 43,027 (the fixture predates the June 10-Q);
+	// TTM to 2023-03-31 = 7,275 + 7,787 + 7,936 + 7,985 = 30,983 (Q4 derived as FY − 9M).
+	near(t, "revenue CAGR 3y", metric(t, r.Growth, "revenueCagr3y").Value, math.Pow(43_027.0/30_983, 1.0/3)-1, 1e-4)
 	// Balance sheet at 2026-03-31: debt 23,976 ÷ equity 35,661.
 	near(t, "debt/equity", metric(t, r.Health, "debtToEquity").Value, 23_976.0/35_661, 1e-9)
 	// Visa reports no cost of revenue.

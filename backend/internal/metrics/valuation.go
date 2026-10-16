@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"time"
 
@@ -20,6 +21,7 @@ type Bands struct {
 	Days         int     `json:"days"`
 	Current      float64 `json:"current"`
 	Cheap        float64 `json:"cheapBelow"`     // percentile edge (e.g. 25th)
+	Median       float64 `json:"median"`         // the typical multiple over the period
 	Expensive    float64 `json:"expensiveAbove"` // percentile edge (e.g. 75th)
 	Percentile   float64 `json:"percentile"`     // share of history at or below today (0–1)
 	Zone         string  `json:"zone"`           // cheap / fair / expensive
@@ -30,6 +32,7 @@ type Bands struct {
 	BasisPeriod    string  `json:"basisPeriod"`
 	Price          float64 `json:"price"`
 	CheapPrice     float64 `json:"cheapPrice"`
+	MedianPrice    float64 `json:"medianPrice"`
 	ExpensivePrice float64 `json:"expensivePrice"`
 }
 
@@ -68,6 +71,7 @@ func valuationBands(b *ingest.Bundle, cfg scoring.Config, ph phase.Result, rolli
 			Days:          len(hist),
 			Current:       round(cur, 4),
 			Cheap:         round(scoring.Percentile(values, cfg.CheapPercentile), 4),
+			Median:        round(scoring.Percentile(values, 0.5), 4),
 			Expensive:     round(scoring.Percentile(values, cfg.ExpensivePercentile), 4),
 			Percentile:    round(scoring.Rank(values, cur), 4),
 			PerShareBasis: basis,
@@ -79,6 +83,7 @@ func valuationBands(b *ingest.Bundle, cfg scoring.Config, ph phase.Result, rolli
 			bands.FellBackFrom = candidates[0]
 		}
 		bands.CheapPrice = round(bands.Cheap*perShare, 2)
+		bands.MedianPrice = round(bands.Median*perShare, 2)
 		bands.ExpensivePrice = round(bands.Expensive*perShare, 2)
 		switch {
 		case bands.Percentile <= cfg.CheapPercentile:
@@ -203,6 +208,18 @@ func shiftDate(date string, years int) string {
 		return date
 	}
 	return t.AddDate(years, 0, 0).Format(time.DateOnly)
+}
+
+// yearsApart reports whether two quarter-end dates are about n years apart
+// (within three weeks, for 52/53-week fiscal calendars).
+func yearsApart(a, b string, n int) bool {
+	ta, err1 := time.Parse(time.DateOnly, a)
+	tb, err2 := time.Parse(time.DateOnly, b)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	d := tb.Sub(ta).Hours() / 24
+	return math.Abs(d-float64(n)*365.25) <= 21
 }
 
 // yearApart reports whether two quarter-end dates are about a year apart

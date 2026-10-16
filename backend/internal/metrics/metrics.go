@@ -64,6 +64,7 @@ type Report struct {
 	Valuation     []Metric `json:"valuation"`
 	Returns       []Metric `json:"returns"`
 	PriceChange5y Metric   `json:"priceChange5y"`
+	TotalReturn5y Metric   `json:"totalReturn5y"`
 
 	Earnings EarningsRecord `json:"earnings"`
 	Phase    phase.Result   `json:"phase"`
@@ -126,7 +127,8 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	r.Health = c.health()
 	r.Valuation = c.valuation(r.Price, mcap)
 	r.Returns = c.returns(mcap)
-	r.PriceChange5y = priceChange(b)
+	r.PriceChange5y = priceChange(b, sp, false)
+	r.TotalReturn5y = priceChange(b, sp, true)
 	r.Earnings = earningsRecord(b.Earnings)
 
 	r.Phase = phase.Classify(c.phaseInputs(r))
@@ -241,12 +243,17 @@ func (c *calc) growth() []Metric {
 	return out
 }
 
-// cagr compares the latest fiscal year with the one n years earlier, using
-// endpoints only. It is undefined when either endpoint is ≤ 0.
+// cagr is the compound annual growth rate between two endpoints n years
+// apart. It prefers trailing-twelve-month endpoints (the latest TTM vs the
+// TTM n years earlier), which include the newest quarters, and falls back to
+// fiscal years. It is undefined when either endpoint is ≤ 0.
 func (c *calc) cagr(field, label string, years int, perShare bool) Metric {
 	key := map[string]string{"revenue": "revenue", "epsDiluted": "eps", "freeCashFlow": "fcf"}[field]
 	m := Metric{Key: fmt.Sprintf("%sCagr%dy", key, years), Label: fmt.Sprintf("%s CAGR %dy", label, years),
 		Unit: Percent, Formula: fmt.Sprintf("(end ÷ start)^(1/%d) − 1", years)}
+	if out, ok := c.ttmCAGR(m, field, years); ok {
+		return out
+	}
 
 	value := func(p financials.FinancialPeriod) *float64 {
 		if perShare {
@@ -292,6 +299,48 @@ func (c *calc) cagr(field, label string, years int, perShare bool) Metric {
 		m.Value = ptr(math.Pow(*endV / *startV, 1/float64(years)) - 1)
 	}
 	return m
+}
+
+// ttmCAGR computes the growth rate from TTM windows, if both endpoints exist.
+func (c *calc) ttmCAGR(m Metric, field string, years int) (Metric, bool) {
+	get := func(t ttm) *float64 {
+		switch field {
+		case "revenue":
+			return t.revenue
+		case "epsDiluted":
+			return t.eps
+		default:
+			return t.fcf
+		}
+	}
+	end, ok := latestWith(c.rolling, func(t ttm) bool { return get(t) != nil })
+	if !ok {
+		return m, false
+	}
+	var start *ttm
+	for i := range c.rolling {
+		if get(c.rolling[i]) != nil && yearsApart(c.rolling[i].end, end.end, years) {
+			start = &c.rolling[i]
+		}
+	}
+	if start == nil {
+		return m, false
+	}
+	sv, ev := *get(*start), *get(end)
+	m.Period = fmt.Sprintf("TTM to %s → TTM to %s", start.end, end.end)
+	m.Inputs = []Input{
+		{Name: "start", Value: ptr(sv), Period: "TTM to " + start.end},
+		{Name: "end", Value: ptr(ev), Period: "TTM to " + end.end},
+	}
+	switch {
+	case sv <= 0:
+		m.Note = "starting value is zero or negative, so a growth rate is not meaningful"
+	case ev <= 0:
+		m.Note = "ending value is zero or negative, so a growth rate is not meaningful"
+	default:
+		m.Value = ptr(math.Pow(ev/sv, 1/float64(years)) - 1)
+	}
+	return m, true
 }
 
 // --- Financial health ----------------------------------------------------------
@@ -496,19 +545,28 @@ func (c *calc) phaseInputs(r Report) phase.Inputs {
 
 // --- Price and earnings -------------------------------------------------------------
 
-func priceChange(b *ingest.Bundle) Metric {
-	m := Metric{Key: "priceChange5y", Label: "5-year total return", Unit: Percent,
-		Formula: "adjusted close today ÷ adjusted close 5 years ago − 1 (dividends reinvested)"}
+// priceChange is the 5-year change in share price (split-adjusted, without
+// dividends), or the total return when total is true (dividends reinvested).
+func priceChange(b *ingest.Bundle, sp splits, total bool) Metric {
+	m := Metric{Key: "priceChange5y", Label: "5-year price change", Unit: Percent,
+		Formula: "split-adjusted close today ÷ split-adjusted close 5 years ago − 1"}
+	price := sp.price
+	if total {
+		m.Key, m.Label = "totalReturn5y", "5-year total return"
+		m.Formula = "adjusted close today ÷ adjusted close 5 years ago − 1 (dividends reinvested)"
+		price = func(bar prices.Bar) float64 { return bar.AdjClose }
+	}
 	bars := lastYears(b.Prices, chartYears)
 	if len(bars) < 2 {
 		m.Note = "not enough price history"
 		return m
 	}
 	first, last := bars[0], bars[len(bars)-1]
+	start, end := price(first), price(last)
 	m.Period = first.Date + " → " + last.Date
-	m.Inputs = []Input{{Name: "start", Value: ptr(first.AdjClose), Period: first.Date}, {Name: "end", Value: ptr(last.AdjClose), Period: last.Date}}
-	if first.AdjClose > 0 {
-		m.Value = ptr(last.AdjClose/first.AdjClose - 1)
+	m.Inputs = []Input{{Name: "start", Value: ptr(start), Period: first.Date}, {Name: "end", Value: ptr(end), Period: last.Date}}
+	if start > 0 {
+		m.Value = ptr(end/start - 1)
 	}
 	return m
 }

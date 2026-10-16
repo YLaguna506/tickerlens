@@ -40,7 +40,7 @@ func printReport(w io.Writer, r *metrics.Report, b *ingest.Bundle) {
 	printMetrics(w, "Financial health", r.Health)
 	printMetrics(w, "Valuation", r.Valuation)
 	printMetrics(w, "Shareholder returns", r.Returns)
-	printMetrics(w, "Price", []metrics.Metric{r.PriceChange5y})
+	printMetrics(w, "Price", []metrics.Metric{r.PriceChange5y, r.TotalReturn5y})
 
 	fmt.Fprintln(w, "Scores")
 	printScore(w, "Growth", r.GrowthScore)
@@ -52,8 +52,8 @@ func printReport(w io.Writer, r *metrics.Report, b *ingest.Bundle) {
 		fmt.Fprintf(w, "Valuation bands (%s, %s to %s, %d trading days)\n", bd.Metric, bd.HistoryFrom, bd.HistoryTo, bd.Days)
 		fmt.Fprintf(w, "  cheap below %.1f× · expensive above %.1f× · today %.1f× → %s (higher than %.0f%% of the period)\n",
 			bd.Cheap, bd.Expensive, bd.Current, bd.Zone, bd.Percentile*100)
-		fmt.Fprintf(w, "  price bar on %s $%.2f (%s): cheap below $%.2f · expensive above $%.2f · today $%.2f\n\n",
-			bd.PerShareBasis, bd.PerShare, bd.BasisPeriod, bd.CheapPrice, bd.ExpensivePrice, bd.Price)
+		fmt.Fprintf(w, "  price bar on %s $%.2f (%s): cheap below $%.2f · typical $%.2f · expensive above $%.2f · today $%.2f\n\n",
+			bd.PerShareBasis, bd.PerShare, bd.BasisPeriod, bd.CheapPrice, bd.MedianPrice, bd.ExpensivePrice, bd.Price)
 	}
 
 	e := r.Earnings
