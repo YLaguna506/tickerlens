@@ -46,6 +46,26 @@ A failed check gets one repair attempt, in which the agent is told exactly what 
 
 `task eval` runs the agents on 10 companies and checks their answers against expected results (for example, that Visa's pricing power is "Easily").
 
+## How the verdict is decided
+
+The verdict is computed in Go from the scores. The LLM only writes the summary afterwards.
+
+1. **Business score (B):** the weighted average of business quality (40%), growth (30%) and financial health (30%). If one is missing, the others are reweighted.
+2. **Valuation score (V):** where today's multiple sits in its own 5-year history.
+3. **Rules,** in order (first match wins):
+
+| Verdict | Rule | Meaning |
+|---|---|---|
+| **Sell** | B < 2.5, or B < 3.0 and V ≤ 2 | Weak business, or a mediocre one that is expensive |
+| **Buy** | B ≥ 4.0 and V ≥ 4, or B ≥ 3.5 and V = 5 | Strong business at an attractive price |
+| **Watch** | B ≥ 4.0 | Great business; wait for a better price |
+| **Hold** | B ≥ 3.0 and V ≥ 3 | Solid business at a fair price |
+| **Pass** | anything else | Not compelling at this price |
+
+Every report shows the rule that matched, the weighted components and a **confidence** level that drops for each gap (no AI analysis, a fallback valuation metric, missing data). All thresholds and weights live in [`config/scoring.yaml`](config/scoring.yaml): edit the file and restart the API (`docker compose restart api`) to tune the model. The file's version is stored on every report.
+
+Example: Visa scores B 4.5 (quality 4.5, growth 4, health 5) and V 2, so its verdict is **Watch**.
+
 ## Getting started
 
 ### Prerequisites
