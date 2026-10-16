@@ -3,12 +3,11 @@
 
 import { useEffect, useState } from "react";
 
-export type Design = "classic" | "evidence" | "scorecard" | "bento" | "decision" | "terminal";
+export type Design = "classic" | "evidence" | "bento" | "decision" | "terminal";
 
 export const DESIGNS: { id: Design; label: string }[] = [
   { id: "classic", label: "Classic" },
   { id: "evidence", label: "Evidence" },
-  { id: "scorecard", label: "Scorecard" },
   { id: "bento", label: "Bento" },
   { id: "decision", label: "Decision" },
   { id: "terminal", label: "Terminal" },

@@ -13,12 +13,6 @@ const STYLES = {
     on: "bg-t-amber font-bold text-black",
     off: "text-t-dim hover:text-white",
   },
-  scorecard: {
-    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] border-2 border-black bg-white font-label text-xs font-bold uppercase",
-    item: "shrink-0 px-2.5 py-1 not-last:border-r-2 not-last:border-black",
-    on: "bg-black text-white",
-    off: "text-black hover:bg-black/10",
-  },
   bento: {
     group: "flex max-w-full overflow-x-auto [scrollbar-width:none] rounded-2xl bg-white/80 p-1 font-bento text-xs font-semibold shadow-[0_2px_12px_rgba(15,23,42,0.08)] backdrop-blur",
     item: "shrink-0 rounded-xl px-3 py-1.5",

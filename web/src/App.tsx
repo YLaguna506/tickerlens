@@ -4,11 +4,10 @@ import { Decision } from "./pages/Decision";
 import { Evidence } from "./pages/Evidence";
 import { Home } from "./pages/Home";
 import { Report } from "./pages/Report";
-import { Scorecard } from "./pages/Scorecard";
 import { Terminal } from "./pages/Terminal";
 import { usePath } from "./router";
 
-const DESIGNS = { classic: Report, evidence: Evidence, scorecard: Scorecard, bento: Bento, decision: Decision, terminal: Terminal };
+const DESIGNS = { classic: Report, evidence: Evidence, bento: Bento, decision: Decision, terminal: Terminal };
 
 export function App() {
   const path = usePath();
