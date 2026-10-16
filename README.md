@@ -6,7 +6,7 @@ Enter a US ticker and TickerLens runs a multi-stage research pipeline (data inge
 
 > **Educational project. Not financial advice.** Nothing here is a recommendation to buy or sell any security.
 
-**Status:** early development. The data layer, computed analysis and report API work. SEC financials, prices and EPS estimates feed margins, growth, financial health, valuation versus the company's own history, a lifecycle phase and 1–5 scores. A report can be requested over HTTP and its progress watched live. AI agents read the latest 10-K to describe the business, judge its quality and extract its revenue breakdown. The verdict and the web report come next.
+**Status:** working end to end. Open http://localhost:3000, type a ticker, and watch the report build live: business overview and quality from the latest 10-K, financial overview, lifecycle phase, valuation against the company's own history, and a verdict with its reasoning.
 
 ## Design principles
 
