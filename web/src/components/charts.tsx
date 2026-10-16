@@ -121,25 +121,31 @@ function BandTooltip({ active, payload, metric }: { active?: boolean; payload?: 
 /** Cheap / fair / expensive price ranges with today's price marked. */
 export function PriceBar({ bands }: { bands: Bands }) {
   // Scale: from 15% below the cheap edge to 15% above the expensive edge.
-  const min = Math.min(bands.cheapPrice * 0.85, bands.price * 0.97);
-  const max = Math.max(bands.expensivePrice * 1.15, bands.price * 1.03);
-  const at = (v: number) => `${((v - min) / (max - min)) * 100}%`;
+  const min = Math.min(bands.cheapPrice * 0.85, bands.price * 0.92);
+  const max = Math.max(bands.expensivePrice * 1.15, bands.price * 1.08);
+  const share = (v: number) => (v - min) / (max - min);
+  const at = (v: number) => `${share(v) * 100}%`;
+  // Near either end the "Now" label hugs that edge instead of centring on the
+  // marker, so it never spills out of the card.
+  const now = share(bands.price);
+  const label = now < 0.15 ? { left: 0 } : now > 0.85 ? { right: 0 } : { left: at(bands.price), transform: "translateX(-50%)" };
   return (
     <div className="pt-8 pb-7">
       <div className="relative h-9 rounded-full">
-        <div className="absolute inset-y-0 left-0 flex items-center rounded-l-full bg-good-soft pl-3 text-sm font-semibold text-good" style={{ width: at(bands.cheapPrice) }}>
-          Cheap
+        <div className="@container absolute inset-y-0 left-0 flex items-center rounded-l-full bg-good-soft pl-3 text-sm font-semibold text-good" style={{ width: at(bands.cheapPrice) }}>
+          {/* Zone names only where they fit; the edge prices below still mark them. */}
+          <span className="hidden @min-[3.25rem]:inline">Cheap</span>
         </div>
         <div className="absolute inset-y-0 flex items-center justify-center bg-mid-soft text-sm font-semibold text-mid" style={{ left: at(bands.cheapPrice), width: `calc(${at(bands.expensivePrice)} - ${at(bands.cheapPrice)})` }}>
           Fair
         </div>
-        <div className="absolute inset-y-0 right-0 flex items-center justify-end rounded-r-full bg-bad-soft pr-3 text-sm font-semibold text-bad" style={{ left: at(bands.expensivePrice) }}>
-          Expensive
+        <div className="@container absolute inset-y-0 right-0 flex items-center justify-end rounded-r-full bg-bad-soft pr-3 text-sm font-semibold text-bad" style={{ left: at(bands.expensivePrice) }}>
+          <span className="hidden @min-[4.75rem]:inline">Expensive</span>
         </div>
-        <div className="absolute -top-7 flex -translate-x-1/2 flex-col items-center" style={{ left: at(bands.price) }}>
-          <span className="text-sm font-bold whitespace-nowrap">Now {price(bands.price)}</span>
-          <span className="h-11 w-1.5 rounded-full bg-ink" />
-        </div>
+        <span className="absolute -top-7 text-sm font-bold whitespace-nowrap" style={label}>
+          Now {price(bands.price)}
+        </span>
+        <span className="absolute -top-2 h-11 w-1.5 -translate-x-1/2 rounded-full bg-ink" style={{ left: at(bands.price) }} />
       </div>
       <div className="relative mt-2 text-sm font-semibold text-muted">
         <span className="absolute -translate-x-1/2" style={{ left: at(bands.cheapPrice) }}>{wholePrice(bands.cheapPrice)}</span>
