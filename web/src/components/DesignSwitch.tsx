@@ -2,9 +2,9 @@ import { DESIGNS, setDesign, useDesign } from "../design";
 
 const STYLES = {
   classic: {
-    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] rounded-full bg-[#ece9e1] p-1 font-display text-xs font-semibold",
+    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] rounded-full border border-line bg-card p-1 font-display text-xs font-semibold",
     item: "shrink-0 rounded-full px-3 py-1.5",
-    on: "bg-white text-ink shadow-sm",
+    on: "bg-good text-white",
     off: "text-muted hover:text-ink",
   },
   terminal: {

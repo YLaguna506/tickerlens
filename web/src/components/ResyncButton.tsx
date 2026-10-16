@@ -6,7 +6,7 @@ import { clearTickerCache, createReport, isFinished, type Report } from "../api"
 import { navigate } from "../router";
 
 const STYLES = {
-  classic: "rounded-full bg-[#ece9e1] p-2 text-muted hover:text-ink",
+  classic: "rounded-full border border-line bg-card p-2 text-muted hover:text-ink",
   evidence: "rounded-xl border border-zinc-200 bg-white p-2 text-zinc-500 hover:text-zinc-900",
   bento: "rounded-2xl bg-white/80 p-2 text-slate-500 shadow-[0_2px_12px_rgba(15,23,42,0.08)] hover:text-slate-900",
   decision: "rounded-md border border-slate-300 bg-white p-1.5 text-slate-600 hover:border-slate-400",

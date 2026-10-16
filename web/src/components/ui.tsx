@@ -26,7 +26,7 @@ export function StepScale({ value, labels, tone = "good" }: { value: number | nu
           <li key={label} className="relative flex w-1/5 flex-col items-center gap-2 text-center">
             <span
               className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold ${
-                i === chosen ? `${ring} text-white ring-4 sm:size-11 sm:text-lg` : "bg-[#efece4] text-muted"
+                i === chosen ? `${ring} text-white ring-4 sm:size-11 sm:text-lg` : "bg-line text-muted"
               }`}
             >
               {i + 1}
@@ -43,7 +43,7 @@ export function StepScale({ value, labels, tone = "good" }: { value: number | nu
 
 const levelStyles = [
   { icon: "✕", on: "bg-bad text-white", off: "bg-bad-soft text-bad/60" },
-  { icon: "–", on: "bg-[#f2c94c] text-ink", off: "bg-mid-soft text-mid/70" },
+  { icon: "–", on: "bg-mid text-[#1a1404]", off: "bg-mid-soft text-mid/70" },
   { icon: "✓", on: "bg-good text-white", off: "bg-good-soft text-good/70" },
 ];
 
@@ -88,7 +88,7 @@ export function ScoreBar({ value, tone }: { value: number | null; tone: "good" |
   return (
     <span className="flex gap-1" aria-hidden>
       {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} className={`h-2 w-6 rounded-full sm:w-8 ${i <= filled ? color : "bg-[#ebe8e0]"}`} />
+        <span key={i} className={`h-2 w-6 rounded-full sm:w-8 ${i <= filled ? color : "bg-line"}`} />
       ))}
     </span>
   );
@@ -153,7 +153,7 @@ export function Skeleton({ lines = 3, label }: { lines?: number; label?: string 
   return (
     <div className="card animate-pulse space-y-3" aria-busy="true" aria-label={label ?? "Loading"}>
       {Array.from({ length: lines }, (_, i) => (
-        <div key={i} className="h-4 rounded bg-[#ece9e1]" style={{ width: `${90 - i * 15}%` }} />
+        <div key={i} className="h-4 rounded bg-line" style={{ width: `${90 - i * 15}%` }} />
       ))}
       {label && <p className="text-xs text-muted">{label}</p>}
     </div>

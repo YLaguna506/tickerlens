@@ -59,7 +59,7 @@ function Progress({ report }: { report: ReportT }) {
             <li key={s.id} className="flex items-center gap-3">
               <span
                 className={`flex size-6 items-center justify-center rounded-full text-xs font-bold ${
-                  state === "done" ? "bg-good text-white" : state === "now" ? "animate-pulse bg-good-soft text-good ring-2 ring-good" : "bg-[#ece9e1] text-muted"
+                  state === "done" ? "bg-good text-white" : state === "now" ? "animate-pulse bg-good-soft text-good ring-2 ring-good" : "bg-line text-muted"
                 }`}
               >
                 {state === "done" ? "✓" : i + 1}

@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
-/* Design tokens. Colors follow the report's paper-and-green look. */
+/* Design tokens for Classic and the home page: a dark theme with a green accent. */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
 
-  --color-paper: #f6f5f1;
-  --color-card: #ffffff;
-  --color-line: #e7e4dc;
-  --color-ink: #34343c;
-  --color-muted: #7a7a80;
+  --color-paper: #0d1117;
+  --color-card: #161b22;
+  --color-line: #2a313c;
+  --color-ink: #e6edf3;
+  --color-muted: #8b949e;
 
-  --color-good: #3f8f4a;
-  --color-good-strong: #2f6f3a;
-  --color-good-soft: #e3efe1;
-  --color-mid: #a8842c;
-  --color-mid-soft: #f4ead2;
-  --color-bad: #c9473e;
-  --color-bad-soft: #f7e3e0;
-  --color-sand: #c3a878;
-  --color-navy: #1f2357;
+  --color-good: #3a9d55;
+  --color-good-strong: #7ee29a;
+  --color-good-soft: #14301d;
+  --color-mid: #d4a72c;
+  --color-mid-soft: #2f2710;
+  --color-bad: #e5534b;
+  --color-bad-soft: #3a1d1c;
+  --color-sand: #b89b65;
+  --color-navy: #3d4bb0;
 
   /* Prototype designs, one typeface each. */
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -46,10 +46,10 @@ html {
 body {
   margin: 0;
   background-color: var(--color-paper);
-  /* Faint grid, like graph paper. */
+  /* Faint grid, like graph paper (just lighter than the background). */
   background-image:
-    linear-gradient(var(--color-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+    linear-gradient(#161c24 1px, transparent 1px),
+    linear-gradient(90deg, #161c24 1px, transparent 1px);
   background-size: 48px 48px;
   background-position: -1px -1px;
   color: var(--color-ink);
@@ -59,7 +59,7 @@ body {
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-line bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-6;
+    @apply rounded-2xl border border-line bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.3)] sm:p-6;
   }
   .eyebrow {
     @apply text-xs font-semibold tracking-[0.12em] text-muted uppercase;

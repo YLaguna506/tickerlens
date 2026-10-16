@@ -190,7 +190,7 @@ export function PhaseSection({ m, body }: { m?: MetricsReport; body?: ReportBody
               </div>
               <span
                 className={`shrink-0 rounded-full px-4 py-1.5 font-semibold ${
-                  c.answer == null ? "bg-[#ece9e1] text-muted" : c.answer ? "bg-good text-white" : "bg-bad text-white"
+                  c.answer == null ? "bg-line text-muted" : c.answer ? "bg-good text-white" : "bg-bad text-white"
                 }`}
               >
                 {c.answer == null ? "?" : c.answer ? "✓ Yes" : "✕ No"}

@@ -17,12 +17,18 @@ import {
 import type { Bands, EarningsQuarter, Point, SegmentShare } from "../api";
 import { monthYear, pct, price, signedPct, usd, wholePrice, yearTicks } from "../format";
 
-const GREEN = "#3f8f4a";
-const INK = "#34343c";
-const GRID = "#e7e4dc";
-const AXIS = { fontSize: 12, fill: "#7a7a80" };
+const GREEN = "#4cb26a";
+const INK = "#e6edf3";
+const GRID = "#2a313c";
+const AXIS = { fontSize: 12, fill: "#8b949e" };
+// Dark tooltips to match the theme.
+const TIP = {
+  contentStyle: { background: "#161b22", border: "1px solid #2a313c", borderRadius: 8, color: "#e6edf3" },
+  labelStyle: { color: "#8b949e" },
+  itemStyle: { color: "#e6edf3" },
+};
 // A white halo keeps point labels readable where they cross a line.
-const POINT_LABEL = { fontSize: 12, fill: INK, stroke: "#fff", strokeWidth: 4, paintOrder: "stroke" } as const;
+const POINT_LABEL = { fontSize: 12, fill: INK, stroke: "#161b22", strokeWidth: 4, paintOrder: "stroke" } as const;
 
 /** 5-year price, area under the line. */
 export function PriceChart({ points }: { points: Point[] }) {
@@ -48,7 +54,7 @@ export function PriceChart({ points }: { points: Point[] }) {
             tickLine={false}
           />
           <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={AXIS} axisLine={false} tickLine={false} width={48} domain={["auto", "auto"]} />
-          <Tooltip formatter={(v) => price(Number(v))} labelFormatter={(d) => String(d)} />
+          <Tooltip {...TIP} formatter={(v) => price(Number(v))} labelFormatter={(d) => String(d)} />
           <Area type="monotone" dataKey="value" stroke={GREEN} strokeWidth={2.5} fill="url(#priceFill)" isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>
@@ -64,7 +70,7 @@ export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: n
         <LineChart data={rows} margin={{ top: 28, right: 24, left: 24, bottom: 4 }}>
           <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} tickMargin={12} />
           <YAxis hide domain={[(min: number) => Math.min(0, min), "auto"]} />
-          <ReferenceLine y={0} stroke="#c9c5bb" strokeDasharray="4 4" />
+          <ReferenceLine y={0} stroke="#3b4350" strokeDasharray="4 4" />
           <Line dataKey="revenue" name="Revenue" stroke={GREEN} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
             <LabelList dataKey="revenue" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
           </Line>
@@ -72,7 +78,7 @@ export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: n
             {/* Above the point: below it, small profits collide with the year labels. */}
             <LabelList dataKey="netIncome" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
           </Line>
-          <Tooltip formatter={(v) => usd(Number(v))} />
+          <Tooltip {...TIP} formatter={(v) => usd(Number(v))} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -91,10 +97,10 @@ export function BandChart({ points, bands, prices }: { points: Point[]; bands: B
     <div className="h-72 w-full">
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <ReferenceArea y1={lo} y2={bands.cheapBelow} fill="#e3efe1" fillOpacity={0.9} ifOverflow="hidden" />
-          <ReferenceArea y1={bands.cheapBelow} y2={bands.expensiveAbove} fill="#f4ead2" fillOpacity={0.8} ifOverflow="hidden" />
-          <ReferenceArea y1={bands.expensiveAbove} y2={hi} fill="#f7e3e0" fillOpacity={0.9} ifOverflow="hidden" />
-          <ReferenceLine y={bands.median} stroke="#9a968c" strokeDasharray="5 5" />
+          <ReferenceArea y1={lo} y2={bands.cheapBelow} fill="#14301d" fillOpacity={0.9} ifOverflow="hidden" />
+          <ReferenceArea y1={bands.cheapBelow} y2={bands.expensiveAbove} fill="#2f2710" fillOpacity={0.9} ifOverflow="hidden" />
+          <ReferenceArea y1={bands.expensiveAbove} y2={hi} fill="#3a1d1c" fillOpacity={0.9} ifOverflow="hidden" />
+          <ReferenceLine y={bands.median} stroke="#d4a72c" strokeDasharray="5 5" />
           <XAxis dataKey="date" tickFormatter={monthYear} tick={AXIS} axisLine={false} tickLine={false} minTickGap={40} />
           <YAxis domain={[lo, hi]} tickFormatter={(v: number) => `${v.toFixed(1)}×`} tick={AXIS} axisLine={false} tickLine={false} width={52} />
           <Tooltip content={<BandTooltip metric={bands.metric} />} />
@@ -109,7 +115,7 @@ function BandTooltip({ active, payload, metric }: { active?: boolean; payload?: 
   const row = active ? payload?.[0]?.payload : undefined;
   if (!row) return null;
   return (
-    <div className="rounded-lg border border-line bg-white px-3 py-2 text-sm shadow-sm">
+    <div className="rounded-lg border border-line bg-card px-3 py-2 text-sm shadow-sm">
       <p className="text-muted">{row.date}</p>
       <p>{metric} <span className="font-semibold">{row.value.toFixed(1)}×</span></p>
       {row.price != null && <p>Price <span className="font-semibold">{price(row.price)}</span></p>}
