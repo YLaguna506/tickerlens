@@ -1,0 +1,59 @@
+# TickerLens scoring model. Every threshold and weight lives here so the model
+# can be tuned without code changes. Bump `version` whenever you change
+# anything: it is stored on every report, and reports built with another
+# version are not reused.
+#
+# Scores are 1–5. Fractions are written as decimals (0.12 = 12%).
+
+version: "2026-10-15.1"
+
+# --- Growth score -------------------------------------------------------------
+# Average of revenue and EPS CAGRs (3y and 5y, whichever exist).
+# Below 0% → 1, 0–5% → 2, 5–12% → 3, 12–20% → 4, 20%+ → 5.
+growth_bands: [0.00, 0.05, 0.12, 0.20]
+
+# --- Financial health score -----------------------------------------------------
+# One point per criterion met; criteria a company does not report are skipped.
+min_interest_coverage: 10   # EBIT / interest expense ≥ 10×
+max_debt_to_equity: 1.0     # total debt / equity ≤ 1
+min_fcf_to_debt: 0.5        # yearly free cash flow ≥ 50% of total debt
+positive_fcf_years: 3       # free cash flow > 0 in each of the last 3 years
+min_health_criteria_used: 2 # fewer evaluable criteria → no score
+
+# --- Valuation score ------------------------------------------------------------
+# Today's multiple compared with its own history.
+history_years: 5
+min_history_days: 250       # at least ~1 year of trading days
+cheap_percentile: 0.25      # at or below the 25th percentile is "cheap"
+expensive_percentile: 0.75  # at or above the 75th percentile is "expensive"
+# Percentile of today's value → score: ≤10% → 5, ≤30% → 4, ≤70% → 3, ≤90% → 2, else 1.
+valuation_score_cuts: [0.10, 0.30, 0.70, 0.90]
+
+# --- Business composite (B) --------------------------------------------------------
+# Weighted mean of the available scores; weights are renormalized when one is missing.
+weights:
+  business_quality: 0.40
+  growth: 0.30
+  financial_health: 0.30
+
+# --- Verdict --------------------------------------------------------------------------
+# Rules are checked in order; the first match wins. V is the valuation score.
+#   1. Sell:  B < sell_below, or (B < sell_weak_below and V ≤ sell_weak_max_v)
+#   2. Buy:   (B ≥ buy_min_b and V ≥ buy_min_v) or (B ≥ buy_cheap_min_b and V ≥ buy_cheap_min_v)
+#   3. Watch: B ≥ watch_min_b  (great business, wait for a better price)
+#   4. Hold:  B ≥ hold_min_b and V ≥ hold_min_v
+#   5. Pass:  everything else
+verdict:
+  sell_below: 2.5
+  sell_weak_below: 3.0
+  sell_weak_max_v: 2
+  buy_min_b: 4.0
+  buy_min_v: 4
+  buy_cheap_min_b: 3.5
+  buy_cheap_min_v: 5
+  watch_min_b: 4.0
+  hold_min_b: 3.0
+  hold_min_v: 3
+  # Confidence (0–100) bands.
+  high_confidence_min: 80
+  medium_confidence_min: 55

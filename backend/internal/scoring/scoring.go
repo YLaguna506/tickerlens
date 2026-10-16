@@ -1,6 +1,6 @@
 // Package scoring turns computed metrics into 1–5 scores. Every threshold
-// lives in Config so it can be tuned in one place (M5 loads it from
-// config/scoring.yaml).
+// and weight lives in Config, loaded from config/scoring.yaml, so the model
+// can be tuned without code changes.
 package scoring
 
 import (
@@ -8,35 +8,67 @@ import (
 	"sort"
 )
 
-// Config holds every scoring threshold.
+// Config holds every scoring threshold and weight. The yaml tags match
+// config/scoring.yaml.
 type Config struct {
-	Version string
+	// Version is stored on every report, so results can be traced to rules.
+	Version string `yaml:"version"`
 
 	// Growth: average CAGR (fraction) → score. A CAGR below Bands[0] scores 1,
 	// below Bands[1] scores 2, ..., at or above Bands[3] scores 5.
-	GrowthBands [4]float64
+	GrowthBands [4]float64 `yaml:"growth_bands"`
 
 	// Health criteria; each passing criterion earns one point.
-	MinInterestCoverage   float64 // EBIT / interest expense ≥ this
-	MaxDebtToEquity       float64 // debt / equity ≤ this
-	MinFCFToDebt          float64 // FCF / total debt ≥ this
-	PositiveFCFYears      int     // FCF > 0 in each of the last N fiscal years
-	MinHealthCriteriaUsed int     // fewer evaluable criteria → no score
+	MinInterestCoverage   float64 `yaml:"min_interest_coverage"`    // EBIT / interest expense ≥ this
+	MaxDebtToEquity       float64 `yaml:"max_debt_to_equity"`       // debt / equity ≤ this
+	MinFCFToDebt          float64 `yaml:"min_fcf_to_debt"`          // FCF / total debt ≥ this
+	PositiveFCFYears      int     `yaml:"positive_fcf_years"`       // FCF > 0 in each of the last N fiscal years
+	MinHealthCriteriaUsed int     `yaml:"min_health_criteria_used"` // fewer evaluable criteria → no score
 
 	// Valuation bands are percentiles of the metric's own history.
-	CheapPercentile     float64 // ≤ this is "cheap"
-	ExpensivePercentile float64 // ≥ this is "expensive"
+	CheapPercentile     float64 `yaml:"cheap_percentile"`     // ≤ this is "cheap"
+	ExpensivePercentile float64 `yaml:"expensive_percentile"` // ≥ this is "expensive"
 	// Current percentile (0–1) → score: ≤ [0] scores 5, ≤ [1] 4, ≤ [2] 3,
 	// ≤ [3] 2, above scores 1.
-	ValuationScoreCuts [4]float64
-	MinHistoryDays     int // trading days of valuation history required
-	HistoryYears       int // years of history used for bands
+	ValuationScoreCuts [4]float64 `yaml:"valuation_score_cuts"`
+	MinHistoryDays     int        `yaml:"min_history_days"` // trading days of valuation history required
+	HistoryYears       int        `yaml:"history_years"`    // years of history used for bands
+
+	// Weights of the business composite B (renormalized when a score is missing).
+	Weights Weights `yaml:"weights"`
+	// Verdict thresholds, applied in order: Sell, Buy, Watch, Hold, else Pass.
+	Verdict VerdictRules `yaml:"verdict"`
 }
 
-// Default returns the plan's starting thresholds.
+// Weights of the scores that make up the business composite.
+type Weights struct {
+	BusinessQuality float64 `yaml:"business_quality"`
+	Growth          float64 `yaml:"growth"`
+	FinancialHealth float64 `yaml:"financial_health"`
+}
+
+// VerdictRules are the thresholds of the verdict rules. B is the business
+// composite, V the valuation score (both 1–5).
+type VerdictRules struct {
+	SellBelow           float64 `yaml:"sell_below"`            // Sell: B < this
+	SellWeakBelow       float64 `yaml:"sell_weak_below"`       // ...or B < this
+	SellWeakMaxV        float64 `yaml:"sell_weak_max_v"`       //    and V ≤ this
+	BuyMinB             float64 `yaml:"buy_min_b"`             // Buy: B ≥ this
+	BuyMinV             float64 `yaml:"buy_min_v"`             //    and V ≥ this
+	BuyCheapMinB        float64 `yaml:"buy_cheap_min_b"`       // ...or B ≥ this
+	BuyCheapMinV        float64 `yaml:"buy_cheap_min_v"`       //    and V ≥ this
+	WatchMinB           float64 `yaml:"watch_min_b"`           // Watch: B ≥ this
+	HoldMinB            float64 `yaml:"hold_min_b"`            // Hold: B ≥ this
+	HoldMinV            float64 `yaml:"hold_min_v"`            //    and V ≥ this
+	HighConfidenceMin   float64 `yaml:"high_confidence_min"`   // confidence ≥ this is "high"
+	MediumConfidenceMin float64 `yaml:"medium_confidence_min"` // confidence ≥ this is "medium"
+}
+
+// Default returns the plan's starting thresholds. config/scoring.yaml ships
+// with the same values; anything left out of the file keeps its default.
 func Default() Config {
 	return Config{
-		Version:               "2026-10-14.1",
+		Version:               "2026-10-15.1",
 		GrowthBands:           [4]float64{0, 0.05, 0.12, 0.20},
 		MinInterestCoverage:   10,
 		MaxDebtToEquity:       1,
@@ -48,6 +80,14 @@ func Default() Config {
 		ValuationScoreCuts:    [4]float64{0.10, 0.30, 0.70, 0.90},
 		MinHistoryDays:        250,
 		HistoryYears:          5,
+		Weights:               Weights{BusinessQuality: 0.40, Growth: 0.30, FinancialHealth: 0.30},
+		Verdict: VerdictRules{
+			SellBelow: 2.5, SellWeakBelow: 3.0, SellWeakMaxV: 2,
+			BuyMinB: 4.0, BuyMinV: 4, BuyCheapMinB: 3.5, BuyCheapMinV: 5,
+			WatchMinB: 4.0,
+			HoldMinB:  3.0, HoldMinV: 3,
+			HighConfidenceMin: 80, MediumConfidenceMin: 55,
+		},
 	}
 }
 
