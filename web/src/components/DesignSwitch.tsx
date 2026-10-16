@@ -25,6 +25,12 @@ const STYLES = {
     on: "bg-slate-900 text-white",
     off: "text-slate-500 hover:text-slate-900",
   },
+  evidence: {
+    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] rounded-xl border border-zinc-200 bg-white p-0.5 text-xs font-semibold",
+    item: "shrink-0 rounded-lg px-2.5 py-1.5",
+    on: "bg-zinc-900 text-white",
+    off: "text-zinc-500 hover:text-zinc-900",
+  },
   decision: {
     group: "flex max-w-full overflow-x-auto [scrollbar-width:none] gap-1 font-flow text-xs font-medium",
     item: "shrink-0 rounded-md border px-2.5 py-1",
