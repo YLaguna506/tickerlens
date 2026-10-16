@@ -77,7 +77,7 @@ A report moves through four stages, and the page updates live after each one:
 
 You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) and [Task](https://taskfile.dev/installation/) (`winget install Task.Task` on Windows, `brew install go-task` on macOS).
 
-1. **Clone and start once** to create your `.env`:
+1. **Clone and run `task up` once.** It creates `.env` from `.env.example` and stops, asking for your keys:
 
    ```bash
    git clone https://github.com/YLaguna506/tickerlens.git
@@ -108,7 +108,7 @@ You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) and [
 
 4. Open **http://localhost:3000**, type a ticker (try `V`, `AAPL` or `MSFT`) and watch the report build.
 
-A first report takes 1–2 minutes on Gemini's free tier, mostly the AI step. The free tier allows about 20 requests a day per model and a report uses 4–6, so `LLM_FALLBACK_MODEL` takes over when the main model is busy or out of quota. Asking for the same ticker again within 12 hours returns the saved report instantly. Without an LLM key you still get every number, score and the verdict, just no AI sections.
+Tested from a fresh clone: the stack builds in under a minute (plus downloading base images the first time) and a first Apple report took about a minute on Gemini's free tier, mostly the AI step. The free tier allows about 20 requests a day per model and a report uses 4–6, so `LLM_FALLBACK_MODEL` takes over when the main model is busy or out of quota. Asking for the same ticker again within 12 hours returns the saved report instantly. Without an LLM key you still get every number, score and the verdict, just no AI sections.
 
 | Service | URL |
 |---|---|

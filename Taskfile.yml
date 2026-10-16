@@ -22,6 +22,14 @@ tasks:
   up:
     desc: Build and start every service, waiting until they are healthy
     deps: [env]
+    preconditions:
+      - sh: '! grep -q "^SEC_USER_AGENT=TickerLens you@example.com" .env'
+        msg: |
+          .env still has the example settings. Add your keys to .env (README, "Getting started" step 2):
+            SEC_USER_AGENT  e.g. "TickerLens your@email.com"
+            TIINGO_API_KEY  prices
+            GEMINI_API_KEY  AI agents
+          then run `task up` again.
     cmds:
       - docker compose up -d --build --wait
 
