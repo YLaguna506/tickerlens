@@ -21,6 +21,8 @@ const GREEN = "#3f8f4a";
 const INK = "#34343c";
 const GRID = "#e7e4dc";
 const AXIS = { fontSize: 12, fill: "#7a7a80" };
+// A white halo keeps point labels readable where they cross a line.
+const POINT_LABEL = { fontSize: 12, fill: INK, stroke: "#fff", strokeWidth: 4, paintOrder: "stroke" } as const;
 
 /** 5-year price, area under the line. */
 export function PriceChart({ points }: { points: Point[] }) {
@@ -65,11 +67,11 @@ export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: n
           <YAxis hide domain={[(min: number) => Math.min(0, min), "auto"]} />
           <ReferenceLine y={0} stroke="#c9c5bb" strokeDasharray="4 4" />
           <Line dataKey="revenue" name="Revenue" stroke={GREEN} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
-            <LabelList dataKey="revenue" position="top" formatter={(v) => usd(Number(v))} style={{ fontSize: 12, fill: INK }} />
+            <LabelList dataKey="revenue" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
           </Line>
           <Line dataKey="netIncome" name="Net income" stroke="#7fb889" strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
             {/* Above the point: below it, small profits collide with the year labels. */}
-            <LabelList dataKey="netIncome" position="top" offset={10} formatter={(v) => usd(Number(v))} style={{ fontSize: 12, fill: INK }} />
+            <LabelList dataKey="netIncome" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
           </Line>
           <Tooltip formatter={(v) => usd(Number(v))} />
         </LineChart>
