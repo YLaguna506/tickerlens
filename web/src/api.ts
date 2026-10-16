@@ -1,0 +1,237 @@
+// Types for the API responses (mirrors the Go structs) and fetch helpers.
+
+export type Unit = "percent" | "multiple" | "usd" | "usd/share";
+
+export interface Input {
+  name: string;
+  value: number | null;
+  period?: string;
+}
+
+export interface Metric {
+  key: string;
+  label: string;
+  value: number | null;
+  unit: Unit;
+  period?: string;
+  formula?: string;
+  inputs?: Input[];
+  note?: string;
+}
+
+export interface Score {
+  value: number | null;
+  max: number;
+  reasons: string[];
+}
+
+export interface Point {
+  date: string;
+  value: number;
+}
+
+export interface PhaseCheck {
+  question: string;
+  answer: boolean | null;
+  detail: string;
+}
+
+export interface Phase {
+  number: number;
+  name: string;
+  valuationMetric: string;
+  lowConfidence: boolean;
+  reason: string;
+  checks: PhaseCheck[];
+}
+
+export interface Bands {
+  metric: string;
+  fellBackFrom?: string;
+  historyFrom: string;
+  historyTo: string;
+  days: number;
+  current: number;
+  cheapBelow: number;
+  median: number;
+  expensiveAbove: number;
+  percentile: number;
+  zone: "cheap" | "fair" | "expensive";
+  perShareBasis: string;
+  perShare: number;
+  basisPeriod: string;
+  price: number;
+  cheapPrice: number;
+  medianPrice: number;
+  expensivePrice: number;
+}
+
+export interface MetricsReport {
+  ticker: string;
+  name: string;
+  scoringVersion: string;
+  priceDate: string;
+  price: number | null;
+  financialsThrough: string;
+  latestFiscalYear: number;
+  marketCap: Metric;
+  profitability: Metric[];
+  growth: Metric[];
+  health: Metric[];
+  valuation: Metric[];
+  returns: Metric[];
+  priceChange5y: Metric;
+  totalReturn5y: Metric;
+  earnings: { quarters: number; beats: number; avgSurprisePercent: number | null; latestQuarter?: string };
+  phase: Phase;
+  growthScore: Score;
+  healthScore: Score;
+  valuationScore: Score;
+  valuationBands: Bands | null;
+  charts: { price: Point[]; revenueFY: Point[]; netIncomeFY: Point[]; valuation1y: Point[] };
+  notes?: string[];
+}
+
+export interface FinancialPeriod {
+  periodType: "FY" | "Q" | "TTM";
+  fiscalYear: number;
+  fiscalQuarter?: number;
+  endDate: string;
+  revenue: number | null;
+  netIncome: number | null;
+}
+
+export interface Evidence {
+  claim: string;
+  documentId: string;
+  quote: string;
+}
+
+export interface AgentSection<T> {
+  status: "ready" | "failed";
+  output?: T;
+  evidence?: Evidence[];
+  errors?: string[];
+}
+
+export interface Overview {
+  mission: string | null;
+  whatItDoes: string;
+  howItMakesMoney: string;
+  payingCustomers: string;
+  whyTheyBuy: string;
+}
+
+export interface QualityAnswer {
+  answer: string;
+  justification: string;
+  evidence: Evidence[];
+}
+
+export type Quality = Record<
+  "revenuePredictability" | "pricingPower" | "recessionResistance" | "competitivePosition",
+  QualityAnswer
+>;
+
+export interface SegmentShare {
+  name: string;
+  revenue: number;
+  share: number;
+  priorRevenue: number | null;
+  yoy: number | null;
+}
+
+export interface Verdict {
+  label: "Buy" | "Watch" | "Hold" | "Pass" | "Sell" | "";
+  meaning: string;
+  business: number | null;
+  valuation: number | null;
+  components: { name: string; score: number | null; weight: number }[];
+  rule: string;
+  confidence: number;
+  confidenceLevel: "high" | "medium" | "low";
+  confidenceReasons: string[];
+  scoringVersion: string;
+  tagline?: string;
+  rationale?: string;
+  narrativeStatus: string;
+}
+
+export interface EarningsQuarter {
+  fiscalDateEnding: string;
+  reportedEPS: number | null;
+  estimatedEPS: number | null;
+  surprisePercent: number | null;
+}
+
+export interface ReportBody {
+  version: string;
+  company: { ticker: string; cik: string; name: string };
+  sections: Record<string, "ready" | "failed" | "pending">;
+  metrics?: MetricsReport;
+  financials?: { annual: FinancialPeriod[]; quarterly: FinancialPeriod[]; ttm: FinancialPeriod | null };
+  earnings?: EarningsQuarter[];
+  notes?: string[];
+  warnings?: string[];
+  filing?: { accession: string; reportDate: string; url: string };
+  agents?: {
+    business_overview?: AgentSection<Overview>;
+    business_quality?: AgentSection<Quality>;
+    segments?: AgentSection<unknown>;
+  };
+  businessQuality?: { score: number; points: number; answers: Record<string, string> };
+  segments?: { fiscalYear: string; segments?: SegmentShare[]; geography?: SegmentShare[] };
+  verdict?: Verdict;
+}
+
+export type Status = "queued" | "running" | "done" | "partial" | "failed";
+
+export interface Report {
+  id: string;
+  ticker: string;
+  companyName: string;
+  status: Status;
+  stage: string;
+  error?: string;
+  failedSections: string[];
+  report?: ReportBody;
+  createdAt: string;
+}
+
+export interface Company {
+  ticker: string;
+  cik: string;
+  name: string;
+}
+
+export class ApiError extends Error {
+  status: number;
+  suggestions: Company[];
+  constructor(message: string, status: number, suggestions: Company[] = []) {
+    super(message);
+    this.status = status;
+    this.suggestions = suggestions;
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const resp = await fetch(path, init);
+  const body = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    throw new ApiError(body.error ?? `Request failed (${resp.status})`, resp.status, body.suggestions ?? []);
+  }
+  return body as T;
+}
+
+export const searchTickers = (q: string) => request<Company[]>(`/api/tickers?q=${encodeURIComponent(q)}`);
+
+export const createReport = (ticker: string, refresh = false) =>
+  request<{ id: string; status: Status; cached: boolean }>("/api/reports", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticker, refresh }),
+  });
+
+export const getReport = (id: string) => request<Report>(`/api/reports/${id}`);
+
+export const isFinished = (s: Status) => s === "done" || s === "partial" || s === "failed";

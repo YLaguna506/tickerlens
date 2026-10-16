@@ -1,35 +1,77 @@
-:root {
-  color-scheme: light dark;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  line-height: 1.5;
+@import "tailwindcss";
+
+/* Design tokens. Colors follow the report's paper-and-green look. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #f6f5f1;
+  --color-card: #ffffff;
+  --color-line: #e7e4dc;
+  --color-ink: #34343c;
+  --color-muted: #7a7a80;
+
+  --color-good: #3f8f4a;
+  --color-good-strong: #2f6f3a;
+  --color-good-soft: #e3efe1;
+  --color-mid: #a8842c;
+  --color-mid-soft: #f4ead2;
+  --color-bad: #c9473e;
+  --color-bad-soft: #f7e3e0;
+  --color-sand: #c3a878;
+  --color-navy: #1f2357;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  background-color: var(--color-paper);
+  /* Faint grid, like graph paper. */
+  background-image:
+    linear-gradient(var(--color-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-.page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding: 0 16px;
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] sm:p-6;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-[0.12em] text-muted uppercase;
+  }
+  .section-title {
+    @apply font-display text-4xl font-extrabold tracking-tight sm:text-5xl;
+  }
 }
 
-main {
-  flex: 1;
-  max-width: 40rem;
-  margin: 0 auto;
-  padding-top: 20vh;
-  text-align: center;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.muted,
-footer {
-  opacity: 0.65;
+.fade-in {
+  animation: fade-in 0.4s ease-out both;
 }
 
-footer {
-  padding: 16px 0;
-  font-size: 0.875rem;
-  text-align: center;
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }

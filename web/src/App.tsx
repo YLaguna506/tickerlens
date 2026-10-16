@@ -1,12 +1,9 @@
+import { Home } from "./pages/Home";
+import { Report } from "./pages/Report";
+import { usePath } from "./router";
+
 export function App() {
-  return (
-    <div className="page">
-      <main>
-        <h1>TickerLens</h1>
-        <p>Enter a US ticker and get a research report with a clear verdict.</p>
-        <p className="muted">Coming soon.</p>
-      </main>
-      <footer>Educational project. Not financial advice.</footer>
-    </div>
-  );
+  const path = usePath();
+  const match = path.match(/^\/reports\/([0-9a-f-]{36})$/i);
+  return match ? <Report id={match[1]!} key={match[1]} /> : <Home />;
 }
