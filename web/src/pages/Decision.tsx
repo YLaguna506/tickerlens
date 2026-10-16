@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { ResyncButton } from "../components/ResyncButton";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, pct, price, shortDate, titleCase, wholePrice } from "../format";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
@@ -276,7 +277,10 @@ export function Decision({ id }: { id: string }) {
           <button onClick={() => navigate("/")} className="text-sm font-semibold text-indigo-600">
             ← New search
           </button>
-          <DesignSwitch look="decision" />
+          <div className="flex min-w-0 items-center gap-2">
+            <ResyncButton report={report} look="decision" />
+            <DesignSwitch look="decision" />
+          </div>
         </header>
 
         {isLoading ? (

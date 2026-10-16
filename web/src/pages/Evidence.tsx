@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type Evidence as Quote, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { ResyncButton } from "../components/ResyncButton";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
@@ -679,6 +680,11 @@ export function Evidence({ id }: { id: string }) {
         <p className="p-10">Report not found.</p>
       ) : (
         <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-[22rem_1fr]">
+          {/* On phones the controls sit above the pinned panel. */}
+          <div className="flex items-center justify-end gap-2 bg-white px-4 pt-4 lg:hidden">
+            <ResyncButton report={report} look="evidence" />
+            <DesignSwitch look="evidence" />
+          </div>
           <aside className="border-b border-zinc-200 bg-white px-4 py-5 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-r lg:border-b-0 lg:px-6">
             <div className="mb-5 flex items-center justify-between gap-3">
               <button onClick={() => navigate("/")} className="text-sm font-semibold text-zinc-500 hover:text-zinc-900">
@@ -699,7 +705,8 @@ export function Evidence({ id }: { id: string }) {
           </nav>
 
           <main className="min-w-0 px-4 py-6 lg:px-10 lg:py-8">
-            <div className="mb-6 flex justify-end">
+            <div className="mb-6 hidden items-center justify-end gap-2 lg:flex">
+              <ResyncButton report={report} look="evidence" />
               <DesignSwitch look="evidence" />
             </div>
             {report.status === "failed" ? (

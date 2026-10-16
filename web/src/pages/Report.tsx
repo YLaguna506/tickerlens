@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createReport, isFinished, type Report as ReportT } from "../api";
 import { PriceChart } from "../components/charts";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { ResyncButton } from "../components/ResyncButton";
 import { RunDetails } from "../components/RunDetails";
 import { BusinessSection, FinancialsSection, PhaseSection, ValuationSection, VerdictSection } from "../components/sections";
 import { Disclaimer } from "../components/ui";
@@ -109,7 +110,8 @@ export function Report({ id }: { id: string }) {
         ))}
       </nav>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex items-center justify-end gap-2 pt-4">
+        <ResyncButton report={report} look="classic" />
         <DesignSwitch look="classic" />
       </div>
       <header className="pt-6 text-center">

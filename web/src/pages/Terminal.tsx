@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type MetricsReport, type ReportBody, type SegmentShare, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { ResyncButton } from "../components/ResyncButton";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
 import { QUALITY_QUESTIONS, STAGES, fallbackNote, incomeRows, isPending, metricOf, useLiveReport, valuedWith } from "../live";
@@ -472,7 +473,8 @@ export function Terminal({ id }: { id: string }) {
           {m && <Stat label="MCAP" value={usd(m.marketCap.value)} />}
           {m?.valuationBands && <Stat label={m.valuationBands.metric} value={multiple(m.valuationBands.current)} tone="text-t-amber" />}
           {v?.label && <Stat label="VERDICT" value={v.label.toUpperCase()} tone={VERDICT_COLOR[v.label]} />}
-          <div className="ml-auto">
+          <div className="ml-auto flex min-w-0 items-center gap-2">
+            <ResyncButton report={report} look="terminal" />
             <DesignSwitch look="terminal" />
           </div>
         </div>

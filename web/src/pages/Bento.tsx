@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { ResyncButton } from "../components/ResyncButton";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, toneFor, usd, wholePrice, yearTicks } from "../format";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
@@ -430,7 +431,10 @@ export function Bento({ id }: { id: string }) {
             <span className="size-7 rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400" aria-hidden />
             TickerLens
           </button>
-          <DesignSwitch look="bento" />
+          <div className="flex min-w-0 items-center gap-2">
+            <ResyncButton report={report} look="bento" />
+            <DesignSwitch look="bento" />
+          </div>
         </header>
 
         {isLoading ? (
