@@ -6,7 +6,7 @@ Enter a US ticker and TickerLens runs a multi-stage research pipeline (data inge
 
 > **Educational project. Not financial advice.** Nothing here is a recommendation to buy or sell any security.
 
-**Status:** early development. The data layer, computed analysis and report API work. SEC financials, prices and EPS estimates feed margins, growth, financial health, valuation versus the company's own history, a lifecycle phase and 1–5 scores. A report can be requested over HTTP and its progress watched live. The AI agents and the web report come next.
+**Status:** early development. The data layer, computed analysis and report API work. SEC financials, prices and EPS estimates feed margins, growth, financial health, valuation versus the company's own history, a lifecycle phase and 1–5 scores. A report can be requested over HTTP and its progress watched live. AI agents read the latest 10-K to describe the business, judge its quality and extract its revenue breakdown. The verdict and the web report come next.
 
 ## Design principles
 
@@ -23,7 +23,28 @@ Enter a US ticker and TickerLens runs a multi-stage research pipeline (data inge
 | Storage and cache | PostgreSQL |
 | Frontend | React, Vite, TypeScript |
 
-Data comes from free sources: SEC EDGAR (financials and filings), Tiingo (prices) and Alpha Vantage (EPS estimates).
+Data comes from free sources: SEC EDGAR (financials and filings), Tiingo (prices) and Alpha Vantage (EPS estimates). The LLM runs through [OpenRouter](https://openrouter.ai) (free models work) or OpenAI.
+
+## How the AI agents stay honest
+
+Each report runs three agents in parallel on the company's latest 10-K (Items 1 and 7):
+
+| Agent | Produces |
+|---|---|
+| Business overview | What the company does, how it makes money, who pays and why |
+| Business quality | Revenue predictability, pricing power, recession resistance, competitive position, each with a justification |
+| Segments | Revenue by segment and by region, copied from the filing |
+
+Every answer goes through checks before it's accepted:
+
+1. **Schema:** the reply must match a strict JSON schema.
+2. **Evidence:** every judgment cites a quote, and the quote must appear **word for word** in the filing (30 words max).
+3. **Number guard:** every number in the prose must match a computed metric or a number inside the agent's own quotes. An invented figure fails.
+4. **Segments:** each figure must appear in a quote, and the total must roughly match reported revenue.
+
+A failed check gets one repair attempt, in which the agent is told exactly what was wrong. If that fails too, the section is left out and the report is marked partial. Scores are computed in Go from the agents' answers, not by the model.
+
+`task eval` runs the agents on 10 companies and checks their answers against expected results (for example, that Visa's pricing power is "Easily").
 
 ## Getting started
 
