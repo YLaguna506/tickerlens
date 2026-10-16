@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
 	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
@@ -18,16 +19,21 @@ import (
 
 // Reports reads and creates report rows (store.Reports).
 type Reports interface {
-	Create(ctx context.Context, ticker, companyName string) (store.Report, error)
+	Create(ctx context.Context, ticker, companyName string, opt store.Options) (store.Report, error)
 	Get(ctx context.Context, id string) (store.Report, error)
-	LatestFinished(ctx context.Context, ticker string, since time.Time) (store.Report, error)
+	LatestFinished(ctx context.Context, ticker string, opt store.Options, since time.Time) (store.Report, error)
 	ListByTicker(ctx context.Context, ticker string, limit int) ([]store.Report, error)
 	ClearTicker(ctx context.Context, ticker string) (store.Cleared, error)
 }
 
 // Jobs starts report jobs in the background (pipeline.Runner).
 type Jobs interface {
-	Start(reportID, ticker string, refresh bool)
+	Start(reportID, ticker string, refresh bool, opt store.Options)
+}
+
+// Models lists the AI models a report can use (agentclient.Client).
+type Models interface {
+	Models(ctx context.Context) ([]agentclient.ModelChoice, error)
 }
 
 // Events streams progress for running jobs (pipeline.Broker).
@@ -50,6 +56,8 @@ type Deps struct {
 	Jobs    Jobs
 	Events  Events
 	Tickers Tickers
+	// Models is nil when the AI agents are not configured.
+	Models Models
 	// Ready reports whether dependencies (Postgres) are reachable.
 	Ready func(ctx context.Context) error
 	// FreshFor is how long a finished report is returned instead of
@@ -71,6 +79,7 @@ func NewRouter(d Deps) http.Handler {
 	mux.HandleFunc("GET /readyz", a.handleReady)
 
 	mux.HandleFunc("GET /api/tickers", a.searchTickers)
+	mux.HandleFunc("GET /api/models", a.listModels)
 	mux.HandleFunc("POST /api/reports", a.createReport)
 	mux.HandleFunc("GET /api/reports", a.listReports)
 	mux.HandleFunc("GET /api/reports/{id}", a.getReport)

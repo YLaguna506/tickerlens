@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from functools import lru_cache
 
 from tickerlens_agents.llm.base import LLMClient, LLMError
 from tickerlens_agents.llm.openai_compat import OpenAICompatibleClient
@@ -48,13 +49,62 @@ def models_from_env() -> Models:
 def client_from_env() -> LLMClient:
     """LLM_PROVIDER picks openai, openrouter or gemini. LLM_BASE_URL overrides
     the endpoint, e.g. for a local server."""
-    provider = provider_from_env()
+    return client_for(provider_from_env())
+
+
+def client_for(provider: str) -> LLMClient:
+    """The client for one provider. LLM_BASE_URL applies only to the default
+    provider. Clients are reused for the same settings."""
     if provider not in BASE_URLS:
-        raise LLMError(f"unknown LLM_PROVIDER {provider!r}; use one of {sorted(BASE_URLS)}")
-    base_url = os.getenv("LLM_BASE_URL") or BASE_URLS[provider]
-    return OpenAICompatibleClient(
-        base_url,
-        os.getenv(KEY_VARS[provider], ""),
-        provider=provider,
-        reasoning_effort=os.getenv("LLM_REASONING_EFFORT", "low"),
-    )
+        raise LLMError(f"unknown LLM provider {provider!r}; use one of {sorted(BASE_URLS)}")
+    base_url = BASE_URLS[provider]
+    if provider == provider_from_env():
+        base_url = os.getenv("LLM_BASE_URL") or base_url
+    key = os.getenv(KEY_VARS[provider], "")
+    return _client(provider, base_url, key, os.getenv("LLM_REASONING_EFFORT", "low"))
+
+
+@lru_cache
+def _client(provider: str, base_url: str, key: str, effort: str) -> LLMClient:
+    return OpenAICompatibleClient(base_url, key, provider=provider, reasoning_effort=effort)
+
+
+@dataclass
+class ModelChoice:
+    id: str  # "provider:model"
+    provider: str
+    model: str
+    default: bool = False
+
+
+def available_models() -> list[ModelChoice]:
+    """The models a report can use, default first: the configured model, its
+    fallback, each other provider's <PROVIDER>_LLM_MODEL when its key is set,
+    and anything listed in LLM_MODEL_CHOICES ("provider:model, ...")."""
+    default_provider = provider_from_env()
+    candidates: list[tuple[str, str]] = []
+    configured = models_from_env()
+    candidates.append((default_provider, configured.fast))
+    if configured.fallback:
+        candidates.append((default_provider, configured.fallback))
+    for provider in BASE_URLS:
+        if provider != default_provider:
+            candidates.append((provider, os.getenv(f"{provider.upper()}_LLM_MODEL", "")))
+    for item in os.getenv("LLM_MODEL_CHOICES", "").split(","):
+        provider, _, model = item.strip().partition(":")
+        candidates.append((provider.strip().lower(), model.strip()))
+
+    out: list[ModelChoice] = []
+    seen: set[str] = set()
+    for provider, model in candidates:
+        key = f"{provider}:{model}"
+        if (
+            not model
+            or provider not in KEY_VARS
+            or not os.getenv(KEY_VARS[provider])
+            or key in seen
+        ):
+            continue
+        seen.add(key)
+        out.append(ModelChoice(id=key, provider=provider, model=model, default=not out))
+    return out

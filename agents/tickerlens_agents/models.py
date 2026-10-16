@@ -21,7 +21,9 @@ class AgentTask(BaseModel):
     ticker: str
     companyName: str = ""
     promptVersion: str = "v1"
+    provider: str = ""  # with model: an LLM other than the configured default
     model: str = ""  # overrides the configured model
+    language: str = "en"  # language of the prose the agent writes: en or es
     metrics: dict[str, Any] = Field(default_factory=dict)
     documents: list[Document] = Field(default_factory=list)
 

@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
 	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
@@ -27,7 +28,7 @@ type fakeReports struct {
 	latest  *store.Report // returned by LatestFinished
 }
 
-func (f *fakeReports) Create(_ context.Context, ticker, name string) (store.Report, error) {
+func (f *fakeReports) Create(_ context.Context, ticker, name string, _ store.Options) (store.Report, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	r := store.Report{ID: "11111111-1111-1111-1111-111111111111", Ticker: ticker, CompanyName: name, Status: store.StatusQueued}
@@ -45,7 +46,7 @@ func (f *fakeReports) Get(_ context.Context, id string) (store.Report, error) {
 	return r, nil
 }
 
-func (f *fakeReports) LatestFinished(context.Context, string, time.Time) (store.Report, error) {
+func (f *fakeReports) LatestFinished(context.Context, string, store.Options, time.Time) (store.Report, error) {
 	if f.latest == nil {
 		return store.Report{}, store.ErrNotFound
 	}
@@ -72,12 +73,23 @@ func (f *fakeReports) ListByTicker(_ context.Context, ticker string, _ int) ([]s
 type fakeJobs struct {
 	mu      sync.Mutex
 	started []string
+	opts    []store.Options
 }
 
-func (f *fakeJobs) Start(_, ticker string, _ bool) {
+type fakeModels struct{}
+
+func (fakeModels) Models(context.Context) ([]agentclient.ModelChoice, error) {
+	return []agentclient.ModelChoice{
+		{ID: "gemini:gemini-3.5-flash", Provider: "gemini", Model: "gemini-3.5-flash", Default: true},
+		{ID: "gemini:gemini-3.5-flash-lite", Provider: "gemini", Model: "gemini-3.5-flash-lite"},
+	}, nil
+}
+
+func (f *fakeJobs) Start(_, ticker string, _ bool, opt store.Options) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.started = append(f.started, ticker)
+	f.opts = append(f.opts, opt)
 }
 
 func (f *fakeJobs) list() []string {
@@ -115,6 +127,7 @@ func newTestAPI(t *testing.T) (*httptest.Server, *fakeReports, *fakeJobs, *pipel
 		Jobs:    jobs,
 		Events:  broker,
 		Tickers: fakeTickers{},
+		Models:  fakeModels{},
 		Ready:   func(context.Context) error { return nil },
 	})
 	srv := httptest.NewServer(h)
@@ -298,6 +311,37 @@ func TestClearTickerDeletesFinishedReports(t *testing.T) {
 	}
 	if _, err := reports.Get(t.Context(), "66666666-6666-6666-6666-666666666666"); err != nil {
 		t.Error("a running report was deleted")
+	}
+}
+
+func TestCreateReportWithLanguageAndModel(t *testing.T) {
+	srv, _, jobs, _ := newTestAPI(t)
+	resp, body := do(t, "POST", srv.URL+"/api/reports", `{"ticker":"V","lang":"es","model":"gemini:gemini-3.5-flash-lite"}`)
+	if resp.StatusCode != http.StatusAccepted {
+		t.Fatalf("status %d, body %s", resp.StatusCode, body)
+	}
+	jobs.mu.Lock()
+	got := jobs.opts[0]
+	jobs.mu.Unlock()
+	if got.Lang != "es" || got.Model != "gemini:gemini-3.5-flash-lite" {
+		t.Errorf("options = %+v", got)
+	}
+
+	// Choosing the default model is the same as choosing none.
+	_, _ = do(t, "POST", srv.URL+"/api/reports", `{"ticker":"V","refresh":true,"model":"gemini:gemini-3.5-flash"}`)
+	jobs.mu.Lock()
+	if m := jobs.opts[1].Model; m != "" {
+		t.Errorf("default model stored as %q, want empty", m)
+	}
+	jobs.mu.Unlock()
+
+	for _, bad := range []string{`{"ticker":"V","lang":"fr"}`, `{"ticker":"V","model":"openai:gpt-9"}`} {
+		if resp, _ := do(t, "POST", srv.URL+"/api/reports", bad); resp.StatusCode != http.StatusBadRequest {
+			t.Errorf("%s: status %d, want 400", bad, resp.StatusCode)
+		}
+	}
+	if resp, body := do(t, "GET", srv.URL+"/api/models", ""); resp.StatusCode != http.StatusOK || !strings.Contains(string(body), "flash-lite") {
+		t.Errorf("models: %d %s", resp.StatusCode, body)
 	}
 }
 

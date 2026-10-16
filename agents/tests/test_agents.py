@@ -255,3 +255,18 @@ def test_bad_request_does_not_fall_back() -> None:
     models = Models(fast="fast-model", strong="strong-model", fallback="backup-model")
     result = run_agent(task("business_overview"), Rejects([]), models)
     assert result.status == "failed" and len(result.errors) == 1
+
+
+def test_spanish_tasks_get_a_language_note() -> None:
+    fake = FakeClient([overview()])
+    t = task("business_overview")
+    t.language = "es"
+    run_agent(t, fake, MODELS)
+    system = fake.calls[0][0]["content"]
+    assert "in Spanish" in system and "word for word" in system
+
+
+def test_models_endpoint_lists_choices(client: TestClient) -> None:
+    resp = client.get("/models")
+    assert resp.status_code == 200
+    assert isinstance(resp.json()["models"], list)

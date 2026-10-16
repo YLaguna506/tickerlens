@@ -170,6 +170,23 @@ def load_prompt(section: str, version: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+LANGUAGE_NOTES = {
+    "es": (
+        "\n\nLanguage: write every free-text field (descriptions, justifications, claims, "
+        "tagline, rationale) in Spanish, in a neutral Latin American register. Keep in "
+        "English, exactly as the schema lists them: enum answers (for example "
+        '"Predictable" or "Easily"), segment and region names, and every quote, which must '
+        "stay word for word from the filing. Write numbers like the filing does, with a "
+        "period for decimals (14.5%), so they can be checked."
+    ),
+}
+
+
+def system_prompt(task: AgentTask) -> str:
+    """The section's prompt, plus a language note when not writing in English."""
+    return load_prompt(task.section, task.promptVersion) + LANGUAGE_NOTES.get(task.language, "")
+
+
 def build_input(task: AgentTask) -> str:
     parts = [f"Company: {task.companyName} ({task.ticker})"]
     if task.metrics:
@@ -225,7 +242,7 @@ def run_agent(
     model = task.model or (models.strong if spec.model_tier == "strong" else models.fast)
     schema = strict_schema(spec.output)
     messages = [
-        {"role": "system", "content": load_prompt(task.section, task.promptVersion)},
+        {"role": "system", "content": system_prompt(task)},
         {"role": "user", "content": build_input(task)},
     ]
     usage = Usage(model=model)

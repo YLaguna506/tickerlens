@@ -20,7 +20,7 @@ func TestClearTicker(t *testing.T) {
 		_, _ = pool.Exec(t.Context(), "DELETE FROM http_cache WHERE key LIKE '%' || $1 || '%'", stamp)
 	})
 
-	done, err := repo.Create(ctx, ticker, "Clear Co")
+	done, err := repo.Create(ctx, ticker, "Clear Co", Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,8 +35,8 @@ func TestClearTicker(t *testing.T) {
 	if err := repo.Finish(ctx, done.ID, Outcome{Status: StatusDone}); err != nil {
 		t.Fatal(err)
 	}
-	running, _ := repo.Create(ctx, ticker, "Clear Co") // still queued: must survive
-	kept, _ := repo.Create(ctx, other, "Other Co")
+	running, _ := repo.Create(ctx, ticker, "Clear Co", Options{}) // still queued: must survive
+	kept, _ := repo.Create(ctx, other, "Other Co", Options{})
 
 	cleared := []string{
 		"agent:" + ticker + ":" + acc + ":segments:v2:m",

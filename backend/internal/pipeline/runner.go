@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -100,12 +101,13 @@ func NewRunner(s Store, f Fetcher, b *Broker, cfg scoring.Config, logger *slog.L
 	return &Runner{store: s, fetcher: f, broker: b, cfg: cfg, logger: logger, timeout: timeout, ctx: ctx, cancel: cancel}
 }
 
-// Start runs a report job in the background and returns immediately.
-func (r *Runner) Start(reportID, ticker string, refresh bool) {
+// Start runs a report job in the background and returns immediately. opt
+// picks the language of the report's AI text and the AI model.
+func (r *Runner) Start(reportID, ticker string, refresh bool, opt store.Options) {
 	r.wg.Add(1)
 	go func() {
 		defer r.wg.Done()
-		r.run(reportID, ticker, refresh)
+		r.run(reportID, ticker, refresh, opt)
 	}()
 }
 
@@ -131,13 +133,15 @@ type job struct {
 	*Runner
 	agents     *Agents
 	id, ticker string
+	opt        store.Options
 	body       Body
 	mu         sync.Mutex // guards body.TimingsMs while agents run in parallel
 	log        *slog.Logger
 }
 
-func (r *Runner) run(reportID, ticker string, refresh bool) {
-	j := &job{Runner: r, agents: r.Agents, id: reportID, ticker: ticker, log: r.logger.With("report", reportID, "ticker", ticker)}
+func (r *Runner) run(reportID, ticker string, refresh bool, opt store.Options) {
+	j := &job{Runner: r, agents: r.Agents, id: reportID, ticker: ticker, opt: opt,
+		log: r.logger.With("report", reportID, "ticker", ticker, "lang", opt.Lang, "model", opt.Model)}
 	j.body = Body{Version: BodyVersion, Sections: map[string]string{}, TimingsMs: map[string]int64{}}
 
 	ctx, cancel := context.WithTimeout(r.ctx, r.timeout)
@@ -175,7 +179,7 @@ func (r *Runner) run(reportID, ticker string, refresh bool) {
 
 	// Reuse an identical finished report (same filing, same price day, same
 	// scoring rules) instead of recomputing it.
-	key := cacheKey(bundle, r.cfg, r.Agents)
+	key := cacheKey(bundle, r.cfg, r.Agents, opt)
 	if !refresh && len(failed) == 0 {
 		if prev, err := r.store.FindByCacheKey(ctx, bundle.Company.Ticker, key, reportID); err == nil {
 			if err := r.store.SaveBody(ctx, reportID, prev.Body); err == nil {
@@ -257,6 +261,33 @@ func (j *job) tokens() int {
 	return n
 }
 
+// modelOr is the report's chosen model, or def when it uses the default.
+func modelOr(opt store.Options, def string) string {
+	if opt.Model != "" {
+		return opt.Model
+	}
+	return def
+}
+
+// langSuffix keeps English cache keys as they were and marks the others.
+func langSuffix(opt store.Options) string {
+	if opt.Lang == "" || opt.Lang == "en" {
+		return ""
+	}
+	return ":" + opt.Lang
+}
+
+// choose fills in the report's language and model on an agent task.
+func (j *job) choose(t agentclient.Task) agentclient.Task {
+	if j.opt.Lang != "" && j.opt.Lang != "en" {
+		t.Language = j.opt.Lang
+	}
+	if j.opt.Model != "" {
+		t.Provider, t.Model, _ = strings.Cut(j.opt.Model, ":")
+	}
+	return t
+}
+
 // timed runs one stage: marks it in the database, publishes start/finish
 // events and records how long it took.
 func timed[T any](j *job, stage string, fn func() (T, error)) (T, error) {
@@ -335,10 +366,10 @@ func (j *job) fail(err error) {
 }
 
 // cacheKey identifies the data a report is built from.
-func cacheKey(b *ingest.Bundle, cfg scoring.Config, agents *Agents) string {
+func cacheKey(b *ingest.Bundle, cfg scoring.Config, agents *Agents, opt store.Options) string {
 	ai := "no-agents"
 	if agents != nil {
-		ai = agents.PromptVersion + "/" + agents.FastModel
+		ai = agents.PromptVersion + "/" + modelOr(opt, agents.FastModel) + langSuffix(opt)
 	}
 	accession := ""
 	if b.Financials.TTM != nil {

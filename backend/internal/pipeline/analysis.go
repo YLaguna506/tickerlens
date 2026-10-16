@@ -177,7 +177,7 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 	}
 	for i, s := range sections {
 		g.Go(func() error {
-			results[i] = j.runAgent(ctx, filing, agentclient.Task{
+			results[i] = j.runAgent(ctx, filing, j.choose(agentclient.Task{
 				JobID:         j.id,
 				Section:       s,
 				Ticker:        bundle.Company.Ticker,
@@ -185,7 +185,7 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 				PromptVersion: a.promptFor(s),
 				Metrics:       facts,
 				Documents:     docs[s],
-			})
+			}))
 			return nil
 		})
 	}
@@ -229,7 +229,7 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 // section, prompt version and model when there is one.
 func (j *job) runAgent(ctx context.Context, filing edgar.Filing, task agentclient.Task) *AgentSection {
 	a := j.agents
-	key := fmt.Sprintf("agent:%s:%s:%s:%s:%s", task.Ticker, filing.Accession, task.Section, task.PromptVersion, a.FastModel)
+	key := fmt.Sprintf("agent:%s:%s:%s:%s:%s", task.Ticker, filing.Accession, task.Section, task.PromptVersion, modelOr(j.opt, a.FastModel)) + langSuffix(j.opt)
 	if task.Section == AgentSegments {
 		// Which stretch of Item 7 the segments agent reads can change, so its
 		// answer is also keyed by the text it was given.

@@ -89,7 +89,7 @@ func runWithAgentsTimeout(t *testing.T, agents *fakeAgents, cache fetch.Cache, s
 	r.Agents = &Agents{Filings: &fakeFilings{}, Service: agents, Cache: cache, FastModel: "m", PromptVersion: "v1", StageTimeout: stage}
 	events, unsubscribe := broker.Subscribe("r1")
 	defer unsubscribe()
-	r.Start("r1", "V", true)
+	r.Start("r1", "V", true, store.Options{})
 	for e := range events {
 		if e.Terminal() {
 			break
@@ -254,7 +254,7 @@ func TestAgentConcurrencyLimit(t *testing.T) {
 	r.Agents = &Agents{Filings: &fakeFilings{}, Service: agents, FastModel: "m", PromptVersion: "v1", Concurrency: 1}
 	events, unsubscribe := broker.Subscribe("r1")
 	defer unsubscribe()
-	r.Start("r1", "V", true)
+	r.Start("r1", "V", true, store.Options{})
 	for e := range events {
 		if e.Terminal() {
 			break

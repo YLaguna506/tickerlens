@@ -29,6 +29,8 @@ type Report struct {
 	ID             string          `json:"id"`
 	Ticker         string          `json:"ticker"`
 	CompanyName    string          `json:"companyName"`
+	Lang           string          `json:"lang"`            // language of the report's text: en | es
+	Model          string          `json:"model,omitempty"` // "provider:model", empty for the default
 	Status         string          `json:"status"`
 	Stage          string          `json:"stage"`
 	Error          string          `json:"error,omitempty"`
@@ -56,13 +58,13 @@ func NewReports(pool *pgxpool.Pool) *Reports {
 	return &Reports{pool: pool}
 }
 
-const reportColumns = `id::text, ticker, company_name, status, stage, error, failed_sections, cache_key,
+const reportColumns = `id::text, ticker, company_name, lang, model, status, stage, error, failed_sections, cache_key,
 	reused_from::text, body, created_at, updated_at, finished_at`
 
 // scanReport reads one row in reportColumns order.
 func scanReport(row pgx.Row) (Report, error) {
 	var r Report
-	err := row.Scan(&r.ID, &r.Ticker, &r.CompanyName, &r.Status, &r.Stage, &r.Error, &r.FailedSections,
+	err := row.Scan(&r.ID, &r.Ticker, &r.CompanyName, &r.Lang, &r.Model, &r.Status, &r.Stage, &r.Error, &r.FailedSections,
 		&r.CacheKey, &r.ReusedFrom, &r.Body, &r.CreatedAt, &r.UpdatedAt, &r.FinishedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return r, ErrNotFound
@@ -70,10 +72,24 @@ func scanReport(row pgx.Row) (Report, error) {
 	return r, err
 }
 
+// Options are what a report is asked for beyond the ticker.
+type Options struct {
+	Lang  string // en | es; empty means en
+	Model string // "provider:model"; empty means the configured default
+}
+
+func (o Options) lang() string {
+	if o.Lang == "" {
+		return "en"
+	}
+	return o.Lang
+}
+
 // Create inserts a queued report for ticker.
-func (s *Reports) Create(ctx context.Context, ticker, companyName string) (Report, error) {
+func (s *Reports) Create(ctx context.Context, ticker, companyName string, opt Options) (Report, error) {
 	r, err := scanReport(s.pool.QueryRow(ctx,
-		`INSERT INTO reports (ticker, company_name) VALUES ($1, $2) RETURNING `+reportColumns, ticker, companyName))
+		`INSERT INTO reports (ticker, company_name, lang, model) VALUES ($1, $2, $3, $4) RETURNING `+reportColumns,
+		ticker, companyName, opt.lang(), opt.Model))
 	if err != nil {
 		return r, fmt.Errorf("create report: %w", err)
 	}
@@ -151,13 +167,13 @@ func (s *Reports) Finish(ctx context.Context, id string, o Outcome) error {
 	return nil
 }
 
-// LatestFinished returns the newest done or partial report for ticker
-// created after since, or ErrNotFound.
-func (s *Reports) LatestFinished(ctx context.Context, ticker string, since time.Time) (Report, error) {
+// LatestFinished returns the newest done or partial report for ticker in the
+// same language and model, created after since, or ErrNotFound.
+func (s *Reports) LatestFinished(ctx context.Context, ticker string, opt Options, since time.Time) (Report, error) {
 	r, err := scanReport(s.pool.QueryRow(ctx, `
 		SELECT `+reportColumns+` FROM reports
-		WHERE ticker = $1 AND status IN ('done', 'partial') AND created_at > $2
-		ORDER BY created_at DESC LIMIT 1`, ticker, since))
+		WHERE ticker = $1 AND lang = $2 AND model = $3 AND status IN ('done', 'partial') AND created_at > $4
+		ORDER BY created_at DESC LIMIT 1`, ticker, opt.lang(), opt.Model, since))
 	if err != nil && !errors.Is(err, ErrNotFound) {
 		return r, fmt.Errorf("latest report %s: %w", ticker, err)
 	}
@@ -180,7 +196,7 @@ func (s *Reports) FindByCacheKey(ctx context.Context, ticker, key, excludeID str
 // ListByTicker returns the newest reports for ticker, without their bodies.
 func (s *Reports) ListByTicker(ctx context.Context, ticker string, limit int) ([]Report, error) {
 	rows, err := s.pool.Query(ctx, `
-		SELECT id::text, ticker, company_name, status, stage, error, failed_sections, cache_key,
+		SELECT id::text, ticker, company_name, lang, model, status, stage, error, failed_sections, cache_key,
 		       reused_from::text, NULL::jsonb, created_at, updated_at, finished_at
 		FROM reports WHERE ticker = $1 ORDER BY created_at DESC LIMIT $2`, ticker, limit)
 	if err != nil {

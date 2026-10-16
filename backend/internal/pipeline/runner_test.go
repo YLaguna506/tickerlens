@@ -110,7 +110,7 @@ func runJob(t *testing.T, s *fakeStore, f Fetcher, refresh bool) []Event {
 	events, unsubscribe := broker.Subscribe("r1")
 	defer unsubscribe()
 
-	r.Start("r1", "V", refresh)
+	r.Start("r1", "V", refresh, store.Options{})
 	var got []Event
 	timeout := time.After(10 * time.Second)
 	for {
@@ -236,7 +236,7 @@ func TestShutdownInterruptsRunningJobs(t *testing.T) {
 	r := NewRunner(s, fakeFetcher{block: true}, broker, scoring.Default(), slog.New(slog.NewTextHandler(io.Discard, nil)), time.Minute)
 	events, unsubscribe := broker.Subscribe("r1")
 	defer unsubscribe()
-	r.Start("r1", "V", false)
+	r.Start("r1", "V", false, store.Options{})
 	<-events // stage.started
 
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)

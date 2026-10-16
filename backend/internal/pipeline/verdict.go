@@ -108,7 +108,7 @@ func (j *job) narrate(ctx context.Context, v *VerdictSection, report *metrics.Re
 	// Same inputs → same narrative: cache by a hash of the input.
 	raw, _ := json.Marshal(input)
 	sum := sha256.Sum256(raw)
-	key := fmt.Sprintf("agent:narrative:%s:%s:%s", a.promptFor(AgentNarrative), a.StrongModel, hex.EncodeToString(sum[:12]))
+	key := fmt.Sprintf("agent:narrative:%s:%s:%s", a.promptFor(AgentNarrative), modelOr(j.opt, a.StrongModel), hex.EncodeToString(sum[:12])) + langSuffix(j.opt)
 	if a.Cache != nil {
 		if b, ok, err := a.Cache.Get(ctx, key); err == nil && ok {
 			var cached VerdictSection
@@ -120,14 +120,14 @@ func (j *job) narrate(ctx context.Context, v *VerdictSection, report *metrics.Re
 	}
 
 	t0 := time.Now()
-	res, err := a.Service.Analyze(ctx, agentclient.Task{
+	res, err := a.Service.Analyze(ctx, j.choose(agentclient.Task{
 		JobID:         j.id,
 		Section:       AgentNarrative,
 		Ticker:        j.body.Company.Ticker,
 		CompanyName:   j.body.Company.Name,
 		PromptVersion: a.promptFor(AgentNarrative),
 		Metrics:       input,
-	})
+	}))
 	j.mu.Lock()
 	j.body.TimingsMs["agent:"+AgentNarrative] = time.Since(t0).Milliseconds()
 	j.mu.Unlock()

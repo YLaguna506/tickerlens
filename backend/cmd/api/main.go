@@ -82,10 +82,13 @@ func run(logger *slog.Logger) error {
 	runner := pipeline.NewRunner(reports, fetcher, broker, scoringCfg, logger, jobTimeout)
 
 	// The AI agents stage runs only when the agents service is configured.
+	var models httpapi.Models // stays nil (no model choice) without agents
 	if url := os.Getenv("AGENTS_URL"); url != "" {
+		agents := agentclient.New(url)
+		models = agents
 		runner.Agents = &pipeline.Agents{
 			Filings:       fetcher.SEC,
-			Service:       agentclient.New(url),
+			Service:       agents,
 			Cache:         cache,
 			FastModel:     fastModel(),
 			StrongModel:   envOr("LLM_MODEL_STRONG", fastModel()),
@@ -108,6 +111,7 @@ func run(logger *slog.Logger) error {
 		Jobs:    runner,
 		Events:  broker,
 		Tickers: fetcher.SEC,
+		Models:  models,
 		Ready:   pool.Ping,
 	})
 

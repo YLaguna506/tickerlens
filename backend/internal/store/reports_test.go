@@ -14,7 +14,7 @@ func TestReportLifecycle(t *testing.T) {
 	ticker := "TEST" + time.Now().Format("150405.000")
 	t.Cleanup(func() { _, _ = pool.Exec(t.Context(), "DELETE FROM reports WHERE ticker = $1", ticker) })
 
-	r, err := repo.Create(ctx, ticker, "Test Co")
+	r, err := repo.Create(ctx, ticker, "Test Co", Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,8 +51,14 @@ func TestReportLifecycle(t *testing.T) {
 	if _, err := repo.FindByCacheKey(ctx, ticker, "acc-1|2026-10-14", ""); !errors.Is(err, ErrNotFound) {
 		t.Errorf("partial report must not be reused: %v", err)
 	}
-	if _, err := repo.LatestFinished(ctx, ticker, time.Now().Add(-time.Hour)); err != nil {
-		t.Errorf("latest finished: %v", err)
+	if got, err := repo.LatestFinished(ctx, ticker, Options{}, time.Now().Add(-time.Hour)); err != nil || got.Lang != "en" {
+		t.Errorf("latest finished: %+v, %v", got, err)
+	}
+	// A report in another language or built with another model is not reused.
+	for _, opt := range []Options{{Lang: "es"}, {Model: "gemini:gemini-3.5-flash"}} {
+		if _, err := repo.LatestFinished(ctx, ticker, opt, time.Now().Add(-time.Hour)); !errors.Is(err, ErrNotFound) {
+			t.Errorf("latest finished for %+v: %v, want not found", opt, err)
+		}
 	}
 
 	list, err := repo.ListByTicker(ctx, ticker, 10)
@@ -76,9 +82,9 @@ func TestMarkInterrupted(t *testing.T) {
 	ticker := "INT" + time.Now().Format("150405.000")
 	t.Cleanup(func() { _, _ = pool.Exec(t.Context(), "DELETE FROM reports WHERE ticker = $1", ticker) })
 
-	running, _ := repo.Create(t.Context(), ticker, "")
+	running, _ := repo.Create(t.Context(), ticker, "", Options{})
 	_ = repo.SetStage(t.Context(), running.ID, "ingesting")
-	done, _ := repo.Create(t.Context(), ticker, "")
+	done, _ := repo.Create(t.Context(), ticker, "", Options{})
 	_ = repo.Finish(t.Context(), done.ID, Outcome{Status: StatusDone})
 
 	if _, err := repo.MarkInterrupted(t.Context()); err != nil {

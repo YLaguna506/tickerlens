@@ -24,7 +24,13 @@ from pydantic import BaseModel
 from tickerlens_agents.agents import AGENTS, run_agent
 from tickerlens_agents.filings import sections_from_html
 from tickerlens_agents.llm import LLMClient, LLMError, client_from_env
-from tickerlens_agents.llm.factory import Models, models_from_env
+from tickerlens_agents.llm.factory import (
+    Models,
+    available_models,
+    client_for,
+    models_from_env,
+    provider_from_env,
+)
 from tickerlens_agents.models import AgentResult, AgentTask
 
 app = FastAPI(title="TickerLens agents")
@@ -97,6 +103,35 @@ def get_llm() -> LLMClient | None:
         return None
 
 
+def get_client_for() -> Callable[[str], LLMClient | None]:
+    """A lookup of other providers' clients, for tasks that pick a model."""
+
+    def lookup(provider: str) -> LLMClient | None:
+        try:
+            return client_for(provider)
+        except LLMError:
+            return None
+
+    return lookup
+
+
+class ModelOut(BaseModel):
+    id: str
+    provider: str
+    model: str
+    default: bool
+
+
+class ModelList(BaseModel):
+    models: list[ModelOut]
+
+
+@app.get("/models")
+def list_models() -> ModelList:
+    """Models a report can use: providers with a key set, default first."""
+    return ModelList(models=[ModelOut(**vars(m)) for m in available_models()])
+
+
 def get_models() -> Models:
     return models_from_env()
 
@@ -107,12 +142,18 @@ def analyze(
     task: AgentTask,
     llm: Annotated[LLMClient | None, Depends(get_llm)],
     models: Annotated[Models, Depends(get_models)],
+    client_for_provider: Annotated[Callable[[str], LLMClient | None], Depends(get_client_for)],
 ) -> AgentResult:
     if section not in AGENTS:
         raise HTTPException(
             status_code=404, detail=f"unknown section {section!r}; known: {sorted(AGENTS)}"
         )
     task.section = section
+    if task.provider and task.provider != provider_from_env():
+        # Another provider's model: its own client, and no fallback (the
+        # configured fallback belongs to the default provider).
+        llm = client_for_provider(task.provider)
+        models = Models(fast=task.model, strong=task.model)
     if llm is None:
         return AgentResult(
             jobId=task.jobId, section=section, status="failed", promptVersion=task.promptVersion,

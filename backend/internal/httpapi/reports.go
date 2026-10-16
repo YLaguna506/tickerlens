@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
 	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
@@ -82,6 +83,8 @@ func suggest(all []edgar.Company, ticker string) []edgar.Company {
 type createRequest struct {
 	Ticker  string `json:"ticker"`
 	Refresh bool   `json:"refresh"`
+	Lang    string `json:"lang"`  // en (default) or es
+	Model   string `json:"model"` // "provider:model" from GET /api/models; empty = default
 }
 
 type createResponse struct {
@@ -107,6 +110,11 @@ func (a *api) createReport(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadGateway, "could not load the SEC ticker list")
 		return
 	}
+	opt, msg := a.options(r, req)
+	if msg != "" {
+		writeError(w, http.StatusBadRequest, msg)
+		return
+	}
 	ticker := edgar.NormalizeTicker(req.Ticker)
 	var company *edgar.Company
 	for i := range all {
@@ -124,7 +132,7 @@ func (a *api) createReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !req.Refresh {
-		prev, err := a.Reports.LatestFinished(r.Context(), ticker, time.Now().Add(-a.FreshFor))
+		prev, err := a.Reports.LatestFinished(r.Context(), ticker, opt, time.Now().Add(-a.FreshFor))
 		if err == nil {
 			w.Header().Set("Location", "/api/reports/"+prev.ID)
 			writeJSON(w, http.StatusOK, createResponse{ID: prev.ID, Status: prev.Status, Cached: true})
@@ -135,13 +143,13 @@ func (a *api) createReport(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rep, err := a.Reports.Create(r.Context(), ticker, company.Name)
+	rep, err := a.Reports.Create(r.Context(), ticker, company.Name, opt)
 	if err != nil {
 		a.Logger.Error("create report", "err", err)
 		writeError(w, http.StatusInternalServerError, "could not create the report")
 		return
 	}
-	a.Jobs.Start(rep.ID, ticker, req.Refresh)
+	a.Jobs.Start(rep.ID, ticker, req.Refresh, opt)
 	w.Header().Set("Location", "/api/reports/"+rep.ID)
 	writeJSON(w, http.StatusAccepted, createResponse{ID: rep.ID, Status: rep.Status})
 }
@@ -264,4 +272,51 @@ func (a *api) clearTicker(w http.ResponseWriter, r *http.Request) {
 	}
 	a.Logger.Info("cleared ticker cache", "ticker", ticker, "reports", c.Reports, "cache_entries", c.CacheEntries)
 	writeJSON(w, http.StatusOK, c)
+}
+
+// options checks the requested language and model; msg explains a bad one.
+// Choosing the default model is stored as no choice, so those reports share
+// the default's cache.
+func (a *api) options(r *http.Request, req createRequest) (opt store.Options, msg string) {
+	switch req.Lang {
+	case "", "en", "es":
+		opt.Lang = req.Lang
+	default:
+		return opt, `lang must be "en" or "es"`
+	}
+	if req.Model == "" {
+		return opt, ""
+	}
+	if a.Models == nil {
+		return opt, "AI models are not configured"
+	}
+	choices, err := a.Models.Models(r.Context())
+	if err != nil {
+		a.Logger.Warn("list models", "err", err)
+		return opt, "could not check the model: the AI service is unreachable"
+	}
+	for _, c := range choices {
+		if c.ID == req.Model {
+			if !c.Default {
+				opt.Model = c.ID
+			}
+			return opt, ""
+		}
+	}
+	return opt, fmt.Sprintf("unknown model %q; see GET /api/models", req.Model)
+}
+
+// GET /api/models → the AI models a report can use; the default comes first.
+func (a *api) listModels(w http.ResponseWriter, r *http.Request) {
+	if a.Models == nil {
+		writeJSON(w, http.StatusOK, []agentclient.ModelChoice{})
+		return
+	}
+	choices, err := a.Models.Models(r.Context())
+	if err != nil {
+		a.Logger.Warn("list models", "err", err)
+		writeError(w, http.StatusBadGateway, "the AI service is unreachable")
+		return
+	}
+	writeJSON(w, http.StatusOK, choices)
 }

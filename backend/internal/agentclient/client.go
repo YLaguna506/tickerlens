@@ -22,12 +22,17 @@ type Document struct {
 
 // Task is the request body of POST /analyze/{section}.
 type Task struct {
-	JobID         string         `json:"jobId"`
-	Section       string         `json:"section"`
-	Ticker        string         `json:"ticker"`
-	CompanyName   string         `json:"companyName"`
-	PromptVersion string         `json:"promptVersion"`
-	Metrics       map[string]any `json:"metrics"`
+	JobID         string `json:"jobId"`
+	Section       string `json:"section"`
+	Ticker        string `json:"ticker"`
+	CompanyName   string `json:"companyName"`
+	PromptVersion string `json:"promptVersion"`
+	// Provider and Model pick the LLM; empty means the service's default.
+	Provider string `json:"provider,omitempty"`
+	Model    string `json:"model,omitempty"`
+	// Language of the prose the agent writes: en (default) or es.
+	Language string         `json:"language,omitempty"`
+	Metrics  map[string]any `json:"metrics"`
 	// omitempty: a nil slice would be sent as null, which the service rejects.
 	Documents []Document `json:"documents,omitempty"`
 }
@@ -86,6 +91,37 @@ func (c *Client) Sections(ctx context.Context, html []byte) (map[string]string, 
 		return nil, fmt.Errorf("filing sections: %w", err)
 	}
 	return out.Items, nil
+}
+
+// ModelChoice is an LLM the agents service can use.
+type ModelChoice struct {
+	ID       string `json:"id"` // "provider:model"
+	Provider string `json:"provider"`
+	Model    string `json:"model"`
+	Default  bool   `json:"default"`
+}
+
+// Models lists the LLMs the agents service has keys for.
+func (c *Client) Models(ctx context.Context) ([]ModelChoice, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/models", nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("models: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("models: HTTP %d", resp.StatusCode)
+	}
+	var out struct {
+		Models []ModelChoice `json:"models"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, fmt.Errorf("models: %w", err)
+	}
+	return out.Models, nil
 }
 
 // Analyze runs one agent. A validation failure inside the agent is not an
