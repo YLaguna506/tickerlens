@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { clearTickerCache, createReport, isFinished, type Report } from "../api";
+import { t } from "../i18n";
 import { navigate } from "../router";
 
 const STYLES = {
@@ -21,7 +22,9 @@ export function ResyncButton({ report, look }: { report?: Report; look: keyof ty
 
   const run = async () => {
     const ok = window.confirm(
-      `Delete every saved ${ticker} report and its cached data (filings, prices, AI answers), then rebuild it from scratch?\n\nThe new report calls the AI again, which uses your daily quota.`,
+      t("Delete every saved {ticker} report and its cached data (filings, prices, AI answers), then rebuild it from scratch?", { ticker }) +
+        "\n\n" +
+        t("The new report calls the AI again, which uses your daily quota."),
     );
     if (!ok) return;
     setState("working");
@@ -36,10 +39,10 @@ export function ResyncButton({ report, look }: { report?: Report; look: keyof ty
 
   const label =
     state === "error"
-      ? "Could not clear the cache. Is the API running? Click to try again."
+      ? t("Could not clear the cache. Is the API running? Click to try again.")
       : running
-        ? "The report is still being built"
-        : `Clear cached ${ticker} data and rebuild from scratch`;
+        ? t("The report is still being built")
+        : t("Clear cached {ticker} data and rebuild from scratch", { ticker });
   return (
     <button
       type="button"

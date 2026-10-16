@@ -1,4 +1,5 @@
 import { DESIGNS, setDesign, useDesign } from "../design";
+import { t } from "../i18n";
 
 const STYLES = {
   classic: {
@@ -38,10 +39,10 @@ export function DesignSwitch({ look }: { look: keyof typeof STYLES }) {
   const current = useDesign();
   const s = STYLES[look];
   return (
-    <div role="group" aria-label="Report design" className={s.group}>
+    <div role="group" aria-label={t("Report design")} className={s.group}>
       {DESIGNS.map((d) => (
         <button key={d.id} type="button" aria-pressed={d.id === current} onClick={() => setDesign(d.id)} className={`${s.item} ${d.id === current ? s.on : s.off}`}>
-          {d.label}
+          {t(d.label)}
         </button>
       ))}
     </div>

@@ -15,6 +15,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Bands, EarningsQuarter, Point, SegmentShare } from "../api";
+import { t } from "../i18n";
 import { monthYear, pct, price, signedPct, usd, wholePrice, yearTicks } from "../format";
 
 const GREEN = "#4cb26a";
@@ -55,7 +56,7 @@ export function PriceChart({ points }: { points: Point[] }) {
           />
           <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={AXIS} axisLine={false} tickLine={false} width={48} domain={["auto", "auto"]} />
           <Tooltip {...TIP} formatter={(v) => price(Number(v))} labelFormatter={(d) => String(d)} />
-          <Area type="monotone" dataKey="value" stroke={GREEN} strokeWidth={2.5} fill="url(#priceFill)" isAnimationActive={false} />
+          <Area type="monotone" dataKey="value" name={t("Price")} stroke={GREEN} strokeWidth={2.5} fill="url(#priceFill)" isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -71,10 +72,10 @@ export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: n
           <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} tickMargin={12} />
           <YAxis hide domain={[(min: number) => Math.min(0, min), "auto"]} />
           <ReferenceLine y={0} stroke="#3b4350" strokeDasharray="4 4" />
-          <Line dataKey="revenue" name="Revenue" stroke={GREEN} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
+          <Line dataKey="revenue" name={t("Revenue")} stroke={GREEN} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
             <LabelList dataKey="revenue" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
           </Line>
-          <Line dataKey="netIncome" name="Net income" stroke="#7fb889" strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
+          <Line dataKey="netIncome" name={t("Net income")} stroke="#7fb889" strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
             {/* Above the point: below it, small profits collide with the year labels. */}
             <LabelList dataKey="netIncome" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
           </Line>
@@ -118,7 +119,7 @@ function BandTooltip({ active, payload, metric }: { active?: boolean; payload?: 
     <div className="rounded-lg border border-line bg-card px-3 py-2 text-sm shadow-sm">
       <p className="text-muted">{row.date}</p>
       <p>{metric} <span className="font-semibold">{row.value.toFixed(1)}×</span></p>
-      {row.price != null && <p>Price <span className="font-semibold">{price(row.price)}</span></p>}
+      {row.price != null && <p>{t("Price")} <span className="font-semibold">{price(row.price)}</span></p>}
     </div>
   );
 }
@@ -139,16 +140,16 @@ export function PriceBar({ bands }: { bands: Bands }) {
       <div className="relative h-9 rounded-full">
         <div className="@container absolute inset-y-0 left-0 flex items-center rounded-l-full bg-good-soft pl-3 text-sm font-semibold text-good" style={{ width: at(bands.cheapPrice) }}>
           {/* Zone names only where they fit; the edge prices below still mark them. */}
-          <span className="hidden @min-[3.25rem]:inline">Cheap</span>
+          <span className="hidden @min-[3.25rem]:inline">{t("Cheap")}</span>
         </div>
         <div className="absolute inset-y-0 flex items-center justify-center bg-mid-soft text-sm font-semibold text-mid" style={{ left: at(bands.cheapPrice), width: `calc(${at(bands.expensivePrice)} - ${at(bands.cheapPrice)})` }}>
-          Fair
+          {t("Fair")}
         </div>
         <div className="@container absolute inset-y-0 right-0 flex items-center justify-end rounded-r-full bg-bad-soft pr-3 text-sm font-semibold text-bad" style={{ left: at(bands.expensivePrice) }}>
-          <span className="hidden @min-[4.75rem]:inline">Expensive</span>
+          <span className="hidden @min-[4.75rem]:inline">{t("Expensive")}</span>
         </div>
         <span className="absolute -top-7 text-sm font-bold whitespace-nowrap" style={label}>
-          Now {price(bands.price)}
+          {t("Now")} {price(bands.price)}
         </span>
         <span className="absolute -top-2 h-11 w-1.5 -translate-x-1/2 rounded-full bg-ink" style={{ left: at(bands.price) }} />
       </div>
@@ -182,10 +183,10 @@ export function SegmentBreakdown({ rows, title }: { rows: SegmentShare[]; title:
       <table className="w-full text-sm sm:text-base">
         <thead>
           <tr className="text-left text-xs text-muted sm:text-sm">
-            <th className="py-2 font-semibold">Segment</th>
-            <th className="py-2 text-right font-semibold">Share</th>
-            <th className="py-2 text-right font-semibold">Revenue</th>
-            <th className="py-2 text-right font-semibold">1-yr</th>
+            <th className="py-2 font-semibold">{t("Segment")}</th>
+            <th className="py-2 text-right font-semibold">{t("Share")}</th>
+            <th className="py-2 text-right font-semibold">{t("Revenue")}</th>
+            <th className="py-2 text-right font-semibold">{t("1-yr")}</th>
           </tr>
         </thead>
         <tbody>
@@ -214,7 +215,7 @@ export function GeographySplit({ rows }: { rows: SegmentShare[] }) {
   const colors = ["#c3a878", "#3f8f4a", "#7fb889", "#d9c7a3", "#a5cfa9", "#8a7a5a"];
   return (
     <div className="space-y-3">
-      <p className="eyebrow">Revenue by geography</p>
+      <p className="eyebrow">{t("Revenue by geography")}</p>
       <div className="flex h-5 overflow-hidden rounded-full">
         {sorted.map((r, i) => (
           <div key={r.name} style={{ width: `${r.share * 100}%`, background: colors[i % colors.length] }} />
@@ -242,8 +243,8 @@ export function EarningsDots({ quarters }: { quarters: EarningsQuarter[] }) {
         return (
           <div key={q.fiscalDateEnding} className="flex flex-col items-center gap-1 text-center">
             <span className={`text-sm font-bold ${beat ? "text-good" : "text-bad"}`}>{q.reportedEPS == null ? "–" : `$${q.reportedEPS.toFixed(2)}`}</span>
-            <span className={`size-3.5 rounded-full ${beat ? "bg-good" : "bg-bad"}`} title={beat ? "Beat" : "Miss"} />
-            <span className="text-[11px] text-muted">est. {q.estimatedEPS == null ? "–" : `$${q.estimatedEPS.toFixed(2)}`}</span>
+            <span className={`size-3.5 rounded-full ${beat ? "bg-good" : "bg-bad"}`} title={beat ? t("Beat") : t("Miss")} />
+            <span className="text-[11px] text-muted">{t("est.")} {q.estimatedEPS == null ? "–" : `$${q.estimatedEPS.toFixed(2)}`}</span>
             <span className="text-xs text-muted">{monthYear(q.fiscalDateEnding)}</span>
             {q.surprisePercent != null && <span className="text-[11px] text-muted">{signedPct(q.surprisePercent / 100)}</span>}
           </div>

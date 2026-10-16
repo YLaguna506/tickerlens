@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { getReport, isFinished, type Metric, type MetricsReport, type Quality, type ReportBody } from "./api";
+import { t, tx } from "./i18n";
 
 export const STAGES = [
   { id: "ingesting", label: "Fetching SEC filings, prices and estimates" },
@@ -55,7 +56,9 @@ export const valuedWith = (m: MetricsReport) => m.valuationBands?.metric ?? m.ph
 /** "P/E has a distorted history: …", when the phase's metric was not used. */
 export const fallbackNote = (m: MetricsReport) => {
   const b = m.valuationBands;
-  return b?.fellBackFrom ? `${b.fellBackFrom} ${b.fallbackReason ?? "was not usable"}, so ${b.metric} is used instead.` : "";
+  return b?.fellBackFrom
+    ? t("{from} {reason}, so {metric} is used instead.", { from: b.fellBackFrom, reason: b.fallbackReason ? tx(b.fallbackReason) : t("was not usable"), metric: b.metric })
+    : "";
 };
 
 /** The four business-quality questions, in report order. */
@@ -75,4 +78,4 @@ export const SCORE_WORDS = {
 };
 
 export const scoreWord = (words: string[], v: number | null) =>
-  v == null ? "n/a" : words[Math.min(Math.max(Math.round(v), 1), 5) - 1]!;
+  v == null ? t("n/a") : t(words[Math.min(Math.max(Math.round(v), 1), 5) - 1]!);

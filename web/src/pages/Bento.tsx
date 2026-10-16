@@ -4,10 +4,10 @@
 import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type MetricsReport, type ReportBody, type Verdict } from "../api";
-import { DesignSwitch } from "../components/DesignSwitch";
-import { ResyncButton } from "../components/ResyncButton";
+import { LangNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, toneFor, usd, wholePrice, yearTicks } from "../format";
+import { t, tx } from "../i18n";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
@@ -44,10 +44,10 @@ function Tile({ title, right, className = "", children }: { title?: string; righ
   );
 }
 
-function Waiting({ text = "Loading…" }: { text?: string }) {
+function Waiting({ text }: { text?: string }) {
   return (
     <div className="space-y-2" aria-busy>
-      <p className="text-sm text-slate-400">{text}</p>
+      <p className="text-sm text-slate-400">{text ?? t("Loading…")}</p>
       <div className="h-3 w-3/4 animate-pulse rounded-full bg-slate-100" />
       <div className="h-3 w-1/2 animate-pulse rounded-full bg-slate-100" />
     </div>
@@ -68,10 +68,10 @@ function RingTile({ title, value, words }: { title: string; value: number | null
         </svg>
         <span className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-3xl font-extrabold tabular-nums">{value == null ? "–" : value.toFixed(1)}</span>
-          <span className="text-[11px] font-semibold text-slate-400">of 5</span>
+          <span className="text-[11px] font-semibold text-slate-400">{t("of 5")}</span>
         </span>
       </div>
-      <p className="mt-2 font-bold">{title}</p>
+      <p className="mt-2 font-bold">{t(title)}</p>
       <p className="text-sm text-slate-500">{scoreWord(words, value)}</p>
     </Tile>
   );
@@ -90,11 +90,15 @@ function HeroTile({ m, name, ticker }: { m?: MetricsReport; name: string; ticker
         <span className="text-5xl font-extrabold tracking-tight tabular-nums">{price(m?.price)}</span>
         {change != null && (
           <span className={`rounded-full px-3 py-1 text-sm font-bold ${change >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
-            {signedPct(change, 0)} in 5 years
+            {t("{change} in 5 years", { change: signedPct(change, 0) })}
           </span>
         )}
       </div>
-      {m && <p className="mt-1 text-sm text-slate-500">Market cap {usd(m.marketCap.value)} · prices as of {shortDate(m.priceDate)}</p>}
+      {m && (
+        <p className="mt-1 text-sm text-slate-500">
+          {t("Market cap {cap}", { cap: usd(m.marketCap.value) })} · {t("prices as of {date}", { date: shortDate(m.priceDate) })}
+        </p>
+      )}
       <div className="mt-4 min-h-48 flex-1">
         {data.length > 1 && (
           <ResponsiveContainer>
@@ -108,7 +112,7 @@ function HeroTile({ m, name, ticker }: { m?: MetricsReport; name: string; ticker
               <XAxis dataKey="date" ticks={yearTicks(data)} tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} />
               <YAxis hide domain={["auto", "auto"]} />
               <Tooltip {...TIP} formatter={(v) => price(Number(v))} />
-              <Area type="monotone" dataKey="value" name="Price" stroke={INDIGO} strokeWidth={2.5} fill="url(#bentoPrice)" isAnimationActive={false} />
+              <Area type="monotone" dataKey="value" name={t("Price")} stroke={INDIGO} strokeWidth={2.5} fill="url(#bentoPrice)" isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -121,21 +125,21 @@ function VerdictTile({ v }: { v?: Verdict }) {
   if (!v) {
     return (
       <Tile className="sm:col-span-2">
-        <Waiting text="The verdict comes last, once every score is in." />
+        <Waiting text={t("The verdict comes last, once every score is in.")} />
       </Tile>
     );
   }
   return (
     <section className={`rounded-3xl bg-gradient-to-br p-6 text-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] sm:col-span-2 ${VERDICT_GRADIENT[v.label] ?? "from-slate-500 to-slate-700"}`}>
-      <p className="text-xs font-bold tracking-wider uppercase opacity-80">Verdict · confidence {v.confidenceLevel}</p>
-      <p className="mt-1 text-6xl font-extrabold tracking-tight">{v.label || "n/a"}</p>
-      <p className="mt-2 text-lg font-semibold">{v.tagline || v.meaning}</p>
+      <p className="text-xs font-bold tracking-wider uppercase opacity-80">{t("Verdict · confidence {level}", { level: t(v.confidenceLevel) })}</p>
+      <p className="mt-1 text-6xl font-extrabold tracking-tight">{v.label ? t(v.label) : t("n/a")}</p>
+      <p className="mt-2 text-lg font-semibold">{v.tagline || tx(v.meaning)}</p>
       <div className="mt-4 flex gap-6 text-sm">
         <span>
-          Business <strong className="text-lg">{v.business?.toFixed(1) ?? "–"}</strong>/5
+          {t("Business")} <strong className="text-lg">{v.business?.toFixed(1) ?? "–"}</strong>/5
         </span>
         <span>
-          Valuation <strong className="text-lg">{v.valuation ?? "–"}</strong>/5
+          {t("Valuation")} <strong className="text-lg">{v.valuation ?? "–"}</strong>/5
         </span>
       </div>
     </section>
@@ -146,21 +150,21 @@ const PHASES = ["Startup", "Hypergrowth", "Operating leverage", "Capital return"
 
 function PhaseTile({ m }: { m: MetricsReport }) {
   return (
-    <Tile title="Life-cycle phase" right={`valued with ${valuedWith(m)}`} className="sm:col-span-2">
+    <Tile title={t("Life-cycle phase")} right={t("valued with {metric}", { metric: valuedWith(m) })} className="sm:col-span-2">
       <div className="grid grid-cols-5 gap-1.5">
         {PHASES.map((p, i) => (
-          <div key={p} className={`h-2 rounded-full ${i + 1 === m.phase.number ? "bg-indigo-500" : i + 1 < m.phase.number ? "bg-indigo-200" : "bg-slate-100"}`} title={p} />
+          <div key={p} className={`h-2 rounded-full ${i + 1 === m.phase.number ? "bg-indigo-500" : i + 1 < m.phase.number ? "bg-indigo-200" : "bg-slate-100"}`} title={tx(p)} />
         ))}
       </div>
       <p className="mt-3 text-2xl font-extrabold">
-        <span className="text-indigo-500">{m.phase.number}</span> {m.phase.name}
+        <span className="text-indigo-500">{m.phase.number}</span> {tx(m.phase.name)}
       </p>
       {fallbackNote(m) && <p className="mt-1 text-sm text-amber-700">{fallbackNote(m)}</p>}
       <ul className="mt-2 space-y-1 text-sm">
         {m.phase.checks.map((c) => (
           <li key={c.question} className="flex items-center gap-2">
             <span className={`flex size-5 items-center justify-center rounded-full text-[11px] font-bold text-white ${c.answer == null ? "bg-slate-300" : c.answer ? "bg-emerald-500" : "bg-rose-500"}`}>{c.answer == null ? "?" : c.answer ? "✓" : "✕"}</span>
-            <span className="text-slate-600">{c.question}</span>
+            <span className="text-slate-600">{tx(c.question)}</span>
           </li>
         ))}
       </ul>
@@ -172,8 +176,10 @@ function BandsTile({ m }: { m: MetricsReport }) {
   const b = m.valuationBands;
   if (!b) {
     return (
-      <Tile title="Valuation" className="sm:col-span-2 lg:col-span-3">
-        <p className="text-sm text-slate-500">Not enough history to compare: {m.valuationScore.reasons.join("; ")}</p>
+      <Tile title={t("Valuation")} className="sm:col-span-2 lg:col-span-3">
+        <p className="text-sm text-slate-500">
+          {t("Not enough history to compare:")} {m.valuationScore.reasons.map(tx).join("; ")}
+        </p>
       </Tile>
     );
   }
@@ -181,7 +187,11 @@ function BandsTile({ m }: { m: MetricsReport }) {
   const lo = Math.min(...values, b.cheapBelow) * 0.95;
   const hi = Math.max(...values, b.expensiveAbove) * 1.05;
   return (
-    <Tile title={`${b.metric} over the last year`} right={`higher than ${pct(b.percentile, 0)} of days since ${b.historyFrom.slice(0, 4)}`} className="sm:col-span-2 lg:col-span-3">
+    <Tile
+      title={t("{metric} over the last year", { metric: b.metric })}
+      right={t("higher than {pct} of days since {year}", { pct: pct(b.percentile, 0), year: b.historyFrom.slice(0, 4) })}
+      className="sm:col-span-2 lg:col-span-3"
+    >
       <div className="h-56">
         <ResponsiveContainer>
           <LineChart data={m.charts.valuation1y} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -210,23 +220,23 @@ function PriceTile({ m }: { m: MetricsReport }) {
   ];
   const vsTypical = b.price / b.medianPrice - 1;
   return (
-    <Tile title="Fair price" className="flex flex-col">
+    <Tile title={t("Fair price")} className="flex flex-col">
       <ul className="space-y-3">
         {rows.map((r) => (
           <li key={r.label} className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-2 text-sm text-slate-500">
               <span className={`size-2.5 rounded-full ${r.dot}`} />
-              {r.label}
+              {t(r.label)}
             </span>
             <span className="text-lg font-extrabold tabular-nums">{wholePrice(r.value)}</span>
           </li>
         ))}
       </ul>
       <div className="mt-auto rounded-2xl bg-slate-50 p-3 pt-3">
-        <p className="text-xs font-bold text-slate-400 uppercase">Now</p>
+        <p className="text-xs font-bold text-slate-400 uppercase">{t("Now")}</p>
         <p className="text-2xl font-extrabold">{price(b.price)}</p>
         <p className={`text-sm font-semibold ${vsTypical > 0 ? "text-rose-500" : "text-emerald-600"}`}>
-          {signedPct(vsTypical, 0)} vs typical
+          {t("{change} vs typical", { change: signedPct(vsTypical, 0) })}
         </p>
       </div>
     </Tile>
@@ -236,19 +246,19 @@ function PriceTile({ m }: { m: MetricsReport }) {
 function BusinessTile({ body }: { body?: ReportBody }) {
   const o = body?.agents?.business_overview;
   return (
-    <Tile title="The business" className="sm:col-span-2">
+    <Tile title={t("The business")} className="sm:col-span-2">
       {isPending(body, "business_overview") ? (
-        <Waiting text="AI analysts are reading the 10-K…" />
+        <Waiting text={t("AI analysts are reading the 10-K…")} />
       ) : o?.output ? (
         <div className="space-y-3 leading-relaxed text-slate-700">
           <p className="text-lg font-semibold text-slate-900">{o.output.whatItDoes}</p>
           <p>{o.output.howItMakesMoney}</p>
           <p className="text-sm text-slate-500">
-            <strong className="text-slate-700">Customers:</strong> {o.output.payingCustomers}
+            <strong className="text-slate-700">{t("Customers:")}</strong> {o.output.payingCustomers}
           </p>
         </div>
       ) : (
-        <p className="text-sm text-slate-500">The overview is not available for this report.</p>
+        <p className="text-sm text-slate-500">{t("The overview is not available for this report.")}</p>
       )}
     </Tile>
   );
@@ -259,9 +269,9 @@ function SegmentsTile({ body }: { body?: ReportBody }) {
   const rows = [...(segs?.segments ?? [])].sort((a, b) => b.revenue - a.revenue);
   if (!isPending(body, "segments") && !rows.length) return null;
   return (
-    <Tile title="Revenue by segment" right={segs?.fiscalYear} className="sm:col-span-2">
+    <Tile title={t("Revenue by segment")} right={segs?.fiscalYear} className="sm:col-span-2">
       {!rows.length ? (
-        <Waiting text="Reading the segment table…" />
+        <Waiting text={t("Reading the segment table…")} />
       ) : (
         <div className="flex flex-col items-center gap-4 sm:flex-row">
           <div className="size-40 shrink-0">
@@ -294,12 +304,12 @@ function SegmentsTile({ body }: { body?: ReportBody }) {
 
 function MarginsTile({ m }: { m: MetricsReport }) {
   return (
-    <Tile title="Profitability" right={m.profitability[0]?.period} className="sm:col-span-2">
+    <Tile title={t("Profitability")} right={tx(m.profitability[0]?.period)} className="sm:col-span-2">
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {m.profitability.map((x) => (
-          <div key={x.key} title={x.formula}>
+          <div key={x.key} title={tx(x.formula)}>
             <p className="text-3xl font-extrabold tabular-nums">{metricValue(x)}</p>
-            <p className="text-sm text-slate-500">{x.label.replace(" margin", "")}</p>
+            <p className="text-sm text-slate-500">{tx(x.label)}</p>
           </div>
         ))}
       </div>
@@ -311,12 +321,12 @@ function GrowthTile({ m }: { m: MetricsReport }) {
   const rows = ["3y", "5y", "10y"].map((y) => ({ y, v: metricOf(m, `revenueCagr${y}`)?.value ?? null }));
   const max = Math.max(...rows.map((r) => Math.abs(r.v ?? 0)), 0.01);
   return (
-    <Tile title="Revenue growth / yr">
+    <Tile title={t("Revenue growth / yr")}>
       <ul className="space-y-3">
         {rows.map((r) => (
           <li key={r.y}>
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500">{r.y}</span>
+              <span className="text-slate-500">{t(r.y)}</span>
               <span className="font-bold tabular-nums">{pct(r.v)}</span>
             </div>
             <div className="mt-1 h-2 rounded-full bg-slate-100">
@@ -331,11 +341,11 @@ function GrowthTile({ m }: { m: MetricsReport }) {
 
 function HealthTile({ m }: { m: MetricsReport }) {
   return (
-    <Tile title="Balance sheet">
+    <Tile title={t("Balance sheet")}>
       <ul className="space-y-2 text-sm">
         {m.health.map((x) => (
-          <li key={x.key} className="flex justify-between gap-2" title={x.formula}>
-            <span className="truncate text-slate-500">{x.label.replace("Cash & short-term investments", "Cash")}</span>
+          <li key={x.key} className="flex justify-between gap-2" title={tx(x.formula)}>
+            <span className="truncate text-slate-500">{x.key === "cashAndInvestments" ? t("Cash") : tx(x.label)}</span>
             <span className="font-bold tabular-nums">{metricValue(x)}</span>
           </li>
         ))}
@@ -348,15 +358,23 @@ function IncomeTile({ body }: { body?: ReportBody }) {
   const rows = incomeRows(body);
   if (rows.length < 2) return null;
   return (
-    <Tile title="Revenue and net income" right={<span><span className="text-indigo-500">●</span> revenue <span className="text-emerald-500">●</span> net income</span>} className="sm:col-span-2">
+    <Tile
+      title={t("Revenue and net income")}
+      right={
+        <span>
+          <span className="text-indigo-500">●</span> {t("revenue")} <span className="text-emerald-500">●</span> {t("net income")}
+        </span>
+      }
+      className="sm:col-span-2"
+    >
       <div className="h-52">
         <ResponsiveContainer>
           <BarChart data={rows} margin={{ top: 4, right: 0, left: 0, bottom: 0 }} barGap={3}>
             <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
             <YAxis hide />
             <Tooltip {...TIP} cursor={{ fill: "#f1f5f9", radius: 8 }} formatter={(v) => usd(Number(v))} />
-            <Bar dataKey="revenue" name="Revenue" fill={INDIGO} radius={[6, 6, 0, 0]} isAnimationActive={false} />
-            <Bar dataKey="netIncome" name="Net income" fill={EMERALD} radius={[6, 6, 0, 0]} isAnimationActive={false} />
+            <Bar dataKey="revenue" name={t("Revenue")} fill={INDIGO} radius={[6, 6, 0, 0]} isAnimationActive={false} />
+            <Bar dataKey="netIncome" name={t("Net income")} fill={EMERALD} radius={[6, 6, 0, 0]} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -368,12 +386,12 @@ function EarningsTile({ m, body }: { m: MetricsReport; body?: ReportBody }) {
   const rows = (body?.earnings ?? []).slice(-8);
   if (!rows.length) return null;
   return (
-    <Tile title="Earnings vs estimates" className="sm:col-span-2">
+    <Tile title={t("Earnings vs estimates")} className="sm:col-span-2">
       <p className="text-4xl font-extrabold">
         {m.earnings.beats}
-        <span className="text-xl text-slate-400">/{m.earnings.quarters} beats</span>
+        <span className="text-xl text-slate-400">/{t("{n} beats", { n: m.earnings.quarters })}</span>
       </p>
-      {m.earnings.avgSurprisePercent != null && <p className="text-sm text-slate-500">Average surprise {signedPct(m.earnings.avgSurprisePercent / 100)}</p>}
+      {m.earnings.avgSurprisePercent != null && <p className="text-sm text-slate-500">{t("Average surprise {x}", { x: signedPct(m.earnings.avgSurprisePercent / 100) })}</p>}
       <div className="mt-4 flex gap-2">
         {rows.map((r) => {
           const beat = r.reportedEPS != null && r.estimatedEPS != null && r.reportedEPS > r.estimatedEPS;
@@ -394,9 +412,9 @@ const ANSWER_STYLE = ["bg-rose-50 text-rose-600", "bg-amber-50 text-amber-700", 
 function QualityTile({ body }: { body?: ReportBody }) {
   const q = body?.agents?.business_quality;
   return (
-    <Tile title="Business quality" right={body?.businessQuality ? `${body.businessQuality.points} of 8 points` : undefined} className="sm:col-span-2 lg:col-span-4">
+    <Tile title={t("Business quality")} right={body?.businessQuality ? t("{points} of 8 points", { points: body.businessQuality.points }) : undefined} className="sm:col-span-2 lg:col-span-4">
       {isPending(body, "business_quality") ? (
-        <Waiting text="Judging business quality…" />
+        <Waiting text={t("Judging business quality…")} />
       ) : q?.output ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {QUALITY_QUESTIONS.map((item) => {
@@ -404,15 +422,15 @@ function QualityTile({ body }: { body?: ReportBody }) {
             const level = item.options.indexOf(a?.answer ?? "");
             return (
               <div key={item.key} className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-sm font-bold">{item.question}</p>
-                <span className={`mt-2 inline-block rounded-full px-3 py-1 text-sm font-bold ${ANSWER_STYLE[level] ?? "bg-slate-100 text-slate-500"}`}>{a?.answer ?? "–"}</span>
+                <p className="text-sm font-bold">{t(item.question)}</p>
+                <span className={`mt-2 inline-block rounded-full px-3 py-1 text-sm font-bold ${ANSWER_STYLE[level] ?? "bg-slate-100 text-slate-500"}`}>{a?.answer ? t(a.answer) : "–"}</span>
                 <p className="mt-2 text-sm leading-relaxed text-slate-500">{a?.justification}</p>
               </div>
             );
           })}
         </div>
       ) : (
-        <p className="text-sm text-slate-500">Business quality could not be judged for this report.</p>
+        <p className="text-sm text-slate-500">{t("Business quality could not be judged for this report.")}</p>
       )}
     </Tile>
   );
@@ -429,29 +447,31 @@ export function Bento({ id }: { id: string }) {
     <div className="min-h-screen bg-[#f3f4f7] font-bento text-slate-900">
       <div className="mx-auto max-w-6xl px-4 py-5">
         <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-lg font-extrabold" title="New search">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-lg font-extrabold" title={t("New search")}>
             <span className="size-7 rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400" aria-hidden />
             TickerLens
           </button>
-          <div className="flex min-w-0 items-center gap-2">
-            <ResyncButton report={report} look="bento" />
-            <DesignSwitch look="bento" />
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <ReportControls report={report} look="bento" />
           </div>
         </header>
+        <LangNotice report={report} className="mb-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900" />
 
         {isLoading ? (
           <Tile>
             <Waiting />
           </Tile>
         ) : error || !report ? (
-          <Tile>Report not found.</Tile>
+          <Tile>{t("Report not found.")}</Tile>
         ) : report.status === "failed" ? (
-          <Tile>This report could not be built: {report.error}</Tile>
+          <Tile>
+            {t("This report could not be built:")} {tx(report.error)}
+          </Tile>
         ) : (
           <>
             {!isFinished(report.status) && (
               <p className="mb-4 rounded-2xl bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700" aria-live="polite">
-                Step {stage + 1} of {STAGES.length}: {STAGES[stage]?.label}…
+                {t("Step {n} of {total}: {label}…", { n: stage + 1, total: STAGES.length, label: t(STAGES[stage]?.label ?? "") })}
               </p>
             )}
             <main className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -485,7 +505,8 @@ export function Bento({ id }: { id: string }) {
               <RunDetails report={report} />
             </div>
             <p className="mt-4 text-center text-xs text-slate-400">
-              {m && <>Financials through {shortDate(m.financialsThrough)} · </>}Educational only, not financial advice.
+              {m && <>{t("Financials through {date}", { date: shortDate(m.financialsThrough) })} · </>}
+              {t("Educational only, not financial advice.")}
             </p>
           </>
         )}

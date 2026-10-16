@@ -4,10 +4,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type Evidence as Quote, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
-import { DesignSwitch } from "../components/DesignSwitch";
-import { ResyncButton } from "../components/ResyncButton";
+import { LangNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
+import { t, tx } from "../i18n";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
@@ -80,19 +80,19 @@ function MetricLine({ m }: { m: Metric }) {
   return (
     <details className="group border-b border-zinc-100 py-2 last:border-0">
       <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3">
-        <span className="text-sm text-zinc-600 group-open:text-zinc-900">{m.label}</span>
+        <span className="text-sm text-zinc-600 group-open:text-zinc-900">{tx(m.label)}</span>
         <span className="font-semibold tabular-nums">{metricValue(m)}</span>
       </summary>
       <div className="mt-1.5 space-y-0.5 border-l-2 border-zinc-200 pl-3 text-xs text-zinc-500">
-        {m.formula && <p>= {m.formula}</p>}
-        {m.period && <p>{m.period}</p>}
+        {m.formula && <p>= {tx(m.formula)}</p>}
+        {m.period && <p>{tx(m.period)}</p>}
         {m.inputs?.map((i) => (
           <p key={i.name}>
-            {i.name}: <span className="tabular-nums">{i.value == null ? "not reported" : Math.abs(i.value) >= 1e6 ? usd(i.value) : i.value.toLocaleString("en-US", { maximumFractionDigits: 4 })}</span>
-            {i.period ? ` (${i.period})` : ""}
+            {tx(i.name)}: <span className="tabular-nums">{i.value == null ? tx("not reported") : Math.abs(i.value) >= 1e6 ? usd(i.value) : i.value.toLocaleString("en-US", { maximumFractionDigits: 4 })}</span>
+            {i.period ? ` (${tx(i.period)})` : ""}
           </p>
         ))}
-        {m.note && <p className="text-amber-700">{m.note}</p>}
+        {m.note && <p className="text-amber-700">{tx(m.note)}</p>}
       </div>
     </details>
   );
@@ -103,19 +103,19 @@ function Quotes({ evidence, url }: { evidence?: Quote[]; url?: string }) {
   return (
     <details className="mt-2 text-sm">
       <summary className="cursor-pointer text-xs font-semibold text-zinc-500 hover:text-zinc-800">
-        {evidence.length} quote{evidence.length > 1 ? "s" : ""} from the 10-K
+        {evidence.length > 1 ? t("{n} quotes from the 10-K", { n: evidence.length }) : t("1 quote from the 10-K")}
       </summary>
       <ul className="mt-2 space-y-2">
         {evidence.map((e, i) => (
           <li key={i} className="rounded-lg bg-zinc-50 p-3 text-zinc-600">
             <q className="italic">{e.quote}</q>
             <span className="mt-1 block text-xs text-zinc-400">
-              {e.documentId.replace("10k-item", "10-K Item ")}
+              {e.documentId.replace("10k-item", t("10-K Item "))}
               {url && (
                 <>
                   {" · "}
                   <a href={url} target="_blank" rel="noreferrer" className="underline">
-                    open filing
+                    {t("open filing")}
                   </a>
                 </>
               )}
@@ -148,10 +148,10 @@ function ScoreSection({ k, value, feeds, reasons, children }: { k: ScoreKey; val
       <header className={`flex items-center gap-4 border-b-2 pb-3 ${s.border}`}>
         <span className={`flex size-14 shrink-0 flex-col items-center justify-center rounded-2xl text-white ${s.bg}`}>
           <span className="font-grotesk text-xl leading-none font-bold">{value == null ? "–" : value.toFixed(1)}</span>
-          <span className="text-[10px] opacity-80">of 5</span>
+          <span className="text-[10px] opacity-80">{t("of 5")}</span>
         </span>
         <div>
-          <h2 className="font-grotesk text-2xl font-bold tracking-tight sm:text-3xl">{s.title}</h2>
+          <h2 className="font-grotesk text-2xl font-bold tracking-tight sm:text-3xl">{t(s.title)}</h2>
           <p className="text-sm text-zinc-500">
             <span className={`font-semibold ${s.text}`}>{scoreWord(s.words, value)}</span> · {feeds}
           </p>
@@ -162,7 +162,7 @@ function ScoreSection({ k, value, feeds, reasons, children }: { k: ScoreKey; val
           {reasons.map((r) => (
             <li key={r} className="flex gap-2">
               <span className={s.text}>→</span>
-              <span>{r}</span>
+              <span>{tx(r)}</span>
             </li>
           ))}
         </ul>
@@ -171,6 +171,10 @@ function ScoreSection({ k, value, feeds, reasons, children }: { k: ScoreKey; val
     </section>
   );
 }
+
+/** "40% of the business score", or a fallback when the weight is unknown. */
+const feeds = (weight?: number) =>
+  weight ? t("{pct}% of the business score", { pct: Math.round(weight * 100) }) : t("part of the business score");
 
 // --- Left panel ------------------------------------------------------------------------
 
@@ -186,13 +190,13 @@ function Pinned({ ticker, name, m, body, active, running, stage }: { ticker: str
           <span className="flex size-11 items-center justify-center rounded-xl bg-zinc-900 font-grotesk text-xs font-bold text-white">{ticker.slice(0, 4)}</span>
           <div className="min-w-0">
             <h1 className="truncate font-grotesk text-lg leading-tight font-bold">{name}</h1>
-            {m && <p className="text-xs text-zinc-500">Market cap {usd(m.marketCap.value)}</p>}
+            {m && <p className="text-xs text-zinc-500">{t("Market cap {cap}", { cap: usd(m.marketCap.value) })}</p>}
           </div>
         </div>
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <p className="font-grotesk text-3xl font-bold tabular-nums">{price(m?.price)}</p>
-            {change != null && <p className={`text-sm font-semibold ${change >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{signedPct(change, 0)} over 5 years</p>}
+            {change != null && <p className={`text-sm font-semibold ${change >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{signedPct(change, 0)} {t("over 5 years")}</p>}
           </div>
           {spark.length > 1 && (
             <div className="h-12 w-28">
@@ -209,29 +213,29 @@ function Pinned({ ticker, name, m, body, active, running, stage }: { ticker: str
 
       {running && (
         <p className="animate-pulse rounded-xl bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-600" aria-live="polite">
-          Step {stage + 1} of {STAGES.length}: {STAGES[stage]?.label}…
+          {t("Step {n} of {total}: {label}…", { n: stage + 1, total: STAGES.length, label: t(STAGES[stage]?.label ?? "") })}
         </p>
       )}
 
       <div className="rounded-2xl bg-zinc-900 p-4 text-white">
-        <p className="text-[11px] font-semibold tracking-widest text-zinc-400 uppercase">Verdict</p>
-        <p className="font-grotesk text-4xl font-bold">{v?.label || "…"}</p>
-        <p className="mt-1 text-sm text-zinc-300">{v ? v.tagline || v.meaning : "Comes last, once every score is in."}</p>
+        <p className="text-[11px] font-semibold tracking-widest text-zinc-400 uppercase">{t("Verdict")}</p>
+        <p className="font-grotesk text-4xl font-bold">{v?.label ? t(v.label) : "…"}</p>
+        <p className="mt-1 text-sm text-zinc-300">{v ? v.tagline || tx(v.meaning) : t("Comes last, once every score is in.")}</p>
         <div className="mt-3 grid grid-cols-5 gap-1 text-center text-[10px] font-semibold">
           {LABELS.map((l) => (
-            <span key={l} className={`rounded py-1 ${l === v?.label ? "bg-white text-zinc-900" : "bg-white/10 text-zinc-400"}`}>{l}</span>
+            <span key={l} className={`rounded py-1 ${l === v?.label ? "bg-white text-zinc-900" : "bg-white/10 text-zinc-400"}`}>{t(l)}</span>
           ))}
         </div>
       </div>
 
-      <nav aria-label="Scores" className="space-y-1">
+      <nav aria-label={t("Scores")} className="space-y-1">
         {ORDER.map((k) => {
           const s = SCORES[k];
           const on = active === k;
           return (
             <a key={k} href={`#ev-${k}`} className={`flex items-center justify-between gap-3 rounded-xl border-l-4 px-3 py-2.5 transition-colors ${on ? `${s.border} ${s.soft}` : "border-transparent hover:bg-zinc-100"}`}>
               <span>
-                <span className="block text-sm font-semibold">{s.title}</span>
+                <span className="block text-sm font-semibold">{t(s.title)}</span>
                 <span className="text-xs text-zinc-500">{scoreWord(s.words, scores[k])}</span>
               </span>
               <span className="flex items-center gap-2">
@@ -250,22 +254,23 @@ function Pinned({ ticker, name, m, body, active, running, stage }: { ticker: str
             {v.components.map((c, i) => (
               <span key={c.name}>
                 {i > 0 && " + "}
-                {Math.round(c.weight * 100)}% {c.name.toLowerCase()}
+                {Math.round(c.weight * 100)}% {tx(c.name).toLowerCase()}
               </span>
             ))}
           </p>
           <p>
-            <span className="font-grotesk text-base font-bold text-zinc-900">V {v.valuation ?? "–"}</span> = valuation score
+            <span className="font-grotesk text-base font-bold text-zinc-900">V {v.valuation ?? "–"}</span> = {t("valuation score")}
           </p>
           <p className="border-t border-zinc-100 pt-2">
-            <span className="font-semibold text-zinc-900">Rule:</span> {v.rule}
+            <span className="font-semibold text-zinc-900">{t("Rule:")}</span> {tx(v.rule)}
           </p>
           <p>
-            <span className="font-semibold text-zinc-900">Confidence {v.confidenceLevel}</span> ({v.confidence}/100){v.confidenceReasons.length ? `: ${v.confidenceReasons.join("; ")}` : ""}
+            <span className="font-semibold text-zinc-900">{t("Confidence {level}", { level: t(v.confidenceLevel) })}</span> ({v.confidence}/100)
+            {v.confidenceReasons.length ? `: ${v.confidenceReasons.map(tx).join("; ")}` : ""}
           </p>
           {v.rationale && (
             <details>
-              <summary className="cursor-pointer font-semibold text-zinc-900">Read the reasoning</summary>
+              <summary className="cursor-pointer font-semibold text-zinc-900">{t("Read the reasoning")}</summary>
               <p className="mt-1 leading-relaxed">{v.rationale}</p>
             </details>
           )}
@@ -274,7 +279,7 @@ function Pinned({ ticker, name, m, body, active, running, stage }: { ticker: str
 
       {m && (
         <p className="text-xs text-zinc-500">
-          Phase {m.phase.number} of 5 · {m.phase.name} · valued with {valuedWith(m)}
+          {t("Phase {n} of 5", { n: m.phase.number })} · {tx(m.phase.name)} · {t("valued with {metric}", { metric: valuedWith(m) })}
         </p>
       )}
     </div>
@@ -296,9 +301,9 @@ function CompanySection({ body }: { body?: ReportBody }) {
     : [];
   return (
     <section id="ev-company" className="scroll-mt-20 space-y-4 lg:scroll-mt-6">
-      <h2 className="font-grotesk text-sm font-bold tracking-widest text-zinc-400 uppercase">The company</h2>
+      <h2 className="font-grotesk text-sm font-bold tracking-widest text-zinc-400 uppercase">{t("The company")}</h2>
       {isPending(body, "business_overview") ? (
-        <Waiting text="AI analysts are reading the latest 10-K…" />
+        <Waiting text={t("AI analysts are reading the latest 10-K…")} />
       ) : rows.length ? (
         <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5">
           <dl className="space-y-3">
@@ -306,7 +311,7 @@ function CompanySection({ body }: { body?: ReportBody }) {
               .filter(([, text]) => text)
               .map(([label, text]) => (
                 <div key={label} className="grid gap-1 sm:grid-cols-[9rem_1fr] sm:gap-4">
-                  <dt className="text-xs font-bold tracking-wide text-zinc-400 uppercase sm:pt-0.5">{label}</dt>
+                  <dt className="text-xs font-bold tracking-wide text-zinc-400 uppercase sm:pt-0.5">{t(label)}</dt>
                   <dd className="leading-relaxed">{text}</dd>
                 </div>
               ))}
@@ -314,7 +319,7 @@ function CompanySection({ body }: { body?: ReportBody }) {
           <Quotes evidence={o?.evidence} url={body?.filing?.url} />
         </div>
       ) : (
-        <p className="text-sm text-zinc-500">The business overview is not available for this report.</p>
+        <p className="text-sm text-zinc-500">{t("The business overview is not available for this report.")}</p>
       )}
     </section>
   );
@@ -326,9 +331,9 @@ function QualitySection({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
   const weight = v?.components.find((c) => c.name === "Business quality")?.weight;
   const bq = body?.businessQuality;
   return (
-    <ScoreSection k="quality" value={bq?.score ?? null} feeds={weight ? `${Math.round(weight * 100)}% of the business score` : "part of the business score"} reasons={bq ? [`${bq.points} of 8 points across four questions judged from the 10-K`] : undefined}>
+    <ScoreSection k="quality" value={bq?.score ?? null} feeds={feeds(weight)} reasons={bq ? [t("{points} of 8 points across four questions judged from the 10-K", { points: bq.points })] : undefined}>
       {isPending(body, "business_quality") ? (
-        <Waiting text="Judging business quality…" />
+        <Waiting text={t("Judging business quality…")} />
       ) : q?.output ? (
         <div className="space-y-3">
           {QUALITY_QUESTIONS.map((item) => {
@@ -336,10 +341,10 @@ function QualitySection({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
             return (
               <div key={item.key} className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="font-grotesk text-lg font-bold">{item.question}</h3>
+                  <h3 className="font-grotesk text-lg font-bold">{t(item.question)}</h3>
                   <div className="flex overflow-hidden rounded-lg border border-zinc-200 text-xs font-semibold">
                     {item.options.map((opt) => (
-                      <span key={opt} className={`px-2.5 py-1 ${opt === a?.answer ? "bg-violet-600 text-white" : "text-zinc-400"}`}>{opt}</span>
+                      <span key={opt} className={`px-2.5 py-1 ${opt === a?.answer ? "bg-violet-600 text-white" : "text-zinc-400"}`}>{t(opt)}</span>
                     ))}
                   </div>
                 </div>
@@ -350,10 +355,13 @@ function QualitySection({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
           })}
         </div>
       ) : (
-        <p className="text-sm text-zinc-500">Business quality could not be judged for this report{q?.errors?.length ? `: ${q.errors[0]}` : "."}</p>
+        <p className="text-sm text-zinc-500">
+          {t("Business quality could not be judged for this report")}
+          {q?.errors?.length ? `: ${tx(q.errors[0])}` : "."}
+        </p>
       )}
       {m && (
-        <Block title="Margins behind it">
+        <Block title={t("Margins behind it")}>
           <div className="grid gap-x-8 sm:grid-cols-2">
             {m.profitability.map((x) => (
               <MetricLine key={x.key} m={x} />
@@ -378,21 +386,21 @@ function GrowthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
   const segs = body?.segments;
   const earnings = (body?.earnings ?? []).slice(-8);
   return (
-    <ScoreSection k="growth" value={m.growthScore.value} feeds={weight ? `${Math.round(weight * 100)}% of the business score` : "part of the business score"} reasons={m.growthScore.reasons}>
-      <Block title="Growth a year">
+    <ScoreSection k="growth" value={m.growthScore.value} feeds={feeds(weight)} reasons={m.growthScore.reasons}>
+      <Block title={t("Growth a year")}>
         <table className="w-full text-sm tabular-nums">
           <thead>
             <tr className="text-xs text-zinc-400">
               <th className="text-left font-semibold" />
               {["3 years", "5 years", "10 years"].map((h) => (
-                <th key={h} className="pb-1 text-right font-semibold">{h}</th>
+                <th key={h} className="pb-1 text-right font-semibold">{t(h)}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {CAGR_ROWS.map((r) => (
               <tr key={r.key} className="border-t border-zinc-100">
-                <td className="py-2 text-zinc-600">{r.label}</td>
+                <td className="py-2 text-zinc-600">{t(r.label)}</td>
                 {["3y", "5y", "10y"].map((y) => {
                   const val = metricOf(m, `${r.key}Cagr${y}`)?.value;
                   return (
@@ -404,7 +412,7 @@ function GrowthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
           </tbody>
         </table>
         <details className="mt-2">
-          <summary className="cursor-pointer text-xs font-semibold text-zinc-500">How each rate is calculated</summary>
+          <summary className="cursor-pointer text-xs font-semibold text-zinc-500">{t("How each rate is calculated")}</summary>
           <div className="mt-1 grid gap-x-8 sm:grid-cols-2">
             {m.growth.filter((g) => !g.key.endsWith("1y")).map((g) => (
               <MetricLine key={g.key} m={g} />
@@ -414,7 +422,7 @@ function GrowthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
       </Block>
 
       {rows.length > 1 && (
-        <Block title="Revenue and net income">
+        <Block title={t("Revenue and net income")}>
           <div className="h-56">
             <ResponsiveContainer>
               <BarChart data={rows} margin={{ top: 4, right: 0, left: 0, bottom: 0 }} barGap={2}>
@@ -422,26 +430,26 @@ function GrowthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
                 <YAxis tickFormatter={(x: number) => usd(x)} tick={AXIS} axisLine={false} tickLine={false} width={56} />
                 <Tooltip formatter={(x) => usd(Number(x))} cursor={{ fill: "#f4f4f5" }} />
                 <ReferenceLine y={0} stroke="#e4e4e7" />
-                <Bar dataKey="revenue" name="Revenue" fill="#0284c7" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                <Bar dataKey="netIncome" name="Net income" fill="#7dd3fc" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="revenue" name={t("Revenue")} fill="#0284c7" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="netIncome" name={t("Net income")} fill="#7dd3fc" radius={[4, 4, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <p className="mt-1 flex gap-4 text-xs text-zinc-500">
-            <span><span className="mr-1 inline-block size-2 rounded-sm bg-sky-600" />Revenue</span>
-            <span><span className="mr-1 inline-block size-2 rounded-sm bg-sky-300" />Net income</span>
+            <span><span className="mr-1 inline-block size-2 rounded-sm bg-sky-600" />{t("Revenue")}</span>
+            <span><span className="mr-1 inline-block size-2 rounded-sm bg-sky-300" />{t("Net income")}</span>
           </p>
         </Block>
       )}
 
       {isPending(body, "segments") ? (
-        <Waiting text="Reading the segment table…" />
+        <Waiting text={t("Reading the segment table…")} />
       ) : segs?.segments?.length || segs?.geography?.length ? (
-        <Block title={`Where revenue comes from · ${segs.fiscalYear}`}>
+        <Block title={t("Where revenue comes from · {year}", { year: segs.fiscalYear })}>
           {[segs.segments, segs.geography].map((list, i) =>
             list?.length ? (
               <div key={i} className={i ? "mt-4" : ""}>
-                {i === 1 && <p className="mb-1 text-xs font-semibold text-zinc-400">By geography</p>}
+                {i === 1 && <p className="mb-1 text-xs font-semibold text-zinc-400">{t("By geography")}</p>}
                 <ul className="space-y-2">
                   {[...list].sort((a, b) => b.revenue - a.revenue).map((s) => (
                     <li key={s.name} className="grid grid-cols-[1fr_auto] items-center gap-x-3 text-sm">
@@ -463,7 +471,7 @@ function GrowthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
       ) : null}
 
       {earnings.length ? (
-        <Block title={`EPS vs estimate · beat ${m.earnings.beats} of ${m.earnings.quarters}`}>
+        <Block title={t("EPS vs estimate · beat {beats} of {quarters}", { beats: m.earnings.beats, quarters: m.earnings.quarters })}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[28rem] text-sm tabular-nums">
               <tbody>
@@ -473,14 +481,14 @@ function GrowthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
                   { label: "Reported", get: (q: (typeof earnings)[number]) => (q.reportedEPS == null ? "–" : `$${q.reportedEPS.toFixed(2)}`), cls: "font-semibold" },
                 ].map((row) => (
                   <tr key={row.label} className="border-t border-zinc-100 first:border-0">
-                    <th className="py-1.5 pr-3 text-left text-xs font-semibold text-zinc-400">{row.label}</th>
+                    <th className="py-1.5 pr-3 text-left text-xs font-semibold text-zinc-400">{t(row.label)}</th>
                     {earnings.map((q) => (
                       <td key={q.fiscalDateEnding} className={`text-right ${row.cls}`}>{row.get(q)}</td>
                     ))}
                   </tr>
                 ))}
                 <tr className="border-t border-zinc-100">
-                  <th className="py-1.5 pr-3 text-left text-xs font-semibold text-zinc-400">Surprise</th>
+                  <th className="py-1.5 pr-3 text-left text-xs font-semibold text-zinc-400">{t("Surprise")}</th>
                   {earnings.map((q) => {
                     const beat = q.reportedEPS != null && q.estimatedEPS != null && q.reportedEPS > q.estimatedEPS;
                     return (
@@ -502,8 +510,8 @@ function GrowthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
 function HealthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
   const weight = body?.verdict?.components.find((c) => c.name === "Financial health")?.weight;
   return (
-    <ScoreSection k="health" value={m.healthScore.value} feeds={weight ? `${Math.round(weight * 100)}% of the business score` : "part of the business score"} reasons={m.healthScore.reasons}>
-      <Block title="Balance sheet and coverage">
+    <ScoreSection k="health" value={m.healthScore.value} feeds={feeds(weight)} reasons={m.healthScore.reasons}>
+      <Block title={t("Balance sheet and coverage")}>
         {m.health.map((x) => (
           <MetricLine key={x.key} m={x} />
         ))}
@@ -527,28 +535,28 @@ function PriceLine({ b }: { b: Bands }) {
         <span className="absolute top-1/2 h-5 w-0.5 -translate-y-1/2 bg-yellow-600" style={{ left: `${at(b.medianPrice)}%` }} />
         <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-zinc-900 shadow" style={{ left: `${now}%` }} />
         <span className="absolute -top-7 text-xs font-bold whitespace-nowrap" style={now < 15 ? { left: 0 } : now > 85 ? { right: 0 } : { left: `${now}%`, transform: "translateX(-50%)" }}>
-          Today {price(b.price)}
+          {t("Today {price}", { price: price(b.price) })}
         </span>
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
         <div className="rounded-lg bg-emerald-50 p-2">
-          <p className="text-emerald-700">Cheap below</p>
+          <p className="text-emerald-700">{t("Cheap below")}</p>
           <p className="font-grotesk text-lg font-bold">{wholePrice(b.cheapPrice)}</p>
           <p className="text-zinc-400">{multiple(b.cheapBelow)}</p>
         </div>
         <div className="rounded-lg bg-yellow-50 p-2">
-          <p className="text-yellow-700">Typical</p>
+          <p className="text-yellow-700">{t("Typical")}</p>
           <p className="font-grotesk text-lg font-bold">{wholePrice(b.medianPrice)}</p>
           <p className="text-zinc-400">{multiple(b.median)}</p>
         </div>
         <div className="rounded-lg bg-rose-50 p-2">
-          <p className="text-rose-700">Expensive above</p>
+          <p className="text-rose-700">{t("Expensive above")}</p>
           <p className="font-grotesk text-lg font-bold">{wholePrice(b.expensivePrice)}</p>
           <p className="text-zinc-400">{multiple(b.expensiveAbove)}</p>
         </div>
       </div>
       <p className="mt-2 text-xs text-zinc-500">
-        Each band edge × {b.perShareBasis} of {price(b.perShare)} ({b.basisPeriod}).
+        {t("Each band edge × {basis} of {value} ({period}).", { basis: tx(b.perShareBasis), value: price(b.perShare), period: tx(b.basisPeriod) })}
       </p>
     </div>
   );
@@ -560,18 +568,18 @@ function ValuationSection({ m }: { m: MetricsReport }) {
   const lo = b ? Math.min(...values, b.cheapBelow) * 0.95 : 0;
   const hi = b ? Math.max(...values, b.expensiveAbove) * 1.05 : 0;
   return (
-    <ScoreSection k="valuation" value={m.valuationScore.value} feeds="the V in the verdict rule" reasons={m.valuationScore.reasons}>
-      <Block title={`Why ${valuedWith(m)}`}>
+    <ScoreSection k="valuation" value={m.valuationScore.value} feeds={t("the V in the verdict rule")} reasons={m.valuationScore.reasons}>
+      <Block title={t("Why {metric}", { metric: valuedWith(m) })}>
         <p className="text-sm">
-          Phase {m.phase.number} of 5, <strong>{m.phase.name}</strong>: {m.phase.reason}
-          {m.phase.lowConfidence && " (low confidence: a weak fit for any phase)"}.
+          {t("Phase {n} of 5", { n: m.phase.number })}, <strong>{tx(m.phase.name)}</strong>: {tx(m.phase.reason)}
+          {m.phase.lowConfidence && ` (${t("low confidence: a weak fit for any phase")})`}.
         </p>
         <ul className="mt-2 space-y-1 text-sm">
           {m.phase.checks.map((c) => (
             <li key={c.question} className="flex gap-2">
               <span className={c.answer == null ? "text-zinc-400" : c.answer ? "text-emerald-600" : "text-rose-600"}>{c.answer == null ? "?" : c.answer ? "✓" : "✕"}</span>
               <span>
-                {c.question} <span className="text-zinc-500">{c.detail}</span>
+                {tx(c.question)} <span className="text-zinc-500">{tx(c.detail)}</span>
               </span>
             </li>
           ))}
@@ -581,7 +589,7 @@ function ValuationSection({ m }: { m: MetricsReport }) {
 
       {b ? (
         <>
-          <Block title={`${b.metric} over the last year`}>
+          <Block title={t("{metric} over the last year", { metric: b.metric })}>
             <div className="h-56">
               <ResponsiveContainer>
                 <LineChart data={m.charts.valuation1y} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -597,24 +605,30 @@ function ValuationSection({ m }: { m: MetricsReport }) {
               </ResponsiveContainer>
             </div>
             <p className="text-sm text-zinc-500">
-              Today {multiple(b.current)}: higher than {pct(b.percentile, 0)} of the last {b.days.toLocaleString()} trading days ({b.historyFrom.slice(0, 4)}–{b.historyTo.slice(0, 4)}).
+              {t("Today {x}: higher than {pct} of the last {days} trading days ({from}–{to}).", {
+                x: multiple(b.current),
+                pct: pct(b.percentile, 0),
+                days: b.days.toLocaleString(),
+                from: b.historyFrom.slice(0, 4),
+                to: b.historyTo.slice(0, 4),
+              })}
             </p>
           </Block>
-          <Block title="What price is cheap?">
+          <Block title={t("What price is cheap?")}>
             <PriceLine b={b} />
           </Block>
         </>
       ) : (
-        <p className="text-sm text-zinc-500">Not enough history to compare today&apos;s valuation with the past.</p>
+        <p className="text-sm text-zinc-500">{t("Not enough history to compare today's valuation with the past.")}</p>
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Block title="Multiples">
+        <Block title={t("Multiples")}>
           {[m.marketCap, ...m.valuation].map((x) => (
             <MetricLine key={x.key} m={x} />
           ))}
         </Block>
-        <Block title="Returned to shareholders">
+        <Block title={t("Returned to shareholders")}>
           {m.returns.map((x) => (
             <MetricLine key={x.key} m={x} />
           ))}
@@ -634,10 +648,10 @@ function PriceSection({ m }: { m: MetricsReport }) {
   return (
     <section className="mb-10">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-grotesk text-sm font-bold tracking-widest text-zinc-400 uppercase">Share price · 5 years</h2>
+        <h2 className="font-grotesk text-sm font-bold tracking-widest text-zinc-400 uppercase">{t("Share price · 5 years")}</h2>
         <p className="text-sm text-zinc-500">
           <span className="font-grotesk text-2xl font-bold text-zinc-900 tabular-nums">{price(m.price)}</span>{" "}
-          <span className={`font-semibold ${change >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{signedPct(m.priceChange5y.value, 0)}</span> · as of {shortDate(m.priceDate)}
+          <span className={`font-semibold ${change >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{signedPct(m.priceChange5y.value, 0)}</span> · {t("as of {date}", { date: shortDate(m.priceDate) })}
         </p>
       </div>
       <div className="mt-3 h-56 rounded-2xl border border-zinc-200 bg-white p-3 sm:h-64">
@@ -652,7 +666,7 @@ function PriceSection({ m }: { m: MetricsReport }) {
             <XAxis dataKey="date" ticks={yearTicks(data)} tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} />
             <YAxis domain={["auto", "auto"]} tickFormatter={(x: number) => `$${Math.round(x)}`} tick={AXIS} axisLine={false} tickLine={false} width={48} />
             <Tooltip formatter={(x) => price(Number(x))} />
-            <Area dataKey="value" name="Price" stroke={color} strokeWidth={2} fill="url(#evPrice)" isAnimationActive={false} />
+            <Area dataKey="value" name={t("Price")} stroke={color} strokeWidth={2} fill="url(#evPrice)" isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -675,42 +689,41 @@ export function Evidence({ id }: { id: string }) {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans text-zinc-900">
       {isLoading ? (
-        <p className="p-10 text-zinc-500">Loading…</p>
+        <p className="p-10 text-zinc-500">{t("Loading…")}</p>
       ) : error || !report ? (
-        <p className="p-10">Report not found.</p>
+        <p className="p-10">{t("Report not found.")}</p>
       ) : (
         <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-[22rem_1fr]">
           {/* On phones the controls sit above the pinned panel. */}
-          <div className="flex items-center justify-end gap-2 bg-white px-4 pt-4 lg:hidden">
-            <ResyncButton report={report} look="evidence" />
-            <DesignSwitch look="evidence" />
+          <div className="flex flex-wrap items-center justify-end gap-2 bg-white px-4 pt-4 lg:hidden">
+            <ReportControls report={report} look="evidence" />
           </div>
           <aside className="border-b border-zinc-200 bg-white px-4 py-5 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-r lg:border-b-0 lg:px-6">
             <div className="mb-5 flex items-center justify-between gap-3">
               <button onClick={() => navigate("/")} className="text-sm font-semibold text-zinc-500 hover:text-zinc-900">
-                ← New search
+                ← {t("New search")}
               </button>
             </div>
             <Pinned ticker={report.ticker} name={name} m={m} body={body} active={active} running={running} stage={stage} />
           </aside>
 
           {/* On phones the scores become a sticky strip of shortcuts. */}
-          <nav aria-label="Jump to a score" className="sticky top-0 z-20 flex gap-2 overflow-x-auto border-b border-zinc-200 bg-white/95 px-4 py-2 backdrop-blur [scrollbar-width:none] lg:hidden">
+          <nav aria-label={t("Jump to a score")} className="sticky top-0 z-20 flex gap-2 overflow-x-auto border-b border-zinc-200 bg-white/95 px-4 py-2 backdrop-blur [scrollbar-width:none] lg:hidden">
             {ORDER.map((k) => (
               <a key={k} href={`#ev-${k}`} className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${active === k ? `${SCORES[k].bg} text-white` : "bg-zinc-100 text-zinc-600"}`}>
-                {SCORES[k].short}
+                {t(SCORES[k].short)}
                 <span className="tabular-nums">{scores[k] == null ? "–" : scores[k]!.toFixed(1)}</span>
               </a>
             ))}
           </nav>
 
           <main className="min-w-0 px-4 py-6 lg:px-10 lg:py-8">
-            <div className="mb-6 hidden items-center justify-end gap-2 lg:flex">
-              <ResyncButton report={report} look="evidence" />
-              <DesignSwitch look="evidence" />
+            <div className="mb-6 hidden flex-wrap items-center justify-end gap-2 lg:flex">
+              <ReportControls report={report} look="evidence" />
             </div>
+            <LangNotice report={report} className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" />
             {report.status === "failed" ? (
-              <p className="rounded-2xl bg-rose-50 p-4 text-rose-800">This report could not be built: {report.error}</p>
+              <p className="rounded-2xl bg-rose-50 p-4 text-rose-800">{t("This report could not be built:")} {tx(report.error)}</p>
             ) : (
               <>
                 {m && <PriceSection m={m} />}
@@ -724,7 +737,7 @@ export function Evidence({ id }: { id: string }) {
                   </>
                 ) : (
                   <div className="pt-12">
-                    <Waiting text="Computing metrics from SEC filings…" />
+                    <Waiting text={t("Computing metrics from SEC filings…")} />
                   </div>
                 )}
               </>
@@ -732,15 +745,15 @@ export function Evidence({ id }: { id: string }) {
             <footer className="mt-16 border-t border-zinc-200 pt-6 text-xs text-zinc-500">
               {m && (
                 <p>
-                  Financials through {shortDate(m.financialsThrough)}
-                  {body?.filing && <> · latest 10-K for the period ended {shortDate(body.filing.reportDate)}</>} · prices as of {shortDate(m.priceDate)} · scoring {m.scoringVersion}
-                  {report.status === "partial" && <> · some sections are missing ({report.failedSections.join(", ")})</>}
+                  {t("Financials through {date}", { date: shortDate(m.financialsThrough) })}
+                  {body?.filing && <> · {t("latest 10-K for the period ended {date}", { date: shortDate(body.filing.reportDate) })}</>} · {t("prices as of {date}", { date: shortDate(m.priceDate) })} · {t("scoring {version}", { version: m.scoringVersion })}
+                  {report.status === "partial" && <> · {t("some sections are missing ({list})", { list: report.failedSections.join(", ") })}</>}
                 </p>
               )}
               <div className="mt-3">
                 <RunDetails report={report} />
               </div>
-              <p className="mt-3 font-semibold text-zinc-700">Educational project. Not financial advice.</p>
+              <p className="mt-3 font-semibold text-zinc-700">{t("Educational project. Not financial advice.")}</p>
             </footer>
           </main>
         </div>

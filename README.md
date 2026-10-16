@@ -10,11 +10,15 @@ Type a US ticker and TickerLens builds a research report from the company's SEC 
 
 ## What's in a report
 
-Every report has the same data, shown in five designs you can switch between at the top of the page:
+Every report has the same data, shown in five designs you can switch between at the top of the page. Next to the design switch:
+
+- **English / Español.** The whole page switches language, including every computed explanation (score reasons, rules, formulas). Reports themselves are built in a language: in Spanish, the AI agents write their prose in Spanish while quotes stay word for word from the filing. Switching on an open report offers to build it in the other language.
+- **AI model.** Pick the model for new reports from the ones your keys allow (the default, its fallback, each provider's configured model and anything in `LLM_MODEL_CHOICES`). An open report keeps the model it was built with.
+- **↻** deletes the ticker's saved reports and cached data and builds a fresh one.
 
 | Design | Idea |
 |---|---|
-| **Classic** | One long page: Business, Financials, Phase, Valuation, Verdict |
+| **Classic** | One long page in a dark theme: Business, Financials, Phase, Valuation, Verdict |
 | **Evidence** | The verdict and its four scores stay pinned; the data is grouped by the score it feeds (above) |
 | **Bento** | A grid of tiles: rings for scores, charts, segments, earnings |
 | **Decision** | The verdict as a chain of questions, each opening to its numbers |
@@ -187,7 +191,8 @@ This returns `{"id": "...", "status": "queued"}` and runs the report in the back
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/tickers?q=micro` | Search companies by ticker or name |
-| `POST /api/reports` | Start a report (`{"ticker": "V", "refresh": false}`) |
+| `POST /api/reports` | Start a report (`{"ticker": "V", "refresh": false, "lang": "es", "model": "gemini:gemini-3.5-flash-lite"}`; `lang` and `model` are optional) |
+| `GET /api/models` | AI models a report can use, default first |
 | `GET /api/reports/{id}` | Report status and JSON |
 | `GET /api/reports/{id}/events` | Live progress (SSE) |
 | `GET /api/reports?ticker=V` | Report history for a ticker |

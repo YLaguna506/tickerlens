@@ -4,10 +4,10 @@
 import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type MetricsReport, type ReportBody, type SegmentShare, type Verdict } from "../api";
-import { DesignSwitch } from "../components/DesignSwitch";
-import { ResyncButton } from "../components/ResyncButton";
+import { LangNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
+import { t, tx } from "../i18n";
 import { QUALITY_QUESTIONS, STAGES, fallbackNote, incomeRows, isPending, metricOf, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
@@ -32,7 +32,7 @@ function Panel({ title, right, className = "", children }: { title: string; righ
   return (
     <section className={`min-w-0 bg-t-panel ${className}`}>
       <header className="flex items-center justify-between gap-3 border-b border-t-line px-3 py-1.5 font-mono text-[11px] tracking-wider uppercase">
-        <span className="text-t-amber">{title}</span>
+        <span className="text-t-amber">{t(title)}</span>
         {right && <span className="text-t-dim">{right}</span>}
       </header>
       <div className="p-3">{children}</div>
@@ -41,7 +41,12 @@ function Panel({ title, right, className = "", children }: { title: string; righ
 }
 
 function Waiting({ children = "loading" }: { children?: ReactNode }) {
-  return <p className="font-mono text-xs text-t-dim">{children}<span className="animate-pulse">_</span></p>;
+  return (
+    <p className="font-mono text-xs text-t-dim">
+      {typeof children === "string" ? t(children) : children}
+      <span className="animate-pulse">_</span>
+    </p>
+  );
 }
 
 /** ▮▮▮▯▯ blocks for a 1–5 score. */
@@ -60,7 +65,7 @@ function Blocks({ value }: { value: number | null }) {
 function ScoreRow({ label, value }: { label: string; value: number | null }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1 font-mono text-xs">
-      <span className="text-t-dim uppercase">{label}</span>
+      <span className="text-t-dim uppercase">{t(label)}</span>
       <span className="flex items-center gap-2">
         <Blocks value={value} />
         <span className="w-7 text-right text-t-text">{value == null ? "–" : value.toFixed(1)}</span>
@@ -88,7 +93,7 @@ function PricePanel({ m }: { m: MetricsReport }) {
             <XAxis dataKey="date" tickFormatter={monthYear} tick={AXIS} axisLine={false} tickLine={false} minTickGap={60} />
             <YAxis orientation="right" domain={["auto", "auto"]} tickFormatter={(v: number) => `${Math.round(v)}`} tick={AXIS} axisLine={false} tickLine={false} width={40} />
             <Tooltip {...TIP} formatter={(v) => price(Number(v))} />
-            <Area dataKey="value" name="Price" stroke={BLUE} strokeWidth={1.5} fill="url(#tPrice)" isAnimationActive={false} />
+            <Area dataKey="value" name={t("Price")} stroke={BLUE} strokeWidth={1.5} fill="url(#tPrice)" isAnimationActive={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -99,26 +104,26 @@ function PricePanel({ m }: { m: MetricsReport }) {
 function VerdictPanel({ body }: { body?: ReportBody }) {
   const v = body?.verdict;
   return (
-    <Panel title="Verdict" right={v ? `conf ${v.confidenceLevel} ${v.confidence}` : undefined} className="lg:col-span-4">
+    <Panel title="Verdict" right={v ? t("conf {level} {n}", { level: t(v.confidenceLevel), n: v.confidence }) : undefined} className="lg:col-span-4">
       {!v ? (
         <Waiting>scoring</Waiting>
       ) : (
         <div className="space-y-3">
-          <p className={`font-mono text-4xl font-bold uppercase ${VERDICT_COLOR[v.label] ?? "text-t-text"}`}>{v.label || "n/a"}</p>
+          <p className={`font-mono text-4xl font-bold uppercase ${VERDICT_COLOR[v.label] ?? "text-t-text"}`}>{v.label ? t(v.label) : t("n/a")}</p>
           <div className="grid grid-cols-5 gap-px bg-t-line font-mono text-[10px] uppercase">
             {LABELS.map((l) => (
-              <span key={l} className={`py-1 text-center ${l === v.label ? "bg-t-amber font-bold text-black" : "bg-t-panel text-t-dim"}`}>{l}</span>
+              <span key={l} className={`py-1 text-center ${l === v.label ? "bg-t-amber font-bold text-black" : "bg-t-panel text-t-dim"}`}>{t(l)}</span>
             ))}
           </div>
-          {(v.tagline || v.meaning) && <p className="text-sm text-white">{v.tagline || v.meaning}</p>}
+          {(v.tagline || v.meaning) && <p className="text-sm text-white">{v.tagline || tx(v.meaning)}</p>}
           <div className="border-t border-t-line pt-2">
             <ScoreRow label="Business" value={v.business} />
             {v.components.map((c) => (
-              <ScoreRow key={c.name} label={`· ${c.name}`} value={c.score} />
+              <ScoreRow key={c.name} label={`· ${tx(c.name)}`} value={c.score} />
             ))}
             <ScoreRow label="Valuation" value={v.valuation} />
           </div>
-          <p className="font-mono text-[11px] leading-relaxed text-t-dim">{v.rule}</p>
+          <p className="font-mono text-[11px] leading-relaxed text-t-dim">{tx(v.rule)}</p>
         </div>
       )}
     </Panel>
@@ -143,18 +148,18 @@ function KV({ label, value, tone = "text-t-text", title }: { label: string; valu
 function FundamentalsPanel({ m }: { m: MetricsReport }) {
   const group = (title: string, list: MetricsReport["health"]) => (
     <div>
-      <p className="mb-1 text-[10px] tracking-wider text-t-blue uppercase">{title}</p>
+      <p className="mb-1 text-[10px] tracking-wider text-t-blue uppercase">{t(title)}</p>
       {list.map((x) => (
-        <KV key={x.key} label={x.label} value={metricValue(x)} title={x.formula} />
+        <KV key={x.key} label={tx(x.label)} value={metricValue(x)} title={tx(x.formula)} />
       ))}
     </div>
   );
   return (
-    <Panel title="Fundamentals" right={`thru ${m.financialsThrough}`} className="lg:col-span-4">
+    <Panel title="Fundamentals" right={t("thru {date}", { date: m.financialsThrough })} className="lg:col-span-4">
       <div className="space-y-3 font-mono text-xs">
         {group("Profitability", m.profitability)}
         <div>
-          <p className="mb-1 text-[10px] tracking-wider text-t-blue uppercase">Growth · CAGR</p>
+          <p className="mb-1 text-[10px] tracking-wider text-t-blue uppercase">{t("Growth · CAGR")}</p>
           <table className="w-full tabular-nums">
             <thead>
               <tr className="text-t-dim">
@@ -167,7 +172,7 @@ function FundamentalsPanel({ m }: { m: MetricsReport }) {
             <tbody>
               {GROWTH_ROWS.map((r) => (
                 <tr key={r.key}>
-                  <td className="text-t-dim">{r.label}</td>
+                  <td className="text-t-dim">{t(r.label)}</td>
                   {["3y", "5y", "10y"].map((y) => {
                     const v = metricOf(m, `${r.key}Cagr${y}`)?.value;
                     return <td key={y} className={`text-right ${signTone(v)}`}>{pct(v)}</td>;
@@ -190,7 +195,9 @@ function BandsPanel({ m }: { m: MetricsReport }) {
   if (!b) {
     return (
       <Panel title="Valuation bands" className="lg:col-span-5">
-        <p className="font-mono text-xs text-t-dim">Not enough history: {m.valuationScore.reasons.join("; ")}</p>
+        <p className="font-mono text-xs text-t-dim">
+          {t("Not enough history:")} {m.valuationScore.reasons.map(tx).join("; ")}
+        </p>
       </Panel>
     );
   }
@@ -198,7 +205,11 @@ function BandsPanel({ m }: { m: MetricsReport }) {
   const lo = Math.min(...values, b.cheapBelow) * 0.95;
   const hi = Math.max(...values, b.expensiveAbove) * 1.05;
   return (
-    <Panel title={`${b.metric} · 1y`} right={`pctl ${Math.round(b.percentile * 100)} · ${b.historyFrom.slice(0, 4)}–${b.historyTo.slice(0, 4)}`} className="lg:col-span-5">
+    <Panel
+      title={`${b.metric} · ${t("1y")}`}
+      right={t("pctl {p} · {from}–{to}", { p: Math.round(b.percentile * 100), from: b.historyFrom.slice(0, 4), to: b.historyTo.slice(0, 4) })}
+      className="lg:col-span-5"
+    >
       <div className="h-44">
         <ResponsiveContainer>
           <LineChart data={m.charts.valuation1y} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -221,9 +232,9 @@ function BandsPanel({ m }: { m: MetricsReport }) {
 /** Band edges as share prices, with the distance from today's price. */
 function PriceLadder({ b }: { b: Bands }) {
   const rows = [
-    { label: `Expensive > ${multiple(b.expensiveAbove)}`, value: b.expensivePrice, tone: "text-t-down" },
-    { label: `Typical   ${multiple(b.median)}`, value: b.medianPrice, tone: "text-t-text" },
-    { label: `Cheap   < ${multiple(b.cheapBelow)}`, value: b.cheapPrice, tone: "text-t-up" },
+    { label: `${t("Expensive")} > ${multiple(b.expensiveAbove)}`, value: b.expensivePrice, tone: "text-t-down" },
+    { label: `${t("Typical")}   ${multiple(b.median)}`, value: b.medianPrice, tone: "text-t-text" },
+    { label: `${t("Cheap")}   < ${multiple(b.cheapBelow)}`, value: b.cheapPrice, tone: "text-t-up" },
   ];
   return (
     <table className="mt-3 w-full font-mono text-xs tabular-nums">
@@ -236,9 +247,9 @@ function PriceLadder({ b }: { b: Bands }) {
           </tr>
         ))}
         <tr className="border-t border-t-line">
-          <td className="py-1 text-t-amber">Now       {multiple(b.current)}</td>
+          <td className="py-1 whitespace-pre text-t-amber">{t("Now")}       {multiple(b.current)}</td>
           <td className="text-right font-bold text-white">{price(b.price)}</td>
-          <td className="text-right text-t-dim uppercase">{b.zone}</td>
+          <td className="text-right text-t-dim uppercase">{t(b.zone)}</td>
         </tr>
       </tbody>
     </table>
@@ -256,18 +267,18 @@ function ScoresPanel({ m, body }: { m: MetricsReport; body?: ReportBody }) {
       <ScoreRow label="Valuation" value={m.valuationScore.value} />
       <div className="mt-3 grid grid-cols-5 gap-px bg-t-line font-mono text-[10px]">
         {PHASES.map((p, i) => (
-          <span key={p} title={p} className={`py-1.5 text-center ${i + 1 === m.phase.number ? "bg-t-amber font-bold text-black" : "bg-t-panel text-t-dim"}`}>{i + 1}</span>
+          <span key={p} title={t(p)} className={`py-1.5 text-center ${i + 1 === m.phase.number ? "bg-t-amber font-bold text-black" : "bg-t-panel text-t-dim"}`}>{i + 1}</span>
         ))}
       </div>
       <p className="mt-2 font-mono text-xs text-white">
-        {m.phase.name} <span className="text-t-dim">→ {valuedWith(m)}</span>
+        {tx(m.phase.name)} <span className="text-t-dim">→ {valuedWith(m)}</span>
       </p>
       {fallbackNote(m) && <p className="mt-1 font-mono text-[11px] text-t-amber">! {fallbackNote(m)}</p>}
       <ul className="mt-2 space-y-1 font-mono text-[11px]">
         {m.phase.checks.map((c) => (
-          <li key={c.question} className="flex gap-2" title={c.detail}>
+          <li key={c.question} className="flex gap-2" title={tx(c.detail)}>
             <span className={c.answer == null ? "text-t-dim" : c.answer ? "text-t-up" : "text-t-down"}>{c.answer == null ? "?" : c.answer ? "✓" : "✕"}</span>
-            <span className="text-t-dim">{c.question}</span>
+            <span className="text-t-dim">{tx(c.question)}</span>
           </li>
         ))}
       </ul>
@@ -278,7 +289,11 @@ function ScoresPanel({ m, body }: { m: MetricsReport; body?: ReportBody }) {
 function IncomePanel({ body }: { body?: ReportBody }) {
   const rows = incomeRows(body);
   return (
-    <Panel title="Revenue · net income" right={<span><span className="text-t-blue">■</span> rev <span className="text-t-up">■</span> ni</span>} className="lg:col-span-6">
+    <Panel title="Revenue · net income" right={
+        <span>
+          <span className="text-t-blue">■</span> {t("rev")} <span className="text-t-up">■</span> {t("ni")}
+        </span>
+      } className="lg:col-span-6">
       {rows.length < 2 ? (
         <Waiting />
       ) : (
@@ -289,8 +304,8 @@ function IncomePanel({ body }: { body?: ReportBody }) {
               <YAxis orientation="right" tickFormatter={(v: number) => usd(v)} tick={AXIS} axisLine={false} tickLine={false} width={52} />
               <Tooltip {...TIP} cursor={{ fill: "#1e2631" }} formatter={(v) => usd(Number(v))} />
               <ReferenceLine y={0} stroke="#1e2631" />
-              <Bar dataKey="revenue" name="Revenue" fill={BLUE} isAnimationActive={false} />
-              <Bar dataKey="netIncome" name="Net income" fill={UP} isAnimationActive={false} />
+              <Bar dataKey="revenue" name={t("Revenue")} fill={BLUE} isAnimationActive={false} />
+              <Bar dataKey="netIncome" name={t("Net income")} fill={UP} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -327,13 +342,13 @@ function SegmentsPanel({ body }: { body?: ReportBody }) {
       {isPending(body, "segments") ? (
         <Waiting>reading 10-K</Waiting>
       ) : !segs?.segments?.length && !segs?.geography?.length ? (
-        <p className="font-mono text-xs text-t-dim">Not disclosed or not extracted.</p>
+        <p className="font-mono text-xs text-t-dim">{t("Not disclosed or not extracted.")}</p>
       ) : (
         <div className="space-y-3">
           {segs.segments?.length ? <ShareTable rows={segs.segments} /> : null}
           {segs.geography?.length ? (
             <div>
-              <p className="mb-1 font-mono text-[10px] tracking-wider text-t-blue uppercase">Geography</p>
+              <p className="mb-1 font-mono text-[10px] tracking-wider text-t-blue uppercase">{t("Geography")}</p>
               <ShareTable rows={segs.geography} />
             </div>
           ) : null}
@@ -356,25 +371,25 @@ function BusinessPanel({ body }: { body?: ReportBody }) {
       ]
     : [];
   return (
-    <Panel title="Business brief" right="from the 10-K" className="lg:col-span-8">
+    <Panel title="Business brief" right={t("from the 10-K")} className="lg:col-span-8">
       {isPending(body, "business_overview") ? (
         <Waiting>reading 10-K</Waiting>
       ) : lines.length ? (
         <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[6rem_1fr]">
           {lines.map(([k, v]) => (
             <div key={k} className="contents">
-              <dt className="font-mono text-[11px] text-t-blue uppercase sm:pt-0.5">{k}</dt>
+              <dt className="font-mono text-[11px] text-t-blue uppercase sm:pt-0.5">{t(k ?? "")}</dt>
               <dd className="leading-relaxed text-t-text">{v}</dd>
             </div>
           ))}
         </dl>
       ) : (
-        <p className="font-mono text-xs text-t-dim">Overview unavailable.</p>
+        <p className="font-mono text-xs text-t-dim">{t("Overview unavailable.")}</p>
       )}
 
       <div className="mt-4 border-t border-t-line pt-3">
         <p className="mb-2 font-mono text-[10px] tracking-wider text-t-blue uppercase">
-          Quality {body?.businessQuality ? `· ${body.businessQuality.score.toFixed(1)}/5` : ""}
+          {t("Quality")} {body?.businessQuality ? `· ${body.businessQuality.score.toFixed(1)}/5` : ""}
         </p>
         {isPending(body, "business_quality") ? (
           <Waiting>judging</Waiting>
@@ -385,11 +400,11 @@ function BusinessPanel({ body }: { body?: ReportBody }) {
               return (
                 <details key={item.key} className="group font-mono text-xs">
                   <summary className="flex cursor-pointer list-none items-center gap-3">
-                    <span className="w-28 shrink-0 text-t-dim">{item.short}</span>
+                    <span className="w-28 shrink-0 text-t-dim">{t(item.short)}</span>
                     <span className="grid flex-1 grid-cols-3 gap-px bg-t-line text-[10px] uppercase">
                       {item.options.map((opt, i) => (
                         <span key={opt} className={`truncate px-1 py-0.5 text-center ${opt === a?.answer ? (i === 2 ? "bg-t-up text-black" : i === 1 ? "bg-t-amber text-black" : "bg-t-down text-black") : "bg-t-panel text-t-dim"}`}>
-                          {opt}
+                          {t(opt)}
                         </span>
                       ))}
                     </span>
@@ -401,7 +416,7 @@ function BusinessPanel({ body }: { body?: ReportBody }) {
             })}
           </div>
         ) : (
-          <p className="font-mono text-xs text-t-dim">Quality unavailable.</p>
+          <p className="font-mono text-xs text-t-dim">{t("Quality unavailable.")}</p>
         )}
       </div>
     </Panel>
@@ -411,17 +426,17 @@ function BusinessPanel({ body }: { body?: ReportBody }) {
 function EarningsPanel({ m, body }: { m: MetricsReport; body?: ReportBody }) {
   const rows = (body?.earnings ?? []).slice(-8).reverse();
   return (
-    <Panel title="EPS vs estimate" right={rows.length ? `beat ${m.earnings.beats}/${m.earnings.quarters}` : undefined} className="lg:col-span-4">
+    <Panel title="EPS vs estimate" right={rows.length ? t("beat {beats}/{quarters}", { beats: m.earnings.beats, quarters: m.earnings.quarters }) : undefined} className="lg:col-span-4">
       {!rows.length ? (
-        <p className="font-mono text-xs text-t-dim">No estimates available.</p>
+        <p className="font-mono text-xs text-t-dim">{t("No estimates available.")}</p>
       ) : (
         <table className="w-full font-mono text-xs tabular-nums">
           <thead>
             <tr className="text-t-dim">
-              <th className="text-left font-normal">Qtr</th>
-              <th className="text-right font-normal">Est</th>
-              <th className="text-right font-normal">Act</th>
-              <th className="text-right font-normal">Surp</th>
+              <th className="text-left font-normal">{t("Qtr")}</th>
+              <th className="text-right font-normal">{t("Est")}</th>
+              <th className="text-right font-normal">{t("Act")}</th>
+              <th className="text-right font-normal">{t("Surp")}</th>
             </tr>
           </thead>
           <tbody>
@@ -465,34 +480,37 @@ export function Terminal({ id }: { id: string }) {
     <div className="min-h-screen bg-t-bg text-t-text">
       <header className="sticky top-0 z-20 border-b border-t-line bg-t-bg/95 backdrop-blur">
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-3 py-2 font-mono text-xs">
-          <button onClick={() => navigate("/")} className="bg-t-amber px-2 py-0.5 font-bold text-black" title="New search">
+          <button onClick={() => navigate("/")} className="bg-t-amber px-2 py-0.5 font-bold text-black" title={t("New search")}>
             {report?.ticker ?? "…"}
           </button>
           <span className="max-w-[16rem] truncate text-white">{titleCase(body?.company.name || report?.companyName || "")}</span>
           {m?.price != null && <span className="text-base font-bold text-white">{price(m.price)}</span>}
-          {m && <Stat label="5Y" value={signedPct(m.priceChange5y.value, 0)} tone={signTone(m.priceChange5y.value)} />}
-          {m && <Stat label="MCAP" value={usd(m.marketCap.value)} />}
+          {m && <Stat label={t("5Y")} value={signedPct(m.priceChange5y.value, 0)} tone={signTone(m.priceChange5y.value)} />}
+          {m && <Stat label={t("MCAP")} value={usd(m.marketCap.value)} />}
           {m?.valuationBands && <Stat label={m.valuationBands.metric} value={multiple(m.valuationBands.current)} tone="text-t-amber" />}
-          {v?.label && <Stat label="VERDICT" value={v.label.toUpperCase()} tone={VERDICT_COLOR[v.label]} />}
-          <div className="ml-auto flex min-w-0 items-center gap-2">
-            <ResyncButton report={report} look="terminal" />
-            <DesignSwitch look="terminal" />
+          {v?.label && <Stat label={t("VERDICT")} value={t(v.label).toUpperCase()} tone={VERDICT_COLOR[v.label]} />}
+          <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2">
+            <ReportControls report={report} look="terminal" />
           </div>
         </div>
         {report && !isFinished(report.status) && (
           <p className="border-t border-t-line px-3 py-1 font-mono text-[11px] text-t-amber">
-            [{Math.max(stage, 0) + 1}/{STAGES.length}] {STAGES[Math.max(stage, 0)]?.label.toLowerCase()}
+            [{Math.max(stage, 0) + 1}/{STAGES.length}] {t(STAGES[Math.max(stage, 0)]?.label ?? "").toLowerCase()}
             <span className="animate-pulse">_</span>
           </p>
         )}
       </header>
+      <LangNotice report={report} className="border-b border-t-line px-3 py-2 font-mono text-xs text-t-amber" />
 
       {isLoading ? (
-        <p className="p-6 font-mono text-xs text-t-dim">loading<span className="animate-pulse">_</span></p>
+        <p className="p-6 font-mono text-xs text-t-dim">
+          {t("loading")}
+          <span className="animate-pulse">_</span>
+        </p>
       ) : error || !report ? (
-        <p className="p-6 font-mono text-xs text-t-down">ERR report not found</p>
+        <p className="p-6 font-mono text-xs text-t-down">ERR {t("report not found")}</p>
       ) : report.status === "failed" ? (
-        <p className="p-6 font-mono text-xs text-t-down">ERR {report.error}</p>
+        <p className="p-6 font-mono text-xs text-t-down">ERR {tx(report.error)}</p>
       ) : (
         <main className="grid gap-px border-b border-t-line bg-t-line lg:grid-cols-12">
           {m ? <PricePanel m={m} /> : <Panel title="Price · 5y" className="lg:col-span-8"><Waiting /></Panel>}
@@ -514,14 +532,14 @@ export function Terminal({ id }: { id: string }) {
       <footer className="space-y-1 px-3 py-4 font-mono text-[10px] text-t-dim">
         {m && (
           <p>
-            FIN THRU {shortDate(m.financialsThrough).toUpperCase()} · PX {shortDate(m.priceDate).toUpperCase()}
-            {body?.filing && <> · 10-K {shortDate(body.filing.reportDate).toUpperCase()}</>} · SCORING {m.scoringVersion}
+            {t("FIN THRU")} {shortDate(m.financialsThrough).toUpperCase()} · {t("PX")} {shortDate(m.priceDate).toUpperCase()}
+            {body?.filing && <> · 10-K {shortDate(body.filing.reportDate).toUpperCase()}</>} · {t("SCORING")} {m.scoringVersion}
           </p>
         )}
         <div className="max-w-3xl pt-1 text-t-text">
           <RunDetails report={report} />
         </div>
-        <p>EDUCATIONAL ONLY. NOT FINANCIAL ADVICE. DATA: SEC EDGAR, TIINGO, ALPHA VANTAGE.</p>
+        <p>{t("EDUCATIONAL ONLY. NOT FINANCIAL ADVICE. DATA: SEC EDGAR, TIINGO, ALPHA VANTAGE.")}</p>
       </footer>
     </div>
   );

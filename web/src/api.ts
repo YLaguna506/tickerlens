@@ -1,5 +1,8 @@
 // Types for the API responses (mirrors the Go structs) and fetch helpers.
 
+import { getLang } from "./i18n";
+import { getModel } from "./model";
+
 export type Unit = "percent" | "multiple" | "usd" | "usd/share";
 
 export interface Input {
@@ -204,6 +207,8 @@ export interface Report {
   id: string;
   ticker: string;
   companyName: string;
+  lang?: "en" | "es";
+  model?: string;
   status: Status;
   stage: string;
   error?: string;
@@ -239,12 +244,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const searchTickers = (q: string) => request<Company[]>(`/api/tickers?q=${encodeURIComponent(q)}`);
 
+/** Starts a report in the current language with the chosen AI model. */
 export const createReport = (ticker: string, refresh = false) =>
   request<{ id: string; status: Status; cached: boolean }>("/api/reports", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ticker, refresh }),
+    body: JSON.stringify({ ticker, refresh, lang: getLang(), model: getModel() || undefined }),
   });
+
+export interface ModelChoice {
+  id: string;
+  provider: string;
+  model: string;
+  default: boolean;
+}
+
+export const listModels = () => request<ModelChoice[]>("/api/models");
 
 export const getReport = (id: string) => request<Report>(`/api/reports/${id}`);
 

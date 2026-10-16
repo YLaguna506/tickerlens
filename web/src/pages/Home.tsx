@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ApiError, createReport, searchTickers, type Company } from "../api";
 import { titleCase } from "../format";
+import { LangSwitch, ModelSwitch } from "../components/Controls";
 import { Disclaimer } from "../components/ui";
+import { t, tx } from "../i18n";
 import { navigate } from "../router";
 
 const RECENT_KEY = "tickerlens.recent";
@@ -27,8 +29,8 @@ function saveRecent(c: Company) {
 function useDebounced<T>(value: T, ms: number): T {
   const [v, setV] = useState(value);
   useEffect(() => {
-    const t = setTimeout(() => setV(value), ms);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(timer);
   }, [value, ms]);
   return v;
 }
@@ -66,13 +68,17 @@ export function Home() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4">
+      <header className="flex flex-wrap items-center justify-end gap-2 pt-4">
+        <ModelSwitch look="classic" />
+        <LangSwitch look="classic" />
+      </header>
       <main className="flex flex-1 flex-col justify-center py-16">
         <p className="eyebrow text-center">TickerLens</p>
         <h1 className="mt-3 text-center font-display text-4xl font-extrabold tracking-tight sm:text-6xl">
-          Is it a good business at a good price?
+          {t("Is it a good business at a good price?")}
         </h1>
         <p className="mt-4 text-center text-lg text-muted">
-          Type a US stock. TickerLens reads its SEC filings, computes the numbers and gives a clear verdict.
+          {t("Type a US stock. TickerLens reads its SEC filings, computes the numbers and gives a clear verdict.")}
         </p>
 
         <form
@@ -83,7 +89,7 @@ export function Home() {
             else if (query.trim()) void open(query.trim());
           }}
         >
-          <label htmlFor="ticker" className="sr-only">Ticker or company name</label>
+          <label htmlFor="ticker" className="sr-only">{t("Ticker or company name")}</label>
           <input
             id="ticker"
             autoFocus
@@ -108,7 +114,7 @@ export function Home() {
             disabled={busy || !query.trim()}
             className="absolute top-2 right-2 bottom-2 rounded-xl bg-good px-5 font-semibold text-white disabled:opacity-40"
           >
-            {busy ? "Starting…" : "Analyze"}
+            {busy ? t("Starting…") : t("Analyze")}
           </button>
           {options.length > 0 && (
             <ul id="ticker-options" role="listbox" className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-line bg-card shadow-lg">
@@ -131,10 +137,10 @@ export function Home() {
 
         {error && (
           <div className="mt-4 rounded-xl bg-bad-soft p-4 text-sm" role="alert">
-            <p className="font-semibold">{error.message}</p>
+            <p className="font-semibold">{tx(error.message)}</p>
             {error.suggestions.length > 0 && (
               <p className="mt-1">
-                Did you mean{" "}
+                {t("Did you mean")}{" "}
                 {error.suggestions.map((s, i) => (
                   <span key={s.ticker}>
                     {i > 0 && ", "}
@@ -149,7 +155,7 @@ export function Home() {
 
         {recent.length > 0 && (
           <div className="mt-10">
-            <p className="eyebrow">Recent</p>
+            <p className="eyebrow">{t("Recent")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {recent.map((c) => (
                 <button key={c.ticker} onClick={() => void open(c)} className="rounded-full border border-line bg-card px-4 py-2 text-sm hover:border-good">

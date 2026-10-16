@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import type { Evidence, Metric } from "../api";
 import { metricValue } from "../format";
+import { t, tx } from "../i18n";
 
 export function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -19,7 +20,7 @@ export function StepScale({ value, labels, tone = "good" }: { value: number | nu
   const ring = tone === "good" ? "bg-good ring-good-soft" : "bg-mid ring-mid-soft";
   const text = tone === "good" ? "text-good" : "text-mid";
   return (
-    <div className="card" role="img" aria-label={value == null ? "No score" : `${labels[chosen]}, ${chosen + 1} of 5`}>
+    <div className="card" role="img" aria-label={value == null ? t("No score") : t("{label}, {n} of 5", { label: t(labels[chosen]!), n: chosen + 1 })}>
       <ol className="relative flex justify-between">
         <span className="absolute top-4 right-[10%] left-[10%] h-px bg-line" aria-hidden />
         {labels.map((label, i) => (
@@ -32,7 +33,7 @@ export function StepScale({ value, labels, tone = "good" }: { value: number | nu
               {i + 1}
             </span>
             <span className={`text-[11px] leading-tight sm:text-sm ${i === chosen ? `font-semibold ${text}` : "text-muted"}`}>
-              {label}
+              {t(label)}
             </span>
           </li>
         ))}
@@ -57,7 +58,7 @@ export function ThreeLevel({ question, options, answer, children }: {
   const chosen = options.indexOf(answer ?? "");
   return (
     <div className="card flex flex-col gap-4">
-      <h3 className="font-display text-lg font-semibold">{question}</h3>
+      <h3 className="font-display text-lg font-semibold">{t(question)}</h3>
       <div className="flex justify-between border-b border-line pb-4">
         {options.map((o, i) => {
           const style = levelStyles[i]!;
@@ -71,7 +72,7 @@ export function ThreeLevel({ question, options, answer, children }: {
             >
               {style.icon}
             </span>
-            <span className={`text-sm ${i === chosen ? "font-semibold" : "text-muted"}`}>{o}</span>
+            <span className={`text-sm ${i === chosen ? "font-semibold" : "text-muted"}`}>{t(o)}</span>
           </div>
           );
         })}
@@ -99,19 +100,19 @@ export function MetricRow({ m }: { m: Metric }) {
   return (
     <details className="group border-b border-line py-2.5 last:border-0">
       <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3">
-        <span className="text-[15px] text-muted group-open:text-ink">{m.label}</span>
+        <span className="text-[15px] text-muted group-open:text-ink">{tx(m.label)}</span>
         <span className={`font-semibold tabular-nums ${m.value == null ? "text-muted" : ""}`}>{metricValue(m)}</span>
       </summary>
       <div className="mt-2 space-y-1 rounded-lg bg-paper p-3 text-xs text-muted">
-        {m.formula && <p><span className="font-semibold text-ink">Formula:</span> {m.formula}</p>}
-        {m.period && <p><span className="font-semibold text-ink">Period:</span> {m.period}</p>}
+        {m.formula && <p><span className="font-semibold text-ink">{t("Formula:")}</span> {tx(m.formula)}</p>}
+        {m.period && <p><span className="font-semibold text-ink">{t("Period:")}</span> {tx(m.period)}</p>}
         {m.inputs?.map((i) => (
           <p key={i.name}>
-            {i.name}: <span className="tabular-nums">{i.value == null ? "not reported" : formatInput(i.value)}</span>
-            {i.period ? ` (${i.period})` : ""}
+            {tx(i.name)}: <span className="tabular-nums">{i.value == null ? tx("not reported") : formatInput(i.value)}</span>
+            {i.period ? ` (${tx(i.period)})` : ""}
           </p>
         ))}
-        {m.note && <p className="text-mid">{m.note}</p>}
+        {m.note && <p className="text-mid">{tx(m.note)}</p>}
       </div>
     </details>
   );
@@ -126,18 +127,18 @@ export function EvidenceList({ evidence, filingUrl }: { evidence?: Evidence[]; f
   if (!evidence?.length) return null;
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer text-xs font-semibold text-good">Evidence from the 10-K ({evidence.length})</summary>
+      <summary className="cursor-pointer text-xs font-semibold text-good">{t("Evidence from the 10-K ({n})", { n: evidence.length })}</summary>
       <ul className="mt-2 space-y-2">
         {evidence.map((e, i) => (
           <li key={i} className="border-l-2 border-good-soft pl-3 text-muted">
             <q className="italic">{e.quote}</q>
             <span className="block text-xs">
-              {e.documentId.replace("10k-item", "10-K Item ")}
+              {e.documentId.replace("10k-item", t("10-K Item "))}
               {filingUrl && (
                 <>
                   {" · "}
                   <a href={filingUrl} target="_blank" rel="noreferrer" className="underline">
-                    filing
+                    {t("filing")}
                   </a>
                 </>
               )}
@@ -151,7 +152,7 @@ export function EvidenceList({ evidence, filingUrl }: { evidence?: Evidence[]; f
 
 export function Skeleton({ lines = 3, label }: { lines?: number; label?: string }) {
   return (
-    <div className="card animate-pulse space-y-3" aria-busy="true" aria-label={label ?? "Loading"}>
+    <div className="card animate-pulse space-y-3" aria-busy="true" aria-label={label ?? t("Loading")}>
       {Array.from({ length: lines }, (_, i) => (
         <div key={i} className="h-4 rounded bg-line" style={{ width: `${90 - i * 15}%` }} />
       ))}
@@ -167,9 +168,9 @@ export function Unavailable({ children }: { children: ReactNode }) {
 export function Disclaimer() {
   return (
     <footer className="mt-16 border-t border-line py-8 text-center text-xs text-muted">
-      <p className="font-semibold text-ink">Educational project. Not financial advice.</p>
+      <p className="font-semibold text-ink">{t("Educational project. Not financial advice.")}</p>
       <p className="mt-1">
-        TickerLens builds reports from SEC filings and market data. Nothing here is a recommendation to buy or sell any security.
+        {t("TickerLens builds reports from SEC filings and market data. Nothing here is a recommendation to buy or sell any security.")}
       </p>
     </footer>
   );

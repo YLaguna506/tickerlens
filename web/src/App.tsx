@@ -1,4 +1,5 @@
 import { useDesign } from "./design";
+import { useLang } from "./i18n";
 import { Bento } from "./pages/Bento";
 import { Decision } from "./pages/Decision";
 import { Evidence } from "./pages/Evidence";
@@ -12,8 +13,10 @@ const DESIGNS = { classic: Report, evidence: Evidence, bento: Bento, decision: D
 export function App() {
   const path = usePath();
   const design = useDesign();
+  // Re-render everything when the language changes; t() reads it directly.
+  const lang = useLang();
   const match = path.match(/^\/reports\/([0-9a-f-]{36})$/i);
-  if (!match) return <Home />;
+  if (!match) return <Home key={lang} />;
   const Page = DESIGNS[design];
-  return <Page id={match[1]!} key={match[1]} />;
+  return <Page id={match[1]!} key={`${match[1]}:${lang}`} />;
 }

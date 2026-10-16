@@ -1,6 +1,7 @@
 // Number formatting shared by every component.
 
 import type { Metric } from "./api";
+import { dateLocale } from "./i18n";
 
 export const pct = (v: number | null | undefined, digits = 1) =>
   v == null ? "–" : `${(v * 100).toFixed(digits)}%`;
@@ -40,10 +41,10 @@ export function metricValue(m: Metric): string {
 }
 
 export const shortDate = (iso: string) =>
-  new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  new Date(iso + "T00:00:00Z").toLocaleDateString(dateLocale(), { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
 export const monthYear = (iso: string) =>
-  new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
+  new Date(iso + "T00:00:00Z").toLocaleDateString(dateLocale(), { month: "short", year: "2-digit", timeZone: "UTC" });
 
 /** Axis label for a valuation multiple: one decimal below 10× so small
  * ranges (P/S from 0.7× to 3×) do not repeat the same label. */

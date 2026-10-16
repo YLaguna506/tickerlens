@@ -4,10 +4,10 @@
 import type { ReactNode } from "react";
 import { Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
-import { DesignSwitch } from "../components/DesignSwitch";
-import { ResyncButton } from "../components/ResyncButton";
+import { LangNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, titleCase, wholePrice } from "../format";
+import { t, tx } from "../i18n";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
@@ -42,7 +42,7 @@ function Step({ outcome, question, answer, because, children }: { outcome: Outco
             <span className={`rounded-full px-3 py-1 text-sm font-bold ${b.chip}`}>{answer}</span>
           </div>
           <p className="mt-1 text-sm text-slate-500">{because}</p>
-          {children && <p className="mt-2 text-xs font-semibold text-indigo-600 group-open:hidden">Show the numbers ▾</p>}
+          {children && <p className="mt-2 text-xs font-semibold text-indigo-600 group-open:hidden">{t("Show the numbers")} ▾</p>}
         </summary>
         {children && <div className="border-t border-slate-100 p-4 text-sm">{children}</div>}
       </details>
@@ -65,8 +65,8 @@ function MetricList({ items }: { items: (Metric | undefined)[] }) {
   return (
     <dl className="grid grid-cols-2 gap-x-6 gap-y-1">
       {items.filter((x): x is Metric => Boolean(x)).map((x) => (
-        <div key={x.key} className="flex justify-between gap-2 border-b border-slate-100 py-1" title={x.formula}>
-          <dt className="text-slate-500">{x.label}</dt>
+        <div key={x.key} className="flex justify-between gap-2 border-b border-slate-100 py-1" title={tx(x.formula)}>
+          <dt className="text-slate-500">{tx(x.label)}</dt>
           <dd className="font-semibold tabular-nums">{metricValue(x)}</dd>
         </div>
       ))}
@@ -79,7 +79,7 @@ function Reasons({ items }: { items: string[] }) {
   return (
     <ul className="mt-3 list-disc space-y-0.5 pl-5 text-slate-500">
       {items.map((r) => (
-        <li key={r}>{r}</li>
+        <li key={r}>{tx(r)}</li>
       ))}
     </ul>
   );
@@ -113,7 +113,7 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
   const quality = body?.businessQuality;
   const answers = body?.agents?.business_quality?.output;
   const b = m?.valuationBands;
-  const word = (o: Outcome, yes: string, partly: string, no: string) => (o === "yes" ? yes : o === "partly" ? partly : o === "no" ? no : "Working…");
+  const word = (o: Outcome, yes: string, partly: string, no: string) => t(o === "yes" ? yes : o === "partly" ? partly : o === "no" ? no : "Working…");
 
   const qOut = outcomeOf(quality?.score);
   const gOut = outcomeOf(m?.growthScore.value);
@@ -125,16 +125,16 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
 
       <Step
         outcome={qOut}
-        question="Is it a good business?"
+        question={t("Is it a good business?")}
         answer={`${word(qOut, "Yes", "Partly", "No")}${quality ? ` · ${quality.score.toFixed(1)}/5` : ""}`}
-        because={answers ? QUALITY_QUESTIONS.map((x) => `${x.short}: ${answers[x.key]?.answer ?? "–"}`).join(" · ") : "AI analysts are reading the 10-K…"}
+        because={answers ? QUALITY_QUESTIONS.map((x) => `${t(x.short)}: ${answers[x.key]?.answer ? t(answers[x.key]!.answer) : "–"}`).join(" · ") : t("AI analysts are reading the 10-K…")}
       >
         {answers && (
           <ul className="space-y-3">
             {QUALITY_QUESTIONS.map((x) => (
               <li key={x.key}>
                 <p className="font-semibold">
-                  {x.question} <span className="text-indigo-600">{answers[x.key]?.answer}</span>
+                  {t(x.question)} <span className="text-indigo-600">{answers[x.key]?.answer ? t(answers[x.key]!.answer) : ""}</span>
                 </p>
                 <p className="text-slate-500">{answers[x.key]?.justification}</p>
               </li>
@@ -145,9 +145,9 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
 
       <Step
         outcome={gOut}
-        question="Is it growing?"
+        question={t("Is it growing?")}
         answer={`${word(gOut, "Yes", "Somewhat", "No")}${m?.growthScore.value != null ? ` · ${m.growthScore.value.toFixed(1)}/5` : ""}`}
-        because={m ? `Revenue ${pct(metricOf(m, "revenueCagr5y")?.value)} a year over 5 years, EPS ${pct(metricOf(m, "epsCagr5y")?.value)}.` : "Computing…"}
+        because={m ? t("Revenue {rev} a year over 5 years, EPS {eps}.", { rev: pct(metricOf(m, "revenueCagr5y")?.value), eps: pct(metricOf(m, "epsCagr5y")?.value) }) : t("Computing…")}
       >
         {m && (
           <>
@@ -159,9 +159,9 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
 
       <Step
         outcome={hOut}
-        question="Are its finances healthy?"
+        question={t("Are its finances healthy?")}
         answer={`${word(hOut, "Yes", "Mostly", "No")}${m?.healthScore.value != null ? ` · ${m.healthScore.value.toFixed(1)}/5` : ""}`}
-        because={m ? `Debt to equity ${valueOf(metricOf(m, "debtToEquity"))}; operating profit covers interest ${valueOf(metricOf(m, "interestCoverage"))}.` : "Computing…"}
+        because={m ? t("Debt to equity {de}; operating profit covers interest {cov}.", { de: valueOf(metricOf(m, "debtToEquity")), cov: valueOf(metricOf(m, "interestCoverage")) }) : t("Computing…")}
       >
         {m && (
           <>
@@ -173,16 +173,20 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
 
       <Merge>
         <p className="font-bold">
-          The business scores {v?.business?.toFixed(1) ?? "…"} / 5 · {scoreWord(SCORE_WORDS.quality, v?.business ?? null)}
+          {t("The business scores {score} / 5", { score: v?.business?.toFixed(1) ?? "…" })} · {scoreWord(SCORE_WORDS.quality, v?.business ?? null)}
         </p>
-        {v && <p className="mt-0.5">{v.components.map((c) => `${c.name} ${c.score?.toFixed(1) ?? "–"} × ${Math.round(c.weight * 100)}%`).join("  +  ")}</p>}
+        {v && <p className="mt-0.5">{v.components.map((c) => `${tx(c.name)} ${c.score?.toFixed(1) ?? "–"} × ${Math.round(c.weight * 100)}%`).join("  +  ")}</p>}
       </Merge>
 
       <Step
         outcome={m ? "yes" : "pending"}
-        question="How should it be valued?"
-        answer={m ? `With ${valuedWith(m)}` : "Working…"}
-        because={m ? `It is in phase ${m.phase.number} of 5, ${m.phase.name.toLowerCase()}: ${m.phase.reason}. ${fallbackNote(m)}` : "Computing…"}
+        question={t("How should it be valued?")}
+        answer={m ? t("With {metric}", { metric: valuedWith(m) }) : t("Working…")}
+        because={
+          m
+            ? `${t("It is in phase {n} of 5, {name}: {reason}.", { n: m.phase.number, name: tx(m.phase.name).toLowerCase(), reason: tx(m.phase.reason) })} ${fallbackNote(m)}`
+            : t("Computing…")
+        }
       >
         {m && (
           <ul className="space-y-1">
@@ -190,7 +194,7 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
               <li key={c.question} className="flex gap-2">
                 <span className={c.answer == null ? "text-slate-400" : c.answer ? "text-emerald-600" : "text-rose-600"}>{c.answer == null ? "?" : c.answer ? "✓" : "✕"}</span>
                 <span>
-                  {c.question} <span className="text-slate-500">{c.detail}</span>
+                  {tx(c.question)} <span className="text-slate-500">{tx(c.detail)}</span>
                 </span>
               </li>
             ))}
@@ -200,14 +204,20 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
 
       <Step
         outcome={vOut}
-        question="Is the price attractive?"
+        question={t("Is the price attractive?")}
         answer={`${scoreWord(SCORE_WORDS.valuation, m?.valuationScore.value ?? null)}${m?.valuationScore.value != null ? ` · ${m.valuationScore.value}/5` : ""}`}
         because={
           b
-            ? `${b.metric} is ${multiple(b.current)} against a typical ${multiple(b.median)}: higher than on ${pct(b.percentile, 0)} of days since ${b.historyFrom.slice(0, 4)}.`
+            ? t("{metric} is {x} against a typical {typical}: higher than on {pct} of days since {year}.", {
+                metric: b.metric,
+                x: multiple(b.current),
+                typical: multiple(b.median),
+                pct: pct(b.percentile, 0),
+                year: b.historyFrom.slice(0, 4),
+              })
             : m
-              ? "Not enough price history to compare."
-              : "Computing…"
+              ? t("Not enough price history to compare.")
+              : t("Computing…")
         }
       >
         {m && b && (
@@ -220,12 +230,12 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
                 { label: "Expensive above", value: b.expensivePrice, tone: "text-rose-700 bg-rose-50" },
               ].map((x) => (
                 <div key={x.label} className={`rounded-xl p-2 ${x.tone}`}>
-                  <p className="text-xs font-semibold">{x.label}</p>
+                  <p className="text-xs font-semibold">{t(x.label)}</p>
                   <p className="text-xl font-bold tabular-nums">{wholePrice(x.value)}</p>
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-center text-slate-500">Today {price(b.price)}</p>
+            <p className="mt-2 text-center text-slate-500">{t("Today {price}", { price: price(b.price) })}</p>
           </>
         )}
       </Step>
@@ -237,24 +247,25 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
         </span>
         <div className="rounded-2xl border-2 border-indigo-600 bg-white p-5 shadow-lg">
           {!v ? (
-            <p className="text-slate-500">The verdict comes last, once every score is in.</p>
+            <p className="text-slate-500">{t("The verdict comes last, once every score is in.")}</p>
           ) : (
             <>
-              <p className="text-xs font-bold tracking-wider text-indigo-600 uppercase">Verdict</p>
-              <p className="text-5xl font-bold tracking-tight">{v.label || "n/a"}</p>
-              <p className="mt-1 text-lg font-semibold">{v.tagline || v.meaning}</p>
+              <p className="text-xs font-bold tracking-wider text-indigo-600 uppercase">{t("Verdict")}</p>
+              <p className="text-5xl font-bold tracking-tight">{v.label ? t(v.label) : t("n/a")}</p>
+              <p className="mt-1 text-lg font-semibold">{v.tagline || tx(v.meaning)}</p>
               <div className="mt-4 grid grid-cols-5 gap-1 text-center text-xs font-semibold">
                 {LABELS.map((l) => (
-                  <span key={l} className={`rounded-md py-1.5 ${l === v.label ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-400"}`}>{l}</span>
+                  <span key={l} className={`rounded-md py-1.5 ${l === v.label ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-400"}`}>{t(l)}</span>
                 ))}
               </div>
               <p className="mt-4 rounded-lg bg-slate-50 p-3 text-sm">
-                <span className="font-semibold">Rule applied: </span>
-                {v.rule}
+                <span className="font-semibold">{t("Rule applied:")} </span>
+                {tx(v.rule)}
               </p>
               {v.rationale && <p className="mt-3 text-sm leading-relaxed text-slate-600">{v.rationale}</p>}
               <p className="mt-3 text-xs text-slate-400">
-                Confidence {v.confidenceLevel} ({v.confidence}/100){v.confidenceReasons.length ? `: ${v.confidenceReasons.join("; ")}` : ""}
+                {t("Confidence {level}", { level: t(v.confidenceLevel) })} ({v.confidence}/100)
+                {v.confidenceReasons.length ? `: ${v.confidenceReasons.map(tx).join("; ")}` : ""}
               </p>
             </>
           )}
@@ -276,20 +287,22 @@ export function Decision({ id }: { id: string }) {
       <div className="mx-auto max-w-2xl px-4 py-5 pb-16">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <button onClick={() => navigate("/")} className="text-sm font-semibold text-indigo-600">
-            ← New search
+            ← {t("New search")}
           </button>
-          <div className="flex min-w-0 items-center gap-2">
-            <ResyncButton report={report} look="decision" />
-            <DesignSwitch look="decision" />
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <ReportControls report={report} look="decision" />
           </div>
         </header>
+        <LangNotice report={report} className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" />
 
         {isLoading ? (
-          <p className="pt-10 text-slate-500">Loading…</p>
+          <p className="pt-10 text-slate-500">{t("Loading…")}</p>
         ) : error || !report ? (
-          <p className="pt-10">Report not found.</p>
+          <p className="pt-10">{t("Report not found.")}</p>
         ) : report.status === "failed" ? (
-          <p className="pt-10">This report could not be built: {report.error}</p>
+          <p className="pt-10">
+            {t("This report could not be built:")} {tx(report.error)}
+          </p>
         ) : (
           <>
             <div className="pt-8">
@@ -297,11 +310,11 @@ export function Decision({ id }: { id: string }) {
                 {report.ticker}
                 {m?.price != null && <> · {price(m.price)}</>}
               </p>
-              <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">How we reached a verdict on {name}</h1>
-              <p className="mt-2 text-slate-500">Five questions, answered from SEC filings and prices. Tap a step to see the numbers.</p>
+              <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">{t("How we reached a verdict on {name}", { name })}</h1>
+              <p className="mt-2 text-slate-500">{t("Five questions, answered from SEC filings and prices. Tap a step to see the numbers.")}</p>
               {!isFinished(report.status) && (
                 <p className="mt-3 animate-pulse text-sm font-semibold text-indigo-600" aria-live="polite">
-                  Step {stage + 1} of {STAGES.length}: {STAGES[stage]?.label}…
+                  {t("Step {n} of {total}: {label}…", { n: stage + 1, total: STAGES.length, label: t(STAGES[stage]?.label ?? "") })}
                 </p>
               )}
             </div>
@@ -310,7 +323,8 @@ export function Decision({ id }: { id: string }) {
               <RunDetails report={report} />
             </div>
             <p className="mt-4 text-center text-xs text-slate-400">
-              {m && <>Financials through {shortDate(m.financialsThrough)} · </>}Educational only, not financial advice.
+              {m && <>{t("Financials through {date}", { date: shortDate(m.financialsThrough) })} · </>}
+              {t("Educational only, not financial advice.")}
             </p>
           </>
         )}

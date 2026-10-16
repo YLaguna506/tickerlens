@@ -9,8 +9,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "lint": "eslint . && node scripts/check-i18n.mjs",
+    "preview": "vite preview",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.3",
