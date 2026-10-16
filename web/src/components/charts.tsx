@@ -78,25 +78,40 @@ export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: n
   );
 }
 
-/** One year of the valuation multiple with cheap / fair / expensive bands. */
-export function BandChart({ points, bands }: { points: Point[]; bands: Bands }) {
+/** One year of the valuation multiple with cheap / fair / expensive bands.
+ * The tooltip also shows that day's share price. */
+export function BandChart({ points, bands, prices }: { points: Point[]; bands: Bands; prices: Point[] }) {
+  const priceOn = new Map(prices.map((p) => [p.date, p.value]));
+  const data = points.map((p) => ({ ...p, price: priceOn.get(p.date) ?? null }));
   const values = points.map((p) => p.value);
   const lo = Math.min(...values, bands.cheapBelow) * 0.97;
   const hi = Math.max(...values, bands.expensiveAbove) * 1.03;
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer>
-        <LineChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <ReferenceArea y1={lo} y2={bands.cheapBelow} fill="#e3efe1" fillOpacity={0.9} ifOverflow="hidden" />
           <ReferenceArea y1={bands.cheapBelow} y2={bands.expensiveAbove} fill="#f4ead2" fillOpacity={0.8} ifOverflow="hidden" />
           <ReferenceArea y1={bands.expensiveAbove} y2={hi} fill="#f7e3e0" fillOpacity={0.9} ifOverflow="hidden" />
           <ReferenceLine y={bands.median} stroke="#9a968c" strokeDasharray="5 5" />
           <XAxis dataKey="date" tickFormatter={monthYear} tick={AXIS} axisLine={false} tickLine={false} minTickGap={40} />
           <YAxis domain={[lo, hi]} tickFormatter={(v: number) => `${v.toFixed(1)}×`} tick={AXIS} axisLine={false} tickLine={false} width={52} />
-          <Tooltip formatter={(v) => `${Number(v).toFixed(1)}×`} />
+          <Tooltip content={<BandTooltip metric={bands.metric} />} />
           <Line dataKey="value" name={bands.metric} stroke={INK} strokeWidth={2} dot={false} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+function BandTooltip({ active, payload, metric }: { active?: boolean; payload?: { payload: { date: string; value: number; price: number | null } }[]; metric: string }) {
+  const row = active ? payload?.[0]?.payload : undefined;
+  if (!row) return null;
+  return (
+    <div className="rounded-lg border border-line bg-white px-3 py-2 text-sm shadow-sm">
+      <p className="text-muted">{row.date}</p>
+      <p>{metric} <span className="font-semibold">{row.value.toFixed(1)}×</span></p>
+      {row.price != null && <p>Price <span className="font-semibold">{price(row.price)}</span></p>}
     </div>
   );
 }

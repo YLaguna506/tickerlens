@@ -1,7 +1,7 @@
 // The report's sections, in page order.
 
 import type { MetricsReport, Quality, ReportBody, Verdict } from "../api";
-import { multiple, pct, price, signedPct, titleCase, toneFor, usd } from "../format";
+import { multiple, pct, price, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
 import { BandChart, EarningsDots, GeographySplit, PriceBar, RevenueIncomeChart, SegmentBreakdown } from "./charts";
 import { EvidenceList, MetricRow, ScoreBar, Section, Skeleton, StepScale, ThreeLevel, Unavailable } from "./ui";
 
@@ -286,14 +286,14 @@ export function ValuationSection({ m }: { m?: MetricsReport }) {
               <h3 className="font-display text-xl font-bold">{b.metric} over the last year</h3>
               <span className="text-sm text-muted">bands from {b.historyFrom.slice(0, 4)}–{b.historyTo.slice(0, 4)}</span>
             </div>
-            <BandChart points={m.charts.valuation1y} bands={b} />
+            <BandChart points={m.charts.valuation1y} bands={b} prices={m.charts.price} />
             <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
-              <li><span className="mr-1.5 inline-block size-3 rounded-full bg-good-soft ring-1 ring-good" /> Cheap below {multiple(b.cheapBelow)}</li>
-              <li><span className="mr-1.5 inline-block size-3 rounded-full bg-mid-soft ring-1 ring-mid" /> Fair · typical {multiple(b.median)}</li>
-              <li><span className="mr-1.5 inline-block size-3 rounded-full bg-bad-soft ring-1 ring-bad" /> Expensive above {multiple(b.expensiveAbove)}</li>
+              <li><span className="mr-1.5 inline-block size-3 rounded-full bg-good-soft ring-1 ring-good" /> Cheap below {multiple(b.cheapBelow)} <span className="text-muted">({wholePrice(b.cheapPrice)} today)</span></li>
+              <li><span className="mr-1.5 inline-block size-3 rounded-full bg-mid-soft ring-1 ring-mid" /> Fair · typical {multiple(b.median)} <span className="text-muted">({wholePrice(b.medianPrice)})</span></li>
+              <li><span className="mr-1.5 inline-block size-3 rounded-full bg-bad-soft ring-1 ring-bad" /> Expensive above {multiple(b.expensiveAbove)} <span className="text-muted">({wholePrice(b.expensivePrice)})</span></li>
             </ul>
             <p className="text-sm text-muted">
-              Today {multiple(b.current)}: higher than {pct(b.percentile, 0)} of the last {b.days.toLocaleString()} trading days.
+              Today {multiple(b.current)} at {price(b.price)}: higher than {pct(b.percentile, 0)} of the last {b.days.toLocaleString()} trading days.
             </p>
           </div>
           <div className="card fade-in">
