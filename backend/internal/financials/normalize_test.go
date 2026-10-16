@@ -31,7 +31,7 @@ func load(t *testing.T, ticker string) Financials {
 	if err := json.Unmarshal(raw, &facts); err != nil {
 		t.Fatal(err)
 	}
-	return Normalize(companies[ticker], &facts)
+	return Normalize(companies[ticker], &facts, nil)
 }
 
 // TestGolden compares the full normalized output with a reviewed snapshot, so

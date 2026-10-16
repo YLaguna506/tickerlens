@@ -2085,6 +2085,21 @@
       "shortTermInvestments": "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
       "totalDebt": "derived: ConvertibleDebtNoncurrent",
       "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+    },
+    "filed": {
+      "buybacks": "2026-09-04",
+      "capex": "2026-09-04",
+      "cash": "2026-09-04",
+      "epsDiluted": "2026-09-04",
+      "grossProfit": "2026-09-04",
+      "interestExpense": "2026-09-04",
+      "netIncome": "2026-09-04",
+      "operatingCashFlow": "2026-09-04",
+      "operatingIncome": "2026-09-04",
+      "revenue": "2026-09-04",
+      "sharesDiluted": "2026-09-04",
+      "shortTermInvestments": "2026-09-04",
+      "totalEquity": "2026-09-04"
     }
   },
   "warnings": [

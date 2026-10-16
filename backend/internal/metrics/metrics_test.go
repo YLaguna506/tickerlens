@@ -61,10 +61,10 @@ func loadBundle(t *testing.T, ticker string) *ingest.Bundle {
 		edgar.MergeClassFacts(&facts, class["eps"], class["shares"])
 	}
 	b := &ingest.Bundle{Company: companies[ticker]}
-	b.Financials = financials.Normalize(b.Company, &facts)
 	var bars []prices.Bar
 	readJSON(t, testdata("tiingo", "prices_"+ticker+".json"), &bars)
 	b.Prices = bars
+	b.Financials = financials.Normalize(b.Company, &facts, ingest.Splits(bars))
 	var quarters []estimates.QuarterlyEarnings
 	readJSON(t, testdata("alphavantage", "quarters_"+ticker+".json"), &quarters)
 	b.Earnings = quarters
@@ -224,5 +224,34 @@ func TestAppleSplitInPrices(t *testing.T) {
 	sp := splitsFrom(loadBundle(t, "AAPL").Prices)
 	if len(sp) != 1 || sp[0].date != "2020-08-31" || sp[0].factor != 4 {
 		t.Errorf("splits = %+v, want the 4-for-1 split on 2020-08-31", sp)
+	}
+}
+
+// The SPLIT fixture has a 10-for-1 split between a 10-Q and the next 10-K, so
+// Q4 is derived from YTD values filed on either side of it. Every rolling TTM
+// must be in today's share terms: positive EPS, post-split share counts.
+func TestRollingTTMAcrossSplit(t *testing.T) {
+	var facts edgar.CompanyFacts
+	if !readJSON(t, testdata("edgar", "companyfacts_SPLIT.json"), &facts) {
+		t.Fatal("missing SPLIT fixture")
+	}
+	bars := []prices.Bar{
+		{Date: "2023-12-14", Close: 500, SplitFactor: 1},
+		{Date: "2023-12-15", Close: 50, SplitFactor: 10},
+	}
+	f := financials.Normalize(edgar.Company{Ticker: "SPLIT"}, &facts, ingest.Splits(bars))
+	rolling := rollingTTM(f.Quarterly, f.Annual, splitsFrom(bars))
+
+	want := map[string]float64{"2023-12-31": 0.50, "2024-03-31": 0.51}
+	if len(rolling) != len(want) {
+		t.Fatalf("got %d TTM windows, want %d", len(rolling), len(want))
+	}
+	for _, w := range rolling {
+		if w.eps == nil || *w.eps != want[w.end] {
+			t.Errorf("TTM EPS to %s = %v, want %v", w.end, w.eps, want[w.end])
+		}
+		if w.shares == nil || *w.shares != 1e9 {
+			t.Errorf("TTM shares to %s = %v, want 1e9", w.end, w.shares)
+		}
 	}
 }
