@@ -2,11 +2,14 @@ package pipeline
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/sync/errgroup"
 
@@ -149,6 +152,13 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 		}
 	}
 	business, mdna := doc("1", "Business"), doc("7", "Management's Discussion and Analysis")
+	// Segment tables can sit deep in a long MD&A (HPE's start ~49k
+	// characters in): give that agent the stretch that talks most about
+	// segments instead of the beginning.
+	segmentsDoc := mdna
+	if a.MaxDocChars > 0 {
+		segmentsDoc.Text = segmentWindow(items["7"], a.MaxDocChars)
+	}
 	if business.Text == "" {
 		return failAll("the 10-K's Item 1 (Business) could not be found")
 	}
@@ -156,7 +166,7 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 		AgentOverview: {business},
 		AgentQuality:  {business, mdna},
 		// Revenue tables are in MD&A; sending only Item 7 halves the reading.
-		AgentSegments: {mdna},
+		AgentSegments: {segmentsDoc},
 	}
 	facts := agentFacts(report)
 
@@ -220,6 +230,11 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 func (j *job) runAgent(ctx context.Context, filing edgar.Filing, task agentclient.Task) *AgentSection {
 	a := j.agents
 	key := fmt.Sprintf("agent:%s:%s:%s:%s:%s", task.Ticker, filing.Accession, task.Section, task.PromptVersion, a.FastModel)
+	if task.Section == AgentSegments {
+		// Which stretch of Item 7 the segments agent reads can change, so its
+		// answer is also keyed by the text it was given.
+		key += ":" + docsHash(task.Documents)
+	}
 	if a.Cache != nil {
 		if b, ok, err := a.Cache.Get(ctx, key); err == nil && ok {
 			var cached AgentSection
@@ -247,7 +262,9 @@ func (j *job) runAgent(ctx context.Context, filing edgar.Filing, task agentclien
 		return sec
 	}
 	sec.Status = SectionStateReady
-	if a.Cache != nil {
+	// An empty breakdown is not worth keeping: a later prompt or document
+	// window may find the table.
+	if a.Cache != nil && (task.Section != AgentSegments || !emptySegments(sec.Output)) {
 		if b, err := json.Marshal(sec); err == nil {
 			_ = a.Cache.Set(ctx, key, b, 365*24*time.Hour)
 		}
@@ -414,4 +431,62 @@ func checkSegments(output json.RawMessage, b *ingest.Bundle) (*SegmentBreakdown,
 		return nil, fmt.Errorf("no revenue breakdown disclosed in the documents")
 	}
 	return seg, nil
+}
+
+// segmentWindow returns text if it fits in size bytes; otherwise the window of
+// that size mentioning "segment" most often, centered on those mentions.
+func segmentWindow(text string, size int) string {
+	if len(text) <= size {
+		return text
+	}
+	lower := strings.ToLower(text)
+	best, bestCount := 0, -1
+	step := max(size/10, 1)
+	for start := 0; ; start += step {
+		if start+size > len(text) {
+			start = len(text) - size
+		}
+		if n := strings.Count(lower[start:start+size], "segment"); n > bestCount {
+			best, bestCount = start, n
+		}
+		if start+size >= len(text) {
+			break
+		}
+	}
+	// Center the window on the mentions it holds, so a table that starts
+	// with "Segment results" is not cut short.
+	if first := strings.Index(lower[best:best+size], "segment"); first >= 0 {
+		last := strings.LastIndex(lower[best:best+size], "segment")
+		best = min(max(best+(first+last)/2-size/2, 0), len(text)-size)
+	}
+	// Start and end on character boundaries.
+	end := best + size
+	for best > 0 && !utf8.RuneStart(text[best]) {
+		best--
+	}
+	for end < len(text) && !utf8.RuneStart(text[end]) {
+		end--
+	}
+	return text[best:end]
+}
+
+// docsHash fingerprints the text given to an agent.
+func docsHash(docs []agentclient.Document) string {
+	h := sha256.New()
+	for _, d := range docs {
+		h.Write([]byte(d.ID))
+		h.Write([]byte{0})
+		h.Write([]byte(d.Text))
+		h.Write([]byte{0})
+	}
+	return hex.EncodeToString(h.Sum(nil)[:8])
+}
+
+// emptySegments reports whether a segments answer lists no breakdown at all.
+func emptySegments(output json.RawMessage) bool {
+	var out struct {
+		Segments  []json.RawMessage `json:"segments"`
+		Geography []json.RawMessage `json:"geography"`
+	}
+	return json.Unmarshal(output, &out) == nil && len(out.Segments) == 0 && len(out.Geography) == 0
 }

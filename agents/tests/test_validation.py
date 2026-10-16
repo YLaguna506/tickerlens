@@ -83,6 +83,18 @@ def test_number_guard_ignores_small_counts() -> None:
     assert check_numbers(["The company has 3 segments and 2 brands."], []) == []
 
 
+def test_quotes_ignore_footnote_markers() -> None:
+    text = "Net revenue(1)\n$ 34,296 $ 17,745 and operating losses $ (437) in total"
+    doc = Document(id="10k-item7", source="Item 7", text=text)
+    footnote = Evidence(claim="c", documentId="10k-item7", quote="Net revenue $ 34,296 $ 17,745")
+    # A negative amount in parentheses is not a footnote: it must stay.
+    negative = Evidence(
+        claim="c", documentId="10k-item7", quote="operating losses $ (437) in total"
+    )
+    assert check_evidence([footnote, negative], [doc]) == []
+    assert normalize("losses $ (437)") == "losses 437"
+
+
 def test_normalize() -> None:
     assert (
         normalize("World" + RSQUO + "s  LEADER " + EMDASH + " payments!")

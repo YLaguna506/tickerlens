@@ -299,11 +299,16 @@ func (r *resolver) period(co edgar.Company, pt PeriodType, fy, fq int, start, en
 	return p
 }
 
-// totalDebt adds up the debt balances reported at a date:
-// long-term debt (total, or current + non-current) plus commercial paper and
-// short-term borrowings. Convertible notes are added only when no long-term
-// debt is tagged, because filers that tag both usually include converts in
-// long-term debt already.
+// totalDebt adds up the debt balances reported at a date. When the filing
+// tags all current debt (DebtCurrent) and non-current long-term debt, those
+// two are the whole balance sheet. Otherwise: long-term debt (total, or
+// current + non-current) plus commercial paper and short-term borrowings.
+// Convertible notes are added only when no long-term debt is tagged, because
+// filers that tag both usually include converts in long-term debt already.
+//
+// DebtCurrent goes first because LongTermDebt includes the current portion,
+// and ShortTermBorrowings often does too (HPE's FY2025 10-K): adding them
+// would count that portion twice.
 func (r *resolver) totalDebt(end string) (float64, string, bool) {
 	var total float64
 	var parts []string
@@ -314,6 +319,12 @@ func (r *resolver) totalDebt(end string) (float64, string, bool) {
 			parts = append(parts, v.source)
 		}
 		return ok
+	}
+
+	if cur, ok := r.get("debtCurrentAll", FiscalYear, end); ok {
+		if non, ok := r.get("debtNoncurrent", FiscalYear, end); ok {
+			return cur.val + non.val, "derived: " + cur.source + " + " + non.source, true
+		}
 	}
 
 	haveLongTerm := add("debtTotal")

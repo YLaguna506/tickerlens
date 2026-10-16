@@ -27,10 +27,17 @@ _IGNORE_RE = re.compile(r"\b\d{1,2}-[KQ]\b|\b[Ii]tem\s+\d{1,2}[A-Ca-c]?\b")
 
 
 def normalize(text: str) -> str:
-    """Lower-case, unify quotes and dashes, and collapse everything that is not
-    a letter or digit, so formatting differences do not break quote matching."""
+    """Lower-case, unify quotes and dashes, drop footnote markers, and collapse
+    everything that is not a letter or digit, so formatting differences do not
+    break quote matching."""
     t = text.lower().translate(_UNIFY)
+    t = _FOOTNOTE_RE.sub("", t)
     return re.sub(r"[^a-z0-9]+", " ", t).strip()
+
+
+# A footnote marker glued to a word: "Net revenue(1)", "operations(2)". A
+# negative amount like "$ (437)" is not glued to a word, so it stays.
+_FOOTNOTE_RE = re.compile(r"(?<=[a-z])\(\d{1,2}\)")
 
 
 # Curly quotes, en/em dashes and non-breaking spaces → plain ASCII.

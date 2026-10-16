@@ -385,11 +385,13 @@
       "inputs": [
         {
           "name": "operating income",
-          "value": 26296000000
+          "value": 26296000000,
+          "period": "TTM to 2026-03-31"
         },
         {
           "name": "interest expense",
-          "value": 621000000
+          "value": 621000000,
+          "period": "TTM to 2026-03-31"
         }
       ]
     },

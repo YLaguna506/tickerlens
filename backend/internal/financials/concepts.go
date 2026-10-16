@@ -91,6 +91,7 @@ var fields = []fieldSpec{
 var helpers = []fieldSpec{
 	{"costOfRevenue", flow, "USD", []string{"CostOfRevenue", "CostOfGoodsAndServicesSold"}},
 	{"debtTotal", instant, "USD", []string{"LongTermDebt"}},
+	{"debtCurrentAll", instant, "USD", []string{"DebtCurrent"}}, // current LTD + short-term borrowings + CP
 	{"debtCurrent", instant, "USD", []string{"LongTermDebtCurrent"}},
 	{"debtNoncurrent", instant, "USD", []string{"LongTermDebtNoncurrent"}},
 	{"commercialPaper", instant, "USD", []string{"CommercialPaper"}},

@@ -188,6 +188,38 @@ func newCalc(f financials.Financials, rolling []ttm, sp splits) *calc {
 	return c
 }
 
+// interestExpense is the TTM interest expense or, for filers that tag it only
+// in the 10-K (HPE), the latest fiscal year's: close enough for a coverage
+// ratio. It returns the value, its period and a note when it fell back.
+func (c *calc) interestExpense() (*float64, string, string) {
+	if v := c.ttmValue("interestExpense"); v != nil {
+		return v, c.period, ""
+	}
+	if fy, v := c.recentAnnual("interestExpense"); v != nil {
+		return v, fmt.Sprintf("FY%d", fy.FiscalYear), fmt.Sprintf("interest expense from FY%d (not reported quarterly)", fy.FiscalYear)
+	}
+	return nil, c.period, ""
+}
+
+// recentAnnual returns a field from the latest fiscal year that ended no more
+// than a year before the TTM end, or nil.
+func (c *calc) recentAnnual(field string) (financials.FinancialPeriod, *float64) {
+	if c.ttm == nil {
+		return financials.FinancialPeriod{}, nil
+	}
+	cutoff := shiftDate(c.ttm.EndDate, -1)
+	for i := len(c.f.Annual) - 1; i >= 0; i-- {
+		fy := c.f.Annual[i]
+		if fy.EndDate < cutoff {
+			break
+		}
+		if v := fy.Get(field); v != nil {
+			return fy, v
+		}
+	}
+	return financials.FinancialPeriod{}, nil
+}
+
 // ttmValue returns a TTM field (balance-sheet fields are as of the TTM end).
 func (c *calc) ttmValue(field string) *float64 {
 	if c.ttm == nil {
@@ -383,10 +415,11 @@ func (c *calc) health() []Metric {
 		de.Value = ptr(*debt / *equity)
 	}
 
-	ebit, interest := c.ttmValue("operatingIncome"), c.ttmValue("interestExpense")
+	ebit := c.ttmValue("operatingIncome")
+	interest, interestPeriod, interestNote := c.interestExpense()
 	cov := Metric{Key: "interestCoverage", Label: "EBIT / interest", Unit: Multiple, Period: c.period,
-		Formula: "operating income ÷ interest expense",
-		Inputs:  []Input{{Name: "operating income", Value: ebit}, {Name: "interest expense", Value: interest}}}
+		Formula: "operating income ÷ interest expense", Note: interestNote,
+		Inputs: []Input{{Name: "operating income", Value: ebit, Period: c.period}, {Name: "interest expense", Value: interest, Period: interestPeriod}}}
 	switch {
 	case interest == nil:
 		cov.Note = "interest expense not reported separately"
@@ -414,9 +447,10 @@ func (c *calc) health() []Metric {
 }
 
 func (c *calc) healthInputs() scoring.HealthInputs {
+	interest, _, _ := c.interestExpense()
 	in := scoring.HealthInputs{
 		EBIT:            c.ttmValue("operatingIncome"),
-		InterestExpense: c.ttmValue("interestExpense"),
+		InterestExpense: interest,
 		TotalDebt:       c.ttmValue("totalDebt"),
 		Equity:          c.ttmValue("totalEquity"),
 		FCF:             c.ttmValue("freeCashFlow"),
