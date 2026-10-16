@@ -22,6 +22,7 @@ type Reports interface {
 	Get(ctx context.Context, id string) (store.Report, error)
 	LatestFinished(ctx context.Context, ticker string, since time.Time) (store.Report, error)
 	ListByTicker(ctx context.Context, ticker string, limit int) ([]store.Report, error)
+	ClearTicker(ctx context.Context, ticker string) (store.Cleared, error)
 }
 
 // Jobs starts report jobs in the background (pipeline.Runner).
@@ -74,6 +75,7 @@ func NewRouter(d Deps) http.Handler {
 	mux.HandleFunc("GET /api/reports", a.listReports)
 	mux.HandleFunc("GET /api/reports/{id}", a.getReport)
 	mux.HandleFunc("GET /api/reports/{id}/events", a.streamEvents)
+	mux.HandleFunc("DELETE /api/tickers/{ticker}/cache", a.clearTicker)
 
 	return logRequests(d.Logger, mux)
 }

@@ -247,3 +247,21 @@ func (a *api) streamEvents(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+// DELETE /api/tickers/{ticker}/cache → deletes the ticker's saved reports and
+// cached data, so the next report is built from scratch.
+func (a *api) clearTicker(w http.ResponseWriter, r *http.Request) {
+	ticker := edgar.NormalizeTicker(r.PathValue("ticker"))
+	if ticker == "" {
+		writeError(w, http.StatusBadRequest, "ticker is required")
+		return
+	}
+	c, err := a.Reports.ClearTicker(r.Context(), ticker)
+	if err != nil {
+		a.Logger.Error("clear ticker", "ticker", ticker, "err", err)
+		writeError(w, http.StatusInternalServerError, "could not clear the cache")
+		return
+	}
+	a.Logger.Info("cleared ticker cache", "ticker", ticker, "reports", c.Reports, "cache_entries", c.CacheEntries)
+	writeJSON(w, http.StatusOK, c)
+}

@@ -731,7 +731,7 @@ export function Evidence({ id }: { id: string }) {
                 </p>
               )}
               <div className="mt-3">
-                <RunDetails body={body} />
+                <RunDetails report={report} />
               </div>
               <p className="mt-3 font-semibold text-zinc-700">Educational project. Not financial advice.</p>
             </footer>

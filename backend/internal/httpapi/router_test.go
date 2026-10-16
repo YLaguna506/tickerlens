@@ -52,6 +52,19 @@ func (f *fakeReports) LatestFinished(context.Context, string, time.Time) (store.
 	return *f.latest, nil
 }
 
+func (f *fakeReports) ClearTicker(_ context.Context, ticker string) (store.Cleared, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var c store.Cleared
+	for id, r := range f.reports {
+		if r.Ticker == ticker && r.Finished() {
+			delete(f.reports, id)
+			c.Reports++
+		}
+	}
+	return c, nil
+}
+
 func (f *fakeReports) ListByTicker(_ context.Context, ticker string, _ int) ([]store.Report, error) {
 	return []store.Report{{ID: "x", Ticker: ticker, Status: store.StatusDone}}, nil
 }
@@ -271,6 +284,20 @@ func TestEventsForFinishedReport(t *testing.T) {
 	defer func() { _ = resp.Body.Close() }()
 	if got := strings.Join(readEvents(t, resp), ","); got != "snapshot,job.failed" {
 		t.Errorf("events = %s", got)
+	}
+}
+
+func TestClearTickerDeletesFinishedReports(t *testing.T) {
+	srv, reports, _, _ := newTestAPI(t)
+	reports.put(store.Report{ID: "55555555-5555-5555-5555-555555555555", Ticker: "HPE", Status: store.StatusDone})
+	reports.put(store.Report{ID: "66666666-6666-6666-6666-666666666666", Ticker: "HPE", Status: store.StatusRunning})
+
+	resp, body := do(t, "DELETE", srv.URL+"/api/tickers/hpe/cache", "")
+	if resp.StatusCode != http.StatusOK || !strings.Contains(string(body), `"reports":1`) {
+		t.Fatalf("status %d, body %s", resp.StatusCode, body)
+	}
+	if _, err := reports.Get(t.Context(), "66666666-6666-6666-6666-666666666666"); err != nil {
+		t.Error("a running report was deleted")
 	}
 }
 

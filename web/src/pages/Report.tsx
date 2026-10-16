@@ -173,7 +173,7 @@ export function Report({ id }: { id: string }) {
         </p>
       )}
       <div className="mx-auto mt-4 max-w-2xl text-muted">
-        <RunDetails body={body} />
+        <RunDetails report={report} />
       </div>
       <Disclaimer />
     </div>

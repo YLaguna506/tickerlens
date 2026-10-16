@@ -191,6 +191,7 @@ This returns `{"id": "...", "status": "queued"}` and runs the report in the back
 | `GET /api/reports/{id}` | Report status and JSON |
 | `GET /api/reports/{id}/events` | Live progress (SSE) |
 | `GET /api/reports?ticker=V` | Report history for a ticker |
+| `DELETE /api/tickers/{ticker}/cache` | Delete a ticker's saved reports and cached data (filings, prices, AI answers) so the next report starts from scratch; also a button at the bottom of every report |
 
 ## Command line
 

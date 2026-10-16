@@ -516,7 +516,7 @@ export function Terminal({ id }: { id: string }) {
           </p>
         )}
         <div className="max-w-3xl pt-1 text-t-text">
-          <RunDetails body={body} />
+          <RunDetails report={report} />
         </div>
         <p>EDUCATIONAL ONLY. NOT FINANCIAL ADVICE. DATA: SEC EDGAR, TIINGO, ALPHA VANTAGE.</p>
       </footer>

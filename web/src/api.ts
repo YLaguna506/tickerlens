@@ -248,4 +248,8 @@ export const createReport = (ticker: string, refresh = false) =>
 
 export const getReport = (id: string) => request<Report>(`/api/reports/${id}`);
 
+/** Deletes a ticker's saved reports and cached data (filings, prices, AI answers). */
+export const clearTickerCache = (ticker: string) =>
+  request<{ reports: number; cacheEntries: number }>(`/api/tickers/${encodeURIComponent(ticker)}/cache`, { method: "DELETE" });
+
 export const isFinished = (s: Status) => s === "done" || s === "partial" || s === "failed";

@@ -302,7 +302,7 @@ export function Decision({ id }: { id: string }) {
             </div>
             <Flow m={m} body={body} />
             <div className="mt-8 text-slate-500">
-              <RunDetails body={body} />
+              <RunDetails report={report} />
             </div>
             <p className="mt-4 text-center text-xs text-slate-400">
               {m && <>Financials through {shortDate(m.financialsThrough)} · </>}Educational only, not financial advice.

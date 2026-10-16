@@ -1,7 +1,9 @@
 // "How this report was built": time per stage and the AI calls behind it.
 // Styled with the current text color so it fits every design.
 
-import type { ReportBody, Usage } from "../api";
+import { useState } from "react";
+import { clearTickerCache, createReport, isFinished, type Report, type ReportBody, type Usage } from "../api";
+import { navigate } from "../router";
 
 const STAGES: [string, string][] = [
   ["ingesting", "Fetch filings, prices and estimates"],
@@ -26,7 +28,47 @@ interface Call {
   ms?: number;
 }
 
-export function RunDetails({ body }: { body?: ReportBody }) {
+/** Run details plus a button to rebuild the report from scratch. */
+export function RunDetails({ report }: { report?: Report }) {
+  if (!report || !isFinished(report.status)) return null;
+  return (
+    <div className="space-y-2">
+      <Timings body={report.report} />
+      <ClearCache ticker={report.ticker} />
+    </div>
+  );
+}
+
+/** Deletes the ticker's saved reports and cached data, then starts a fresh report. */
+function ClearCache({ ticker }: { ticker: string }) {
+  const [state, setState] = useState<"idle" | "working" | "error">("idle");
+  const run = async () => {
+    const ok = window.confirm(
+      `Delete every saved ${ticker} report and its cached data (filings, prices, AI answers), then rebuild it from scratch?
+
+The new report calls the AI again, which uses your daily quota.`,
+    );
+    if (!ok) return;
+    setState("working");
+    try {
+      await clearTickerCache(ticker);
+      const r = await createReport(ticker, true);
+      navigate(`/reports/${r.id}${window.location.search}`);
+    } catch {
+      setState("error");
+    }
+  };
+  return (
+    <p className="text-xs">
+      <button type="button" onClick={() => void run()} disabled={state === "working"} className="underline opacity-70 hover:opacity-100 disabled:opacity-40">
+        {state === "working" ? "Clearing…" : `Clear cached ${ticker} data and rebuild`}
+      </button>
+      {state === "error" && <span className="ml-2 text-red-600">Could not clear the cache. Is the API running?</span>}
+    </p>
+  );
+}
+
+function Timings({ body }: { body?: ReportBody }) {
   const t = body?.timingsMs;
   if (!t?.total) return null;
 
