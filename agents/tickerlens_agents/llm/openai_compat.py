@@ -6,6 +6,7 @@ works the same against any OpenAI-compatible endpoint.
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -29,7 +30,7 @@ class OpenAICompatibleClient:
         max_tokens: int = 12000,
         reasoning_effort: str = "low",
         timeout_s: float = 90,
-        max_attempts: int = 3,
+        max_attempts: int = 4,
         http: httpx.Client | None = None,
     ) -> None:
         if not api_key:
@@ -62,6 +63,9 @@ class OpenAICompatibleClient:
             # Unified reasoning control; models without reasoning ignore it.
             if self.reasoning_effort:
                 body["reasoning"] = {"effort": self.reasoning_effort}
+        elif self.provider == "gemini" and self.reasoning_effort:
+            # Gemini's OpenAI-compatible API maps this to its thinking budget.
+            body["reasoning_effort"] = self.reasoning_effort
 
         data = self._post(body)
         try:
@@ -81,9 +85,10 @@ class OpenAICompatibleClient:
         return LLMResult(text=strip_fences(text), usage=usage)
 
     def _post(self, body: dict[str, Any]) -> dict[str, Any]:
-        delay = 2.0
+        backoff = 2.0
         last = ""
         for attempt in range(self.max_attempts):
+            wait = backoff
             try:
                 resp = self.http.post("/chat/completions", json=body)
             except httpx.HTTPError as e:
@@ -95,17 +100,43 @@ class OpenAICompatibleClient:
                         last = f"provider error: {data['error']}"
                     else:
                         return data
+                elif resp.status_code == 429 and "PerDay" in resp.text:
+                    # A daily quota will not reset by waiting: fail now so the
+                    # caller can switch to its fallback model.
+                    detail = error_message(resp.text)[:120]
+                    raise LLMError(f"{self.provider}: HTTP 429: daily quota used up ({detail})")
                 elif resp.status_code in RETRY_STATUSES:
-                    last = f"HTTP {resp.status_code}: {resp.text[:300]}"
-                    retry_after = resp.headers.get("Retry-After", "")
-                    if retry_after.isdigit():
-                        delay = min(float(retry_after), 30)
+                    last = f"HTTP {resp.status_code}: {error_message(resp.text)}"
+                    if hint := retry_hint(resp):
+                        wait = hint
                 else:
-                    raise LLMError(f"{self.provider}: HTTP {resp.status_code}: {resp.text[:300]}")
+                    raise LLMError(
+                        f"{self.provider}: HTTP {resp.status_code}: {error_message(resp.text)}"
+                    )
             if attempt + 1 < self.max_attempts:
-                time.sleep(delay)
-                delay *= 2
+                time.sleep(wait)
+                backoff *= 2
         raise LLMError(f"{self.provider}: giving up after {self.max_attempts} attempts: {last}")
+
+
+def retry_hint(resp: httpx.Response, cap: float = 60) -> float | None:
+    """Seconds the provider asked us to wait: the Retry-After header, or
+    Gemini's RetryInfo ("retryDelay": "25s") inside the error body."""
+    header = resp.headers.get("Retry-After", "")
+    if header.isdigit():
+        return min(float(header), cap)
+    m = re.search(r'"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"', resp.text)
+    if m:
+        return min(float(m.group(1)) + 1, cap)
+    if resp.status_code == 429:
+        return 20.0  # per-minute quotas reset within a minute
+    return None
+
+
+def error_message(text: str) -> str:
+    """The provider's error message, without the full JSON envelope."""
+    m = re.search(r'"message"\s*:\s*"((?:[^"\\]|\\.)*)"', text)
+    return (m.group(1) if m else text)[:300]
 
 
 def strip_fences(text: str) -> str:

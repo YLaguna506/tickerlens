@@ -73,6 +73,9 @@ class BusinessQuality(BaseModel):
 class SegmentRow(BaseModel):
     name: str
     revenue: float = Field(description="As written in the filing, in the filing's unit")
+    priorRevenue: float | None = Field(
+        description="The previous fiscal year's figure, as written, or null if not shown"
+    )
 
 
 class Segments(BaseModel):
@@ -115,10 +118,19 @@ def _segments_checks(out: BaseModel, task: AgentTask) -> list[str]:
     assert isinstance(out, Segments)
     errors = []
     quoted = [n for e in out.evidence for n in numbers_in(e.quote)]
+
+    def quoted_value(v: float) -> bool:
+        return any(abs(v - q) <= max(0.5, abs(q) * 0.001) for q in quoted)
+
     for row in out.segments + out.geography:
-        if not any(abs(row.revenue - q) <= max(0.5, abs(q) * 0.001) for q in quoted):
+        if not quoted_value(row.revenue):
             errors.append(
                 f"revenue {row.revenue:g} for {row.name!r} does not appear in any of your quotes"
+            )
+        if row.priorRevenue is not None and not quoted_value(row.priorRevenue):
+            errors.append(
+                f"prior-year revenue {row.priorRevenue:g} for {row.name!r} does not appear "
+                "in any of your quotes; quote it or set it to null"
             )
     if (out.segments or out.geography) and not out.evidence:
         errors.append("cite the quotes the revenue figures come from")
@@ -194,6 +206,11 @@ def validate(spec: AgentSpec, out: BaseModel, task: AgentTask) -> list[str]:
     return errors
 
 
+def is_capacity_error(e: LLMError) -> bool:
+    """Overloaded or over quota, as opposed to a bad request."""
+    return any(code in str(e) for code in ("HTTP 429", "HTTP 503", "HTTP 502", "HTTP 500"))
+
+
 def run_agent(
     task: AgentTask, client: LLMClient, models: Models, max_attempts: int = 2
 ) -> AgentResult:
@@ -218,8 +235,18 @@ def run_agent(
         try:
             reply = client.complete_structured(messages, schema, spec.name, model)
         except LLMError as e:
-            result.errors = [str(e)]
-            break
+            # The provider kept refusing (overloaded / over quota): switch to
+            # the fallback model once and try this attempt again with it.
+            if models.fallback and model != models.fallback and is_capacity_error(e):
+                model = models.fallback
+                try:
+                    reply = client.complete_structured(messages, schema, spec.name, model)
+                except LLMError as e2:
+                    result.errors = [str(e), f"fallback {model}: {e2}"]
+                    break
+            else:
+                result.errors = [str(e)]
+                break
         usage.add(reply.usage)
         if not reply.text.strip():
             errors = ["your reply was empty; return the JSON object only"]

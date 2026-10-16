@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from tickerlens_agents.agents import run_agent
 from tickerlens_agents.app import app, get_llm, get_models
+from tickerlens_agents.llm import LLMError
 from tickerlens_agents.llm.factory import Models
 from tickerlens_agents.llm.fake import FakeClient
 from tickerlens_agents.models import AgentTask, Document
@@ -121,8 +122,8 @@ def test_segments_numbers_must_be_quoted() -> None:
         "unit": "USD millions",
         "fiscalYear": "FY2025",
         "segments": [
-            {"name": "Service", "revenue": 16000},
-            {"name": "Data processing", "revenue": 19500},
+            {"name": "Service", "revenue": 16000, "priorRevenue": None},
+            {"name": "Data processing", "revenue": 19500, "priorRevenue": None},
         ],
         "geography": [],
         "evidence": [
@@ -136,6 +137,28 @@ def test_segments_numbers_must_be_quoted() -> None:
     result = run_agent(t, FakeClient([out, out]), MODELS)
     assert result.status == "failed"
     assert any("19500" in e for e in result.errors)
+
+
+def test_segments_prior_year_must_be_quoted_too() -> None:
+    doc = Document(
+        id="10k-item7", source="Item 7", text="Service revenue was 17,535 versus 16,109."
+    )
+    t = AgentTask(ticker="V", section="segments", documents=[doc])
+    quote = "Service revenue was 17,535 versus 16,109"
+    ok = {
+        "unit": "USD millions",
+        "fiscalYear": "FY2025",
+        "segments": [
+            {"name": "Service", "revenue": 17535, "priorRevenue": 16109},
+            {"name": "Data", "revenue": 17535, "priorRevenue": None},
+        ],
+        "geography": [],
+        "evidence": [{"claim": "c", "documentId": "10k-item7", "quote": quote}],
+    }
+    assert run_agent(t, FakeClient([ok]), MODELS).status == "ok"
+    bad = {**ok, "segments": [{"name": "Service", "revenue": 17535, "priorRevenue": 15000}]}
+    result = run_agent(t, FakeClient([bad, bad]), MODELS)
+    assert result.status == "failed" and any("15000" in e for e in result.errors)
 
 
 def test_verdict_narrative_uses_strong_model_and_needs_no_documents() -> None:
@@ -181,3 +204,27 @@ def test_filing_sections_endpoint(client: TestClient) -> None:
     assert "We run a payments network." in items["1"]
     assert "Regulation" in items["1A"]
     assert "hidden" not in items["1"]
+
+
+def test_falls_back_to_another_model_when_overloaded() -> None:
+    class Overloaded(FakeClient):
+        def complete_structured(self, messages, schema, schema_name, model):  # type: ignore[no-untyped-def]
+            if model == "fast-model":
+                raise LLMError("gemini: giving up after 4 attempts: HTTP 503: high demand")
+            return super().complete_structured(messages, schema, schema_name, model)
+
+    models = Models(fast="fast-model", strong="strong-model", fallback="backup-model")
+    result = run_agent(task("business_overview"), Overloaded([overview()]), models)
+
+    assert result.status == "ok", result.errors
+    assert result.usage.model == "backup-model"
+
+
+def test_bad_request_does_not_fall_back() -> None:
+    class Rejects(FakeClient):
+        def complete_structured(self, messages, schema, schema_name, model):  # type: ignore[no-untyped-def]
+            raise LLMError("gemini: HTTP 400: invalid schema")
+
+    models = Models(fast="fast-model", strong="strong-model", fallback="backup-model")
+    result = run_agent(task("business_overview"), Rejects([]), models)
+    assert result.status == "failed" and len(result.errors) == 1
