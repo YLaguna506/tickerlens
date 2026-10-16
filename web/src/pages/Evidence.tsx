@@ -521,7 +521,8 @@ function PriceLine({ b }: { b: Bands }) {
       <div className="relative mt-8 h-2 rounded-full bg-zinc-100">
         <span className="absolute inset-y-0 left-0 rounded-l-full bg-emerald-400" style={{ width: `${at(b.cheapPrice)}%` }} />
         <span className="absolute inset-y-0 right-0 rounded-r-full bg-rose-400" style={{ left: `${at(b.expensivePrice)}%` }} />
-        <span className="absolute top-1/2 h-5 w-0.5 -translate-y-1/2 bg-zinc-400" style={{ left: `${at(b.medianPrice)}%` }} />
+        <span className="absolute inset-y-0 bg-yellow-300" style={{ left: `${at(b.cheapPrice)}%`, width: `${at(b.expensivePrice) - at(b.cheapPrice)}%` }} />
+        <span className="absolute top-1/2 h-5 w-0.5 -translate-y-1/2 bg-yellow-600" style={{ left: `${at(b.medianPrice)}%` }} />
         <span className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-zinc-900 shadow" style={{ left: `${now}%` }} />
         <span className="absolute -top-7 text-xs font-bold whitespace-nowrap" style={now < 15 ? { left: 0 } : now > 85 ? { right: 0 } : { left: `${now}%`, transform: "translateX(-50%)" }}>
           Today {price(b.price)}
@@ -533,8 +534,8 @@ function PriceLine({ b }: { b: Bands }) {
           <p className="font-grotesk text-lg font-bold">{wholePrice(b.cheapPrice)}</p>
           <p className="text-zinc-400">{multiple(b.cheapBelow)}</p>
         </div>
-        <div className="rounded-lg bg-zinc-50 p-2">
-          <p className="text-zinc-600">Typical</p>
+        <div className="rounded-lg bg-yellow-50 p-2">
+          <p className="text-yellow-700">Typical</p>
           <p className="font-grotesk text-lg font-bold">{wholePrice(b.medianPrice)}</p>
           <p className="text-zinc-400">{multiple(b.median)}</p>
         </div>
@@ -556,7 +557,6 @@ function ValuationSection({ m }: { m: MetricsReport }) {
   const values = m.charts.valuation1y.map((p) => p.value);
   const lo = b ? Math.min(...values, b.cheapBelow) * 0.95 : 0;
   const hi = b ? Math.max(...values, b.expensiveAbove) * 1.05 : 0;
-  const priceData = m.charts.price.filter((_, i, all) => i % 5 === 0 || i === all.length - 1);
   return (
     <ScoreSection k="valuation" value={m.valuationScore.value} feeds="the V in the verdict rule" reasons={m.valuationScore.reasons}>
       <Block title={`Why ${valuedWith(m)}`}>
@@ -584,12 +584,13 @@ function ValuationSection({ m }: { m: MetricsReport }) {
               <ResponsiveContainer>
                 <LineChart data={m.charts.valuation1y} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                   <ReferenceArea y1={lo} y2={b.cheapBelow} fill="#10b981" fillOpacity={0.1} ifOverflow="hidden" />
+                  <ReferenceArea y1={b.cheapBelow} y2={b.expensiveAbove} fill="#facc15" fillOpacity={0.12} ifOverflow="hidden" />
                   <ReferenceArea y1={b.expensiveAbove} y2={hi} fill="#f43f5e" fillOpacity={0.1} ifOverflow="hidden" />
-                  <ReferenceLine y={b.median} stroke="#a1a1aa" strokeDasharray="4 4" />
+                  <ReferenceLine y={b.median} stroke="#ca8a04" strokeDasharray="4 4" />
                   <XAxis dataKey="date" tickFormatter={monthYear} tick={AXIS} axisLine={false} tickLine={false} minTickGap={50} />
                   <YAxis domain={[lo, hi]} tickFormatter={(x: number) => `${Math.round(x)}×`} tick={AXIS} axisLine={false} tickLine={false} width={40} />
                   <Tooltip formatter={(x) => multiple(Number(x))} />
-                  <Line dataKey="value" name={b.metric} stroke="#d97706" strokeWidth={2} dot={false} isAnimationActive={false} />
+                  <Line dataKey="value" name={b.metric} stroke="#18181b" strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -618,21 +619,43 @@ function ValuationSection({ m }: { m: MetricsReport }) {
         </Block>
       </div>
 
-      {priceData.length > 1 && (
-        <Block title={`Share price · 5 years · ${signedPct(m.priceChange5y.value, 0)}`}>
-          <div className="h-48">
-            <ResponsiveContainer>
-              <AreaChart data={priceData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-                <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} minTickGap={50} />
-                <YAxis domain={["auto", "auto"]} tickFormatter={(x: number) => `$${Math.round(x)}`} tick={AXIS} axisLine={false} tickLine={false} width={48} />
-                <Tooltip formatter={(x) => price(Number(x))} />
-                <Area dataKey="value" name="Price" stroke="#18181b" strokeWidth={1.5} fill="#18181b" fillOpacity={0.05} isAnimationActive={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Block>
-      )}
     </ScoreSection>
+  );
+}
+
+function PriceSection({ m }: { m: MetricsReport }) {
+  const data = m.charts.price.filter((_, i, all) => i % 5 === 0 || i === all.length - 1);
+  if (data.length < 2) return null;
+  const change = m.priceChange5y.value ?? 0;
+  const color = change >= 0 ? "#059669" : "#e11d48";
+  // One tick per year: the first trading day shown in it.
+  const yearStarts = data.filter((p, i) => i === 0 || p.date.slice(0, 4) !== data[i - 1]!.date.slice(0, 4)).map((p) => p.date);
+  return (
+    <section className="mb-10">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-grotesk text-sm font-bold tracking-widest text-zinc-400 uppercase">Share price · 5 years</h2>
+        <p className="text-sm text-zinc-500">
+          <span className="font-grotesk text-2xl font-bold text-zinc-900 tabular-nums">{price(m.price)}</span>{" "}
+          <span className={`font-semibold ${change >= 0 ? "text-emerald-600" : "text-rose-600"}`}>{signedPct(m.priceChange5y.value, 0)}</span> · as of {shortDate(m.priceDate)}
+        </p>
+      </div>
+      <div className="mt-3 h-56 rounded-2xl border border-zinc-200 bg-white p-3 sm:h-64">
+        <ResponsiveContainer>
+          <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="evPrice" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity={0.18} />
+                <stop offset="100%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="date" ticks={yearStarts} tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} />
+            <YAxis domain={["auto", "auto"]} tickFormatter={(x: number) => `$${Math.round(x)}`} tick={AXIS} axisLine={false} tickLine={false} width={48} />
+            <Tooltip formatter={(x) => price(Number(x))} />
+            <Area dataKey="value" name="Price" stroke={color} strokeWidth={2} fill="url(#evPrice)" isAnimationActive={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </section>
   );
 }
 
@@ -683,6 +706,7 @@ export function Evidence({ id }: { id: string }) {
               <p className="rounded-2xl bg-rose-50 p-4 text-rose-800">This report could not be built: {report.error}</p>
             ) : (
               <>
+                {m && <PriceSection m={m} />}
                 <CompanySection body={body} />
                 <QualitySection m={m} body={body} />
                 {m ? (
