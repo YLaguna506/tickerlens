@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -46,9 +47,26 @@ type Agents struct {
 	Cache         fetch.Cache // optional: caches filing sections and agent results
 	FastModel     string      // part of the cache key: a new model means new answers
 	StrongModel   string      // model of the verdict narrative (cache key)
-	PromptVersion string
-	MaxDocChars   int     // per document sent to an agent (a token budget)
-	CostCapUSD    float64 // LLM spend per report; the narrative is skipped beyond it (0 = no cap)
+	PromptVersion string      // default prompt version for every agent
+	// PromptVersions overrides the version per agent, so changing one prompt
+	// does not invalidate the cached answers of the others.
+	PromptVersions map[string]string
+	MaxDocChars    int     // per document sent to an agent (a token budget)
+	CostCapUSD     float64 // LLM spend per report; the narrative is skipped beyond it (0 = no cap)
+	// StageTimeout bounds the agents stage; an agent still running when it
+	// expires fails its own section and the report carries on (default 6 min).
+	StageTimeout time.Duration
+	// Concurrency limits how many agents run at once (0 = all three). Free
+	// LLM tiers have per-minute quotas; 1 runs them one after another.
+	Concurrency int
+}
+
+// promptFor returns the prompt version used for an agent.
+func (a *Agents) promptFor(section string) string {
+	if v, ok := a.PromptVersions[section]; ok {
+		return v
+	}
+	return a.PromptVersion
 }
 
 // AgentSection is one agent's outcome in the report body.
@@ -78,9 +96,11 @@ type QualityScore struct {
 
 // SegmentShare is one line of a validated revenue breakdown.
 type SegmentShare struct {
-	Name    string  `json:"name"`
-	Revenue float64 `json:"revenue"` // USD
-	Share   float64 `json:"share"`   // of the breakdown's total
+	Name         string   `json:"name"`
+	Revenue      float64  `json:"revenue"`      // USD
+	Share        float64  `json:"share"`        // of the breakdown's total
+	PriorRevenue *float64 `json:"priorRevenue"` // USD, previous fiscal year (when disclosed)
+	YoY          *float64 `json:"yoy"`          // revenue ÷ prior − 1
 }
 
 // SegmentBreakdown is the segments agent's output after Go checks it.
@@ -94,6 +114,12 @@ type SegmentBreakdown struct {
 // Failures are per section: the rest of the report is unaffected.
 func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metrics.Report) []string {
 	a := j.agents
+	limit := a.StageTimeout
+	if limit <= 0 {
+		limit = 6 * time.Minute
+	}
+	ctx, cancel := context.WithTimeout(ctx, limit)
+	defer cancel()
 	j.body.Agents = map[string]*AgentSection{}
 	sections := []string{AgentOverview, AgentQuality, AgentSegments}
 	failAll := func(msg string) []string {
@@ -129,12 +155,16 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 	docs := map[string][]agentclient.Document{
 		AgentOverview: {business},
 		AgentQuality:  {business, mdna},
-		AgentSegments: {mdna, business},
+		// Revenue tables are in MD&A; sending only Item 7 halves the reading.
+		AgentSegments: {mdna},
 	}
 	facts := agentFacts(report)
 
 	results := make([]*AgentSection, len(sections))
 	var g errgroup.Group // no shared cancellation: one agent failing must not stop the others
+	if a.Concurrency > 0 {
+		g.SetLimit(a.Concurrency)
+	}
 	for i, s := range sections {
 		g.Go(func() error {
 			results[i] = j.runAgent(ctx, filing, agentclient.Task{
@@ -142,7 +172,7 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 				Section:       s,
 				Ticker:        bundle.Company.Ticker,
 				CompanyName:   bundle.Company.Name,
-				PromptVersion: a.PromptVersion,
+				PromptVersion: a.promptFor(s),
 				Metrics:       facts,
 				Documents:     docs[s],
 			})
@@ -189,7 +219,7 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 // section, prompt version and model when there is one.
 func (j *job) runAgent(ctx context.Context, filing edgar.Filing, task agentclient.Task) *AgentSection {
 	a := j.agents
-	key := fmt.Sprintf("agent:%s:%s:%s:%s:%s", task.Ticker, filing.Accession, task.Section, a.PromptVersion, a.FastModel)
+	key := fmt.Sprintf("agent:%s:%s:%s:%s:%s", task.Ticker, filing.Accession, task.Section, task.PromptVersion, a.FastModel)
 	if a.Cache != nil {
 		if b, ok, err := a.Cache.Get(ctx, key); err == nil && ok {
 			var cached AgentSection
@@ -205,6 +235,9 @@ func (j *job) runAgent(ctx context.Context, filing edgar.Filing, task agentclien
 	j.mu.Lock()
 	j.body.TimingsMs["agent:"+task.Section] = time.Since(t0).Milliseconds()
 	j.mu.Unlock()
+	if errors.Is(err, context.DeadlineExceeded) {
+		return &AgentSection{Status: SectionStateFailed, Errors: []string{"the AI agent did not finish in time"}}
+	}
 	if err != nil {
 		return &AgentSection{Status: SectionStateFailed, Errors: []string{err.Error()}}
 	}
@@ -305,6 +338,13 @@ func qualityScore(output json.RawMessage) (*QualityScore, error) {
 	return q, nil
 }
 
+// segmentRow is one line of the segments agent's output.
+type segmentRow struct {
+	Name         string   `json:"name"`
+	Revenue      float64  `json:"revenue"`
+	PriorRevenue *float64 `json:"priorRevenue"`
+}
+
 var unitScale = map[string]float64{"USD": 1, "USD thousands": 1e3, "USD millions": 1e6, "USD billions": 1e9}
 
 // checkSegments converts the breakdown to dollars and checks that it adds up
@@ -313,16 +353,10 @@ var unitScale = map[string]float64{"USD": 1, "USD thousands": 1e3, "USD millions
 // accepted range is wide; anything outside it is hidden rather than shown.
 func checkSegments(output json.RawMessage, b *ingest.Bundle) (*SegmentBreakdown, error) {
 	var raw struct {
-		Unit       string `json:"unit"`
-		FiscalYear string `json:"fiscalYear"`
-		Segments   []struct {
-			Name    string  `json:"name"`
-			Revenue float64 `json:"revenue"`
-		} `json:"segments"`
-		Geography []struct {
-			Name    string  `json:"name"`
-			Revenue float64 `json:"revenue"`
-		} `json:"geography"`
+		Unit       string       `json:"unit"`
+		FiscalYear string       `json:"fiscalYear"`
+		Segments   []segmentRow `json:"segments"`
+		Geography  []segmentRow `json:"geography"`
 	}
 	if err := json.Unmarshal(output, &raw); err != nil {
 		return nil, fmt.Errorf("segments output: %w", err)
@@ -354,13 +388,16 @@ func checkSegments(output json.RawMessage, b *ingest.Bundle) (*SegmentBreakdown,
 		}
 		return rows, nil
 	}
-	toShares := func(rows []struct {
-		Name    string  `json:"name"`
-		Revenue float64 `json:"revenue"`
-	}) []SegmentShare {
+	toShares := func(rows []segmentRow) []SegmentShare {
 		out := make([]SegmentShare, 0, len(rows))
 		for _, r := range rows {
-			out = append(out, SegmentShare{Name: r.Name, Revenue: r.Revenue * scale})
+			s := SegmentShare{Name: r.Name, Revenue: r.Revenue * scale}
+			if r.PriorRevenue != nil && *r.PriorRevenue > 0 {
+				prior := *r.PriorRevenue * scale
+				yoy := s.Revenue/prior - 1
+				s.PriorRevenue, s.YoY = &prior, &yoy
+			}
+			out = append(out, s)
 		}
 		return out
 	}

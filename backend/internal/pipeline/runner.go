@@ -21,7 +21,7 @@ import (
 
 // BodyVersion changes whenever the report body's shape or computation
 // changes, so old reports are not reused for new requests.
-const BodyVersion = "m5.1"
+const BodyVersion = "m5.2"
 
 // Stages, in order.
 const (
@@ -55,7 +55,7 @@ type Fetcher interface {
 type Body struct {
 	Version    string                        `json:"version"`
 	Company    edgar.Company                 `json:"company"`
-	Sections   map[string]string             `json:"sections"` // section → ready / failed / pending
+	Sections   map[string]string             `json:"sections"` // section â†’ ready / failed / pending
 	Metrics    *metrics.Report               `json:"metrics,omitempty"`
 	Financials *financials.Financials        `json:"financials,omitempty"`
 	Earnings   []estimates.QuarterlyEarnings `json:"earnings,omitempty"`

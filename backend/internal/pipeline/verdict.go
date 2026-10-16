@@ -68,6 +68,8 @@ func (j *job) decide(ctx context.Context, bundle *ingest.Bundle, report *metrics
 // are the verdict, the scores and their justifications.
 func (j *job) narrate(ctx context.Context, v *VerdictSection, report *metrics.Report) {
 	a := j.agents
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
 	input := map[string]any{
 		"verdict":         v.Label,
 		"meaning":         v.Meaning,
@@ -104,7 +106,7 @@ func (j *job) narrate(ctx context.Context, v *VerdictSection, report *metrics.Re
 	// Same inputs → same narrative: cache by a hash of the input.
 	raw, _ := json.Marshal(input)
 	sum := sha256.Sum256(raw)
-	key := fmt.Sprintf("agent:narrative:%s:%s:%s", a.PromptVersion, a.StrongModel, hex.EncodeToString(sum[:12]))
+	key := fmt.Sprintf("agent:narrative:%s:%s:%s", a.promptFor(AgentNarrative), a.StrongModel, hex.EncodeToString(sum[:12]))
 	if a.Cache != nil {
 		if b, ok, err := a.Cache.Get(ctx, key); err == nil && ok {
 			var cached VerdictSection
@@ -121,7 +123,7 @@ func (j *job) narrate(ctx context.Context, v *VerdictSection, report *metrics.Re
 		Section:       AgentNarrative,
 		Ticker:        j.body.Company.Ticker,
 		CompanyName:   j.body.Company.Name,
-		PromptVersion: a.PromptVersion,
+		PromptVersion: a.promptFor(AgentNarrative),
 		Metrics:       input,
 	})
 	j.mu.Lock()

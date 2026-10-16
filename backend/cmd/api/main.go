@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -25,7 +26,7 @@ import (
 // jobTimeout bounds one report. The first report for a multi-class company
 // reads ~30 filings from SEC, and the AI agents can take a few minutes on a
 // free model; later reports hit the caches.
-const jobTimeout = 8 * time.Minute
+const jobTimeout = 12 * time.Minute
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -86,13 +87,17 @@ func run(logger *slog.Logger) error {
 			Filings:       fetcher.SEC,
 			Service:       agentclient.New(url),
 			Cache:         cache,
-			FastModel:     os.Getenv("LLM_MODEL_FAST"),
-			StrongModel:   envOr("LLM_MODEL_STRONG", os.Getenv("LLM_MODEL_FAST")),
+			FastModel:     fastModel(),
+			StrongModel:   envOr("LLM_MODEL_STRONG", fastModel()),
 			PromptVersion: "v1",
-			MaxDocChars:   40_000,
-			CostCapUSD:    envFloat("LLM_JOB_COST_CAP_USD", 0.25),
+			// segments v2 adds prior-year figures for year-over-year growth.
+			PromptVersions: map[string]string{pipeline.AgentSegments: "v2"},
+			MaxDocChars:    40_000,
+			StageTimeout:   6 * time.Minute,
+			Concurrency:    int(envFloat("AGENT_CONCURRENCY", 0)),
+			CostCapUSD:     envFloat("LLM_JOB_COST_CAP_USD", 0.25),
 		}
-		logger.Info("AI agents enabled", "url", url, "model", os.Getenv("LLM_MODEL_FAST"))
+		logger.Info("AI agents enabled", "url", url, "provider", os.Getenv("LLM_PROVIDER"), "model", fastModel())
 	} else {
 		logger.Warn("AGENTS_URL not set: reports will not include AI analysis")
 	}
@@ -166,6 +171,14 @@ func loadScoring(logger *slog.Logger) (scoring.Config, error) {
 	}
 	logger.Info("scoring config loaded", "path", path, "version", cfg.Version)
 	return cfg, nil
+}
+
+// fastModel mirrors the agents service: LLM_MODEL_FAST, or the provider's own
+// model variable (e.g. GEMINI_LLM_MODEL) when that is empty. It is part of the
+// agent cache key, so switching models gives fresh answers.
+func fastModel() string {
+	provider := strings.ToUpper(strings.TrimSpace(os.Getenv("LLM_PROVIDER")))
+	return envOr("LLM_MODEL_FAST", os.Getenv(provider+"_LLM_MODEL"))
 }
 
 func envFloat(key string, fallback float64) float64 {
