@@ -3,9 +3,10 @@
 import type { MetricsReport, Quality, ReportBody, Verdict } from "../api";
 import { multiple, pct, price, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
 import { BandChart, EarningsDots, GeographySplit, PriceBar, RevenueIncomeChart, SegmentBreakdown } from "./charts";
+import { incomeRows, isPending } from "../live";
 import { EvidenceList, MetricRow, ScoreBar, Section, Skeleton, StepScale, ThreeLevel, Unavailable } from "./ui";
 
-const pending = (body: ReportBody | undefined, key: string) => !body || body.sections?.[key] === undefined;
+const pending = isPending;
 
 // --- Business --------------------------------------------------------------------
 
@@ -182,11 +183,7 @@ export function PhaseSection({ m, body }: { m?: MetricsReport; body?: ReportBody
       </Section>
     );
   }
-  const fin = body?.financials;
-  const rows = [
-    ...(fin?.annual ?? []).slice(-5).map((p) => ({ label: `FY${String(p.fiscalYear).slice(2)}`, revenue: p.revenue, netIncome: p.netIncome })),
-    ...(fin?.ttm ? [{ label: "LTM", revenue: fin.ttm.revenue, netIncome: fin.ttm.netIncome }] : []),
-  ];
+  const rows = incomeRows(body);
   return (
     <Section id="phase" title="Phase">
       <div className="fade-in grid gap-4 md:grid-cols-3">

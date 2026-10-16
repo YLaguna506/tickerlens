@@ -1,10 +1,11 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { createReport, getReport, isFinished, type Report as ReportT } from "../api";
+import { createReport, isFinished, type Report as ReportT } from "../api";
 import { PriceChart } from "../components/charts";
+import { DesignSwitch } from "../components/DesignSwitch";
 import { BusinessSection, FinancialsSection, PhaseSection, ValuationSection, VerdictSection } from "../components/sections";
 import { Disclaimer } from "../components/ui";
 import { price, shortDate, signedPct, titleCase } from "../format";
+import { STAGES, useLiveReport } from "../live";
 import { navigate } from "../router";
 
 const TABS = [
@@ -14,33 +15,6 @@ const TABS = [
   { id: "valuation", label: "Valuation" },
   { id: "verdict", label: "Verdict" },
 ];
-
-const STAGES = [
-  { id: "ingesting", label: "Fetching SEC filings, prices and estimates" },
-  { id: "computing", label: "Computing metrics, phase and scores" },
-  { id: "analyzing", label: "AI analysts reading the 10-K" },
-  { id: "scoring", label: "Deciding the verdict" },
-];
-
-/** Live progress: an EventSource that refreshes the report on every event. */
-function useLiveReport(id: string) {
-  const client = useQueryClient();
-  const query = useQuery({ queryKey: ["report", id], queryFn: () => getReport(id) });
-  const running = query.data ? !isFinished(query.data.status) : true;
-
-  useEffect(() => {
-    if (!running) return;
-    const es = new EventSource(`/api/reports/${id}/events`);
-    const refresh = () => void client.invalidateQueries({ queryKey: ["report", id] });
-    const types = ["stage.started", "stage.completed", "section.ready", "section.failed", "job.done", "job.failed"];
-    types.forEach((t) => es.addEventListener(t, refresh));
-    es.addEventListener("job.done", () => es.close());
-    es.addEventListener("job.failed", () => es.close());
-    return () => es.close();
-  }, [id, running, client]);
-
-  return query;
-}
 
 // Highlights the tab of the section in view: the last section whose top has
 // scrolled past a third of the screen. Subscribes once the sections exist.
@@ -134,7 +108,10 @@ export function Report({ id }: { id: string }) {
         ))}
       </nav>
 
-      <header className="pt-10 text-center">
+      <div className="flex justify-end pt-4">
+        <DesignSwitch look="classic" />
+      </div>
+      <header className="pt-6 text-center">
         <span className="inline-flex size-16 items-center justify-center rounded-2xl bg-navy font-display text-lg font-extrabold text-white">
           {report.ticker.slice(0, 4)}
         </span>
