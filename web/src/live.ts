@@ -48,6 +48,16 @@ export function metricOf(m: MetricsReport, key: string): Metric | undefined {
   return [m.marketCap, ...m.profitability, ...m.growth, ...m.health, ...m.valuation, ...m.returns].find((x) => x.key === key);
 }
 
+/** The multiple the valuation was judged on: the phase's choice, unless its
+ * history was missing or distorted. */
+export const valuedWith = (m: MetricsReport) => m.valuationBands?.metric ?? m.phase.valuationMetric;
+
+/** "P/E has a distorted history: …", when the phase's metric was not used. */
+export const fallbackNote = (m: MetricsReport) => {
+  const b = m.valuationBands;
+  return b?.fellBackFrom ? `${b.fellBackFrom} ${b.fallbackReason ?? "was not usable"}, so ${b.metric} is used instead.` : "";
+};
+
 /** The four business-quality questions, in report order. */
 export const QUALITY_QUESTIONS: { key: keyof Quality; question: string; short: string; options: [string, string, string] }[] = [
   { key: "revenuePredictability", question: "How predictable is revenue?", short: "Predictability", options: ["Unpredictable", "Modest", "Predictable"] },

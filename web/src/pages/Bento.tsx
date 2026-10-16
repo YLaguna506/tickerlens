@@ -6,7 +6,7 @@ import { Area, AreaChart, Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, R
 import { isFinished, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
 import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
-import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, incomeRows, isPending, metricOf, scoreWord, useLiveReport } from "../live";
+import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
 const INDIGO = "#6366f1";
@@ -143,7 +143,7 @@ const PHASES = ["Startup", "Hypergrowth", "Operating leverage", "Capital return"
 
 function PhaseTile({ m }: { m: MetricsReport }) {
   return (
-    <Tile title="Life-cycle phase" right={`valued with ${m.phase.valuationMetric}`} className="sm:col-span-2">
+    <Tile title="Life-cycle phase" right={`valued with ${valuedWith(m)}`} className="sm:col-span-2">
       <div className="grid grid-cols-5 gap-1.5">
         {PHASES.map((p, i) => (
           <div key={p} className={`h-2 rounded-full ${i + 1 === m.phase.number ? "bg-indigo-500" : i + 1 < m.phase.number ? "bg-indigo-200" : "bg-slate-100"}`} title={p} />
@@ -152,6 +152,7 @@ function PhaseTile({ m }: { m: MetricsReport }) {
       <p className="mt-3 text-2xl font-extrabold">
         <span className="text-indigo-500">{m.phase.number}</span> {m.phase.name}
       </p>
+      {fallbackNote(m) && <p className="mt-1 text-sm text-amber-700">{fallbackNote(m)}</p>}
       <ul className="mt-2 space-y-1 text-sm">
         {m.phase.checks.map((c) => (
           <li key={c.question} className="flex items-center gap-2">

@@ -3,7 +3,7 @@
 import type { MetricsReport, ReportBody, Verdict } from "../api";
 import { multiple, pct, price, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
 import { BandChart, EarningsDots, GeographySplit, PriceBar, RevenueIncomeChart, SegmentBreakdown } from "./charts";
-import { QUALITY_QUESTIONS, incomeRows, isPending } from "../live";
+import { QUALITY_QUESTIONS, fallbackNote, incomeRows, isPending, valuedWith } from "../live";
 import { EvidenceList, MetricRow, ScoreBar, Section, Skeleton, StepScale, ThreeLevel, Unavailable } from "./ui";
 
 const pending = isPending;
@@ -200,8 +200,8 @@ export function PhaseSection({ m, body }: { m?: MetricsReport; body?: ReportBody
         </div>
         <div className="flex flex-col justify-center rounded-2xl bg-good p-6 text-white">
           <p className="text-xs font-semibold tracking-[0.12em] uppercase opacity-80">Valued with</p>
-          <p className="mt-1 font-display text-3xl font-bold">{m.phase.valuationMetric}</p>
-          <p className="mt-2 text-sm opacity-90">{metricExplainer(m.phase.valuationMetric)}</p>
+          <p className="mt-1 font-display text-3xl font-bold">{valuedWith(m)}</p>
+          <p className="mt-2 text-sm opacity-90">{fallbackNote(m) || metricExplainer(valuedWith(m))}</p>
         </div>
       </div>
 
@@ -268,8 +268,16 @@ export function ValuationSection({ m }: { m?: MetricsReport }) {
           <div className="card flex items-center gap-3">
             <span className="text-xl" aria-hidden>📈</span>
             <p className="font-display text-lg font-semibold">
-              {m.name ? titleCase(m.name) : m.ticker} is in phase {m.phase.number}, so {b.metric} is the useful measure
-              {b.fellBackFrom && ` (${b.fellBackFrom} lacked history)`}.
+              {b.fellBackFrom ? (
+                <>
+                  {m.name ? titleCase(m.name) : m.ticker} is in phase {m.phase.number}, where {b.fellBackFrom} is the usual measure. But {b.fellBackFrom}{" "}
+                  {b.fallbackReason ?? "was not usable"}, so {b.metric} is used instead.
+                </>
+              ) : (
+                <>
+                  {m.name ? titleCase(m.name) : m.ticker} is in phase {m.phase.number}, so {b.metric} is the useful measure.
+                </>
+              )}
             </p>
           </div>
           <div className="card fade-in space-y-3">

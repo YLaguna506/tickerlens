@@ -6,7 +6,7 @@ import { Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Too
 import { isFinished, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
 import { metricValue, monthYear, multiple, pct, price, shortDate, titleCase, wholePrice } from "../format";
-import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, metricOf, scoreWord, useLiveReport } from "../live";
+import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
 type Outcome = "yes" | "partly" | "no" | "pending";
@@ -178,8 +178,8 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
       <Step
         outcome={m ? "yes" : "pending"}
         question="How should it be valued?"
-        answer={m ? `With ${m.phase.valuationMetric}` : "Working…"}
-        because={m ? `It is in phase ${m.phase.number} of 5, ${m.phase.name.toLowerCase()}: ${m.phase.reason}.` : "Computing…"}
+        answer={m ? `With ${valuedWith(m)}` : "Working…"}
+        because={m ? `It is in phase ${m.phase.number} of 5, ${m.phase.name.toLowerCase()}: ${m.phase.reason}. ${fallbackNote(m)}` : "Computing…"}
       >
         {m && (
           <ul className="space-y-1">

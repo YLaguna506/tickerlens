@@ -6,7 +6,7 @@ import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, Referen
 import { isFinished, type Bands, type MetricsReport, type ReportBody, type SegmentShare, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
 import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
-import { QUALITY_QUESTIONS, STAGES, incomeRows, isPending, metricOf, useLiveReport } from "../live";
+import { QUALITY_QUESTIONS, STAGES, fallbackNote, incomeRows, isPending, metricOf, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
 const AMBER = "#e3b341";
@@ -257,8 +257,9 @@ function ScoresPanel({ m, body }: { m: MetricsReport; body?: ReportBody }) {
         ))}
       </div>
       <p className="mt-2 font-mono text-xs text-white">
-        {m.phase.name} <span className="text-t-dim">→ {m.phase.valuationMetric}</span>
+        {m.phase.name} <span className="text-t-dim">→ {valuedWith(m)}</span>
       </p>
+      {fallbackNote(m) && <p className="mt-1 font-mono text-[11px] text-t-amber">! {fallbackNote(m)}</p>}
       <ul className="mt-2 space-y-1 font-mono text-[11px]">
         {m.phase.checks.map((c) => (
           <li key={c.question} className="flex gap-2" title={c.detail}>

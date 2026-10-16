@@ -48,6 +48,7 @@ export interface Phase {
 export interface Bands {
   metric: string;
   fellBackFrom?: string;
+  fallbackReason?: string;
   historyFrom: string;
   historyTo: string;
   days: number;

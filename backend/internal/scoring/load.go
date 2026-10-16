@@ -45,6 +45,9 @@ func (c Config) Validate() error {
 	if c.CheapPercentile >= c.ExpensivePercentile {
 		errs = append(errs, errors.New("cheap_percentile must be below expensive_percentile"))
 	}
+	if c.MaxBasisSwing <= 1 {
+		errs = append(errs, errors.New("max_basis_swing must be above 1"))
+	}
 	w := c.Weights
 	if w.BusinessQuality < 0 || w.Growth < 0 || w.FinancialHealth < 0 || w.BusinessQuality+w.Growth+w.FinancialHealth == 0 {
 		errs = append(errs, errors.New("weights must be non-negative and not all zero"))

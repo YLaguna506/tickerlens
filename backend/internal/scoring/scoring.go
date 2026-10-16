@@ -33,6 +33,10 @@ type Config struct {
 	ValuationScoreCuts [4]float64 `yaml:"valuation_score_cuts"`
 	MinHistoryDays     int        `yaml:"min_history_days"` // trading days of valuation history required
 	HistoryYears       int        `yaml:"history_years"`    // years of history used for bands
+	// A metric's history is distorted when its per-share basis (EPS, FCF or
+	// revenue per share) was ≤ 0 or its typical value was more than this many
+	// times its lowest; the next metric is used instead.
+	MaxBasisSwing float64 `yaml:"max_basis_swing"`
 
 	// Weights of the business composite B (renormalized when a score is missing).
 	Weights Weights `yaml:"weights"`
@@ -68,7 +72,7 @@ type VerdictRules struct {
 // with the same values; anything left out of the file keeps its default.
 func Default() Config {
 	return Config{
-		Version:               "2026-10-15.1",
+		Version:               "2026-10-16.1",
 		GrowthBands:           [4]float64{0, 0.05, 0.12, 0.20},
 		MinInterestCoverage:   10,
 		MaxDebtToEquity:       1,
@@ -80,6 +84,7 @@ func Default() Config {
 		ValuationScoreCuts:    [4]float64{0.10, 0.30, 0.70, 0.90},
 		MinHistoryDays:        250,
 		HistoryYears:          5,
+		MaxBasisSwing:         3,
 		Weights:               Weights{BusinessQuality: 0.40, Growth: 0.30, FinancialHealth: 0.30},
 		Verdict: VerdictRules{
 			SellBelow: 2.5, SellWeakBelow: 3.0, SellWeakMaxV: 2,

@@ -5,7 +5,7 @@
 #
 # Scores are 1–5. Fractions are written as decimals (0.12 = 12%).
 
-version: "2026-10-15.1"
+version: "2026-10-16.1"
 
 # --- Growth score -------------------------------------------------------------
 # Average of revenue and EPS CAGRs (3y and 5y, whichever exist).
@@ -28,6 +28,12 @@ cheap_percentile: 0.25      # at or below the 25th percentile is "cheap"
 expensive_percentile: 0.75  # at or above the 75th percentile is "expensive"
 # Percentile of today's value → score: ≤10% → 5, ≤30% → 4, ≤70% → 3, ≤90% → 2, else 1.
 valuation_score_cuts: [0.10, 0.30, 0.70, 0.90]
+# A multiple's own history is a poor yardstick when what it divides by (EPS,
+# free cash flow or revenue per share) collapsed at some point: the old
+# multiples spike and make today look cheap. If that basis was ≤ 0, or its
+# median over the window is more than this many times its lowest value, the
+# next metric is used (the phase's fallbacks, then P/S).
+max_basis_swing: 3
 
 # --- Business composite (B) --------------------------------------------------------
 # Weighted mean of the available scores; weights are renormalized when one is missing.
