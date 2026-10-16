@@ -41,6 +41,13 @@ type ClassFactsSource interface {
 	ClassFacts(ctx context.Context, cik string, now time.Time) (eps, shares []edgar.Fact, notes []string, err error)
 }
 
+// FreshSource reads the latest 10-K/10-Q directly when companyfacts has not
+// caught up with it (edgar.Client implements it).
+type FreshSource interface {
+	FreshFacts(ctx context.Context, cik, knownThrough string, concepts []string,
+		unitFor func(string) string) (edgar.Filing, edgar.FactsByConcept, bool, error)
+}
+
 // Fetcher gathers a Bundle. Prices and Earnings may be nil when no API key is
 // configured; the bundle then says so in Warnings.
 type Fetcher struct {
@@ -49,6 +56,7 @@ type Fetcher struct {
 	SEC          *edgar.Client
 	Fundamentals Fundamentals
 	ClassFacts   ClassFactsSource // optional
+	Fresh        FreshSource      // optional
 	Prices       PriceSource
 	Earnings     EarningsSource
 	PriceYears   int              // history to fetch; default 11
@@ -70,6 +78,21 @@ type Bundle struct {
 	Failed []string `json:"failed,omitempty"`
 	// Notes explain unusual but successful data handling.
 	Notes []string `json:"notes,omitempty"`
+}
+
+// latestEnd is the latest period end reported for any of the concepts.
+func latestEnd(cf *edgar.CompanyFacts, concepts ...string) string {
+	var max string
+	for _, name := range concepts {
+		for _, facts := range cf.Facts["us-gaap"][name].Units {
+			for _, f := range facts {
+				if f.End > max {
+					max = f.End
+				}
+			}
+		}
+	}
+	return max
 }
 
 // LacksRecentEPS reports whether companyfacts has no diluted EPS within
@@ -159,6 +182,22 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 		} else {
 			edgar.MergeClassFacts(facts, eps, shares)
 			b.Notes = append(b.Notes, notes...)
+		}
+	}
+
+	// companyfacts can lag a new filing by weeks; read the newest one
+	// directly so TTM figures include the latest quarter.
+	if f.Fresh != nil {
+		through := latestEnd(facts, "NetIncomeLoss", "Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax")
+		filing, add, ok, err := f.Fresh.FreshFacts(ctx, co.CIK, through, financials.Concepts(), financials.UnitOf)
+		switch {
+		case err != nil:
+			b.Warnings = append(b.Warnings, "latest filing: "+err.Error())
+		case ok:
+			edgar.MergeFacts(facts, add)
+			b.Notes = append(b.Notes, fmt.Sprintf(
+				"read the %s for the period ended %s (filed %s) directly: the SEC data feed did not include it yet",
+				filing.Form, filing.ReportDate, filing.FilingDate))
 		}
 	}
 

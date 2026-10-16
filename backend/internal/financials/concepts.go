@@ -106,6 +106,21 @@ var missingHints = map[string]string{
 	"grossProfit":   "some companies (e.g. payment networks, banks) do not report cost of revenue",
 }
 
+// UnitOf returns the unit a concept's values are stored under ("USD",
+// "USD/shares" or "shares").
+func UnitOf(concept string) string {
+	for _, specs := range [][]fieldSpec{fields, helpers} {
+		for _, s := range specs {
+			for _, c := range s.concepts {
+				if c == concept {
+					return s.unit
+				}
+			}
+		}
+	}
+	return "USD"
+}
+
 // Concepts lists every us-gaap concept the normalizer reads. The fixture
 // generator uses it to trim recorded companyfacts files.
 func Concepts() []string {

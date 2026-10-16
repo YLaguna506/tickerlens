@@ -33,6 +33,24 @@ type xbrlContext struct {
 // the given us-gaap concepts. It reads token by token (encoding/xml.Decoder)
 // rather than loading the whole tree, since instances are several MB.
 func ParseInstance(r io.Reader, concepts []string) ([]DimFact, error) {
+	facts, _, err := parseInstance(r, concepts)
+	return facts, err
+}
+
+// DocumentInfo is the fiscal period a filing reports on (dei cover facts).
+type DocumentInfo struct {
+	FiscalYear   int    // DocumentFiscalYearFocus, e.g. 2026
+	FiscalPeriod string // DocumentFiscalPeriodFocus: FY, Q1, Q2, Q3
+}
+
+// ParseFiling returns the us-gaap facts for concepts plus the filing's
+// fiscal year and period.
+func ParseFiling(r io.Reader, concepts []string) ([]DimFact, DocumentInfo, error) {
+	return parseInstance(r, concepts)
+}
+
+func parseInstance(r io.Reader, concepts []string) ([]DimFact, DocumentInfo, error) {
+	var info DocumentInfo
 	dec := xml.NewDecoder(r)
 	dec.CharsetReader = charsetReader
 	contexts := map[string]xbrlContext{}
@@ -47,7 +65,7 @@ func ParseInstance(r io.Reader, concepts []string) ([]DimFact, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("parse xbrl instance: %w", err)
+			return nil, info, fmt.Errorf("parse xbrl instance: %w", err)
 		}
 		start, ok := tok.(xml.StartElement)
 		if !ok {
@@ -74,7 +92,7 @@ func ParseInstance(r io.Reader, concepts []string) ([]DimFact, error) {
 			// DecodeElement reads the rest of this element into the struct,
 			// mapping child elements by the struct tags (like XmlSerializer).
 			if err := dec.DecodeElement(&c, &start); err != nil {
-				return nil, fmt.Errorf("parse xbrl context: %w", err)
+				return nil, info, fmt.Errorf("parse xbrl context: %w", err)
 			}
 			ctx := xbrlContext{start: c.Period.Start, end: c.Period.End, dims: map[string]string{}}
 			if ctx.end == "" {
@@ -88,9 +106,22 @@ func ParseInstance(r io.Reader, concepts []string) ([]DimFact, error) {
 		case strings.HasPrefix(start.Name.Space, "http://fasb.org/us-gaap/") && slices.Contains(concepts, start.Name.Local):
 			var text string
 			if err := dec.DecodeElement(&text, &start); err != nil {
-				return nil, fmt.Errorf("parse xbrl fact %s: %w", start.Name.Local, err)
+				return nil, info, fmt.Errorf("parse xbrl fact %s: %w", start.Name.Local, err)
 			}
 			raws = append(raws, rawFact{concept: start.Name.Local, contextRef: attr(start, "contextRef"), text: text})
+
+		case strings.HasPrefix(start.Name.Space, "http://xbrl.sec.gov/dei/") &&
+			(start.Name.Local == "DocumentFiscalYearFocus" || start.Name.Local == "DocumentFiscalPeriodFocus"):
+			var text string
+			if err := dec.DecodeElement(&text, &start); err != nil {
+				return nil, info, fmt.Errorf("parse dei %s: %w", start.Name.Local, err)
+			}
+			text = strings.TrimSpace(text)
+			if start.Name.Local == "DocumentFiscalYearFocus" {
+				info.FiscalYear, _ = strconv.Atoi(text)
+			} else {
+				info.FiscalPeriod = text
+			}
 		}
 	}
 
@@ -114,7 +145,7 @@ func ParseInstance(r io.Reader, concepts []string) ([]DimFact, error) {
 		seen[key] = true
 		out = append(out, DimFact{Concept: rf.concept, Start: ctx.start, End: ctx.end, Val: val, Dims: ctx.dims})
 	}
-	return out, nil
+	return out, info, nil
 }
 
 // charsetReader lets the decoder read older filings that declare a non-UTF-8

@@ -183,6 +183,57 @@ func TestFetchSkipsPerClassWhenEPSExists(t *testing.T) {
 	}
 }
 
+type fakeFresh struct {
+	through string
+	newer   bool
+}
+
+func (f *fakeFresh) FreshFacts(_ context.Context, _, knownThrough string, _ []string, unitFor func(string) string) (edgar.Filing, edgar.FactsByConcept, bool, error) {
+	f.through = knownThrough
+	filing := edgar.Filing{Accession: "0001403161-26-000104", Form: "10-Q", ReportDate: "2026-06-30", FilingDate: "2026-07-29"}
+	if !f.newer {
+		return filing, nil, false, nil
+	}
+	fact := edgar.Fact{Start: "2026-04-01", End: "2026-06-30", Val: 5_628e6, Accn: filing.Accession, Form: "10-Q", Filed: filing.FilingDate}
+	return filing, edgar.FactsByConcept{"NetIncomeLoss": {unitFor("NetIncomeLoss"): {fact}}}, true, nil
+}
+
+func TestFetchReadsLatestFilingWhenFeedLags(t *testing.T) {
+	fresh := &fakeFresh{newer: true}
+	f := &Fetcher{Fundamentals: fakeSEC{facts: visaFacts(t)}, Fresh: fresh, Now: fixedNow}
+
+	b, err := f.Fetch(t.Context(), "V")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fresh.through != "2026-03-31" {
+		t.Errorf("knownThrough = %q, want the fixture's latest period 2026-03-31", fresh.through)
+	}
+	var june *float64
+	for _, q := range b.Financials.Quarterly {
+		if q.EndDate == "2026-06-30" {
+			june = q.NetIncome
+		}
+	}
+	if june == nil || *june != 5_628e6 {
+		t.Errorf("June quarter net income = %v, want 5628e6 from the 10-Q", june)
+	}
+	if len(b.Notes) == 0 || !strings.Contains(b.Notes[0], "10-Q for the period ended 2026-06-30") {
+		t.Errorf("notes = %v", b.Notes)
+	}
+}
+
+func TestFetchSkipsLatestFilingWhenFeedIsCurrent(t *testing.T) {
+	f := &Fetcher{Fundamentals: fakeSEC{facts: visaFacts(t)}, Fresh: &fakeFresh{newer: false}, Now: fixedNow}
+	b, err := f.Fetch(t.Context(), "V")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(b.Notes) != 0 {
+		t.Errorf("no note expected when the feed is current: %v", b.Notes)
+	}
+}
+
 func TestConfigValidate(t *testing.T) {
 	tests := map[string]bool{
 		"":                                 false,
