@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { getReport, isFinished, type Metric, type MetricsReport, type ReportBody } from "./api";
+import { getReport, isFinished, type Metric, type MetricsReport, type Quality, type ReportBody } from "./api";
 
 export const STAGES = [
   { id: "ingesting", label: "Fetching SEC filings, prices and estimates" },
@@ -47,3 +47,22 @@ export function incomeRows(body?: ReportBody) {
 export function metricOf(m: MetricsReport, key: string): Metric | undefined {
   return [m.marketCap, ...m.profitability, ...m.growth, ...m.health, ...m.valuation, ...m.returns].find((x) => x.key === key);
 }
+
+/** The four business-quality questions, in report order. */
+export const QUALITY_QUESTIONS: { key: keyof Quality; question: string; short: string; options: [string, string, string] }[] = [
+  { key: "revenuePredictability", question: "How predictable is revenue?", short: "Predictability", options: ["Unpredictable", "Modest", "Predictable"] },
+  { key: "pricingPower", question: "Can the company raise prices?", short: "Pricing power", options: ["No", "Sometimes", "Easily"] },
+  { key: "recessionResistance", question: "How recession-proof is it?", short: "Recession", options: ["Weak", "Okay", "Strong"] },
+  { key: "competitivePosition", question: "What is its competitive position?", short: "Position", options: ["Weak", "Average", "Dominant"] },
+];
+
+/** Words for a 1–5 score, lowest first. */
+export const SCORE_WORDS = {
+  growth: ["Low", "Below avg", "Average", "Above avg", "High"],
+  health: ["Weak", "Below avg", "Fair", "Good", "Strong"],
+  quality: ["Poor", "Below avg", "Decent", "Good", "Excellent"],
+  valuation: ["Very expensive", "Expensive", "Fair value", "Attractive", "Very attractive"],
+};
+
+export const scoreWord = (words: string[], v: number | null) =>
+  v == null ? "n/a" : words[Math.min(Math.max(Math.round(v), 1), 5) - 1]!;

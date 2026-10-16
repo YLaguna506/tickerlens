@@ -2,22 +2,34 @@ import { DESIGNS, setDesign, useDesign } from "../design";
 
 const STYLES = {
   classic: {
-    group: "flex rounded-full bg-[#ece9e1] p-1 font-display text-xs font-semibold",
-    item: "rounded-full px-3 py-1.5",
+    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] rounded-full bg-[#ece9e1] p-1 font-display text-xs font-semibold",
+    item: "shrink-0 rounded-full px-3 py-1.5",
     on: "bg-white text-ink shadow-sm",
     off: "text-muted hover:text-ink",
   },
   terminal: {
-    group: "flex border border-t-line font-mono text-[11px] uppercase",
-    item: "px-2.5 py-1",
+    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] border border-t-line font-mono text-[11px] uppercase",
+    item: "shrink-0 px-2.5 py-1",
     on: "bg-t-amber font-bold text-black",
     off: "text-t-dim hover:text-white",
   },
-  editorial: {
-    group: "flex gap-4 font-serif text-sm italic",
-    item: "py-1",
-    on: "text-e-ink underline decoration-e-accent decoration-2 underline-offset-4",
-    off: "text-e-dim hover:text-e-ink",
+  scorecard: {
+    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] border-2 border-black bg-white font-label text-xs font-bold uppercase",
+    item: "shrink-0 px-2.5 py-1 not-last:border-r-2 not-last:border-black",
+    on: "bg-black text-white",
+    off: "text-black hover:bg-black/10",
+  },
+  bento: {
+    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] rounded-2xl bg-white/80 p-1 font-bento text-xs font-semibold shadow-[0_2px_12px_rgba(15,23,42,0.08)] backdrop-blur",
+    item: "shrink-0 rounded-xl px-3 py-1.5",
+    on: "bg-slate-900 text-white",
+    off: "text-slate-500 hover:text-slate-900",
+  },
+  decision: {
+    group: "flex max-w-full overflow-x-auto [scrollbar-width:none] gap-1 font-flow text-xs font-medium",
+    item: "shrink-0 rounded-md border px-2.5 py-1",
+    on: "border-indigo-600 bg-indigo-600 text-white",
+    off: "border-slate-300 bg-white text-slate-600 hover:border-slate-400",
   },
 };
 

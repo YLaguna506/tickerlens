@@ -21,10 +21,11 @@
   --color-sand: #c3a878;
   --color-navy: #1f2357;
 
-  /* Prototype designs: "terminal" (dark, dense) and "editorial" (print). */
+  /* Prototype designs, one typeface each. */
   --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --font-serif: "Fraunces", Georgia, serif;
-  --font-text: "Source Serif 4", Georgia, serif;
+  --font-label: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-bento: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-flow: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-t-bg: #0a0d12;
   --color-t-panel: #0f141b;
@@ -36,11 +37,6 @@
   --color-t-amber: #e3b341;
   --color-t-blue: #58a6ff;
 
-  --color-e-paper: #fbf8f1;
-  --color-e-ink: #1b1a17;
-  --color-e-dim: #6e6a62;
-  --color-e-rule: #d9d3c5;
-  --color-e-accent: #b3261e;
 }
 
 html {

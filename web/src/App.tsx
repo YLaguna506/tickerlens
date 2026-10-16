@@ -1,11 +1,13 @@
 import { useDesign } from "./design";
+import { Bento } from "./pages/Bento";
+import { Decision } from "./pages/Decision";
 import { Home } from "./pages/Home";
-import { Editorial } from "./pages/Editorial";
 import { Report } from "./pages/Report";
+import { Scorecard } from "./pages/Scorecard";
 import { Terminal } from "./pages/Terminal";
 import { usePath } from "./router";
 
-const DESIGNS = { classic: Report, terminal: Terminal, editorial: Editorial };
+const DESIGNS = { classic: Report, scorecard: Scorecard, bento: Bento, decision: Decision, terminal: Terminal };
 
 export function App() {
   const path = usePath();

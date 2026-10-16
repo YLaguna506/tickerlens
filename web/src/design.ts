@@ -3,12 +3,14 @@
 
 import { useEffect, useState } from "react";
 
-export type Design = "classic" | "terminal" | "editorial";
+export type Design = "classic" | "scorecard" | "bento" | "decision" | "terminal";
 
 export const DESIGNS: { id: Design; label: string }[] = [
   { id: "classic", label: "Classic" },
+  { id: "scorecard", label: "Scorecard" },
+  { id: "bento", label: "Bento" },
+  { id: "decision", label: "Decision" },
   { id: "terminal", label: "Terminal" },
-  { id: "editorial", label: "Editorial" },
 ];
 
 const KEY = "tickerlens.design";

@@ -1,21 +1,15 @@
 // The report's sections, in page order.
 
-import type { MetricsReport, Quality, ReportBody, Verdict } from "../api";
+import type { MetricsReport, ReportBody, Verdict } from "../api";
 import { multiple, pct, price, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
 import { BandChart, EarningsDots, GeographySplit, PriceBar, RevenueIncomeChart, SegmentBreakdown } from "./charts";
-import { incomeRows, isPending } from "../live";
+import { QUALITY_QUESTIONS, incomeRows, isPending } from "../live";
 import { EvidenceList, MetricRow, ScoreBar, Section, Skeleton, StepScale, ThreeLevel, Unavailable } from "./ui";
 
 const pending = isPending;
 
 // --- Business --------------------------------------------------------------------
 
-const QUESTIONS: { key: keyof Quality; question: string; options: [string, string, string] }[] = [
-  { key: "revenuePredictability", question: "How predictable is revenue?", options: ["Unpredictable", "Modest", "Predictable"] },
-  { key: "pricingPower", question: "Can the company raise prices?", options: ["No", "Sometimes", "Easily"] },
-  { key: "recessionResistance", question: "How recession-proof is it?", options: ["Weak", "Okay", "Strong"] },
-  { key: "competitivePosition", question: "What is its competitive position?", options: ["Weak", "Average", "Dominant"] },
-];
 
 function InfoCard({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
   return (
@@ -77,7 +71,7 @@ export function BusinessSection({ body }: { body?: ReportBody }) {
           </p>
           <StepScale value={body?.businessQuality?.score ?? null} labels={["Poor", "Below avg", "Decent", "Good", "Excellent"]} />
           <div className="fade-in grid gap-4 md:grid-cols-2">
-            {QUESTIONS.map((q) => {
+            {QUALITY_QUESTIONS.map((q) => {
               const a = quality.output![q.key];
               return (
                 <ThreeLevel key={q.key} question={q.question} options={q.options} answer={a?.answer}>

@@ -3,10 +3,10 @@
 
 import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { isFinished, type Bands, type MetricsReport, type Quality, type ReportBody, type SegmentShare, type Verdict } from "../api";
+import { isFinished, type Bands, type MetricsReport, type ReportBody, type SegmentShare, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
 import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
-import { STAGES, incomeRows, isPending, metricOf, useLiveReport } from "../live";
+import { QUALITY_QUESTIONS, STAGES, incomeRows, isPending, metricOf, useLiveReport } from "../live";
 import { navigate } from "../router";
 
 const AMBER = "#e3b341";
@@ -339,12 +339,6 @@ function SegmentsPanel({ body }: { body?: ReportBody }) {
   );
 }
 
-const QUALITY: { key: keyof Quality; label: string; options: [string, string, string] }[] = [
-  { key: "revenuePredictability", label: "Predictability", options: ["Unpredictable", "Modest", "Predictable"] },
-  { key: "pricingPower", label: "Pricing power", options: ["No", "Sometimes", "Easily"] },
-  { key: "recessionResistance", label: "Recession", options: ["Weak", "Okay", "Strong"] },
-  { key: "competitivePosition", label: "Position", options: ["Weak", "Average", "Dominant"] },
-];
 
 function BusinessPanel({ body }: { body?: ReportBody }) {
   const o = body?.agents?.business_overview;
@@ -382,12 +376,12 @@ function BusinessPanel({ body }: { body?: ReportBody }) {
           <Waiting>judging</Waiting>
         ) : q?.output ? (
           <div className="space-y-1">
-            {QUALITY.map((item) => {
+            {QUALITY_QUESTIONS.map((item) => {
               const a = q.output![item.key];
               return (
                 <details key={item.key} className="group font-mono text-xs">
                   <summary className="flex cursor-pointer list-none items-center gap-3">
-                    <span className="w-28 shrink-0 text-t-dim">{item.label}</span>
+                    <span className="w-28 shrink-0 text-t-dim">{item.short}</span>
                     <span className="grid flex-1 grid-cols-3 gap-px bg-t-line text-[10px] uppercase">
                       {item.options.map((opt, i) => (
                         <span key={opt} className={`truncate px-1 py-0.5 text-center ${opt === a?.answer ? (i === 2 ? "bg-t-up text-black" : i === 1 ? "bg-t-amber text-black" : "bg-t-down text-black") : "bg-t-panel text-t-dim"}`}>
