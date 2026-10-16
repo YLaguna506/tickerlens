@@ -45,6 +45,10 @@ export const shortDate = (iso: string) =>
 export const monthYear = (iso: string) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
 
+/** Axis label for a valuation multiple: one decimal below 10× so small
+ * ranges (P/S from 0.7× to 3×) do not repeat the same label. */
+export const multipleTick = (v: number) => (Math.abs(v) >= 10 ? `${Math.round(v)}×` : `${v.toFixed(1)}×`);
+
 /** One x-axis tick per year (its first date in the data). A first year that
  * starts after June is left out, so its label does not crowd the next one. */
 export function yearTicks(points: { date: string }[]): string[] {

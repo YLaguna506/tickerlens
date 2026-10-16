@@ -7,7 +7,7 @@ import { isFinished, type Bands, type Evidence as Quote, type Metric, type Metri
 import { DesignSwitch } from "../components/DesignSwitch";
 import { ResyncButton } from "../components/ResyncButton";
 import { RunDetails } from "../components/RunDetails";
-import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
+import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
@@ -590,7 +590,7 @@ function ValuationSection({ m }: { m: MetricsReport }) {
                   <ReferenceArea y1={b.expensiveAbove} y2={hi} fill="#f43f5e" fillOpacity={0.1} ifOverflow="hidden" />
                   <ReferenceLine y={b.median} stroke="#ca8a04" strokeDasharray="4 4" />
                   <XAxis dataKey="date" tickFormatter={monthYear} tick={AXIS} axisLine={false} tickLine={false} minTickGap={50} />
-                  <YAxis domain={[lo, hi]} tickFormatter={(x: number) => `${Math.round(x)}×`} tick={AXIS} axisLine={false} tickLine={false} width={40} />
+                  <YAxis domain={[lo, hi]} tickFormatter={multipleTick} tick={AXIS} axisLine={false} tickLine={false} width={40} />
                   <Tooltip formatter={(x) => multiple(Number(x))} />
                   <Line dataKey="value" name={b.metric} stroke="#18181b" strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
