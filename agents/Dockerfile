@@ -11,6 +11,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project
 
 COPY tickerlens_agents ./tickerlens_agents
+COPY prompts ./prompts
 RUN uv sync --locked --no-dev
 
 RUN useradd --create-home appuser

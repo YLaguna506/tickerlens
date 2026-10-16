@@ -6,13 +6,13 @@ requires-python = ">=3.12,<3.13"
 license = "MIT"
 dependencies = [
     "fastapi>=0.143.1",
+    "httpx>=0.28.1",
     "pydantic>=2.14.1",
     "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.17.0",
