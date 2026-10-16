@@ -63,8 +63,14 @@ const (
 	overviewOut = `{"mission":null,"whatItDoes":"Payments network.","howItMakesMoney":"Fees.","payingCustomers":"Banks.","whyTheyBuy":"Acceptance."}`
 	qualityOut  = `{"revenuePredictability":{"answer":"Predictable"},"pricingPower":{"answer":"Easily"},"recessionResistance":{"answer":"Okay"},"competitivePosition":{"answer":"Dominant"}}`
 	// Visa FY2025 net revenue is $40,000M; gross segment revenue is higher.
-	segmentsOut = `{"unit":"USD millions","fiscalYear":"FY2025","segments":[{"name":"Service","revenue":18000},{"name":"Data processing","revenue":21000},{"name":"International","revenue":15000}],"geography":[]}`
+	segmentsOut  = `{"unit":"USD millions","fiscalYear":"FY2025","segments":[{"name":"Service","revenue":18000},{"name":"Data processing","revenue":21000},{"name":"International","revenue":15000}],"geography":[]}`
+	narrativeOut = `{"tagline":"Great business, full price.","rationale":"Quality and health are strong; the price is high."}`
 )
+
+// allAgents answers every agent successfully.
+func allAgents() map[string]string {
+	return map[string]string{AgentOverview: overviewOut, AgentQuality: qualityOut, AgentSegments: segmentsOut, AgentNarrative: narrativeOut}
+}
 
 func runWithAgents(t *testing.T, agents *fakeAgents, cache fetch.Cache) (*fakeStore, Body) {
 	t.Helper()
@@ -88,13 +94,13 @@ func runWithAgents(t *testing.T, agents *fakeAgents, cache fetch.Cache) (*fakeSt
 }
 
 func TestAnalyzingStage(t *testing.T) {
-	agents := &fakeAgents{outputs: map[string]string{AgentOverview: overviewOut, AgentQuality: qualityOut, AgentSegments: segmentsOut}}
+	agents := &fakeAgents{outputs: allAgents()}
 	s, body := runWithAgents(t, agents, nil)
 
 	if s.outcome == nil || s.outcome.Status != store.StatusDone {
 		t.Fatalf("outcome = %+v", s.outcome)
 	}
-	if len(s.stages) != 3 || s.stages[2] != StageAnalyzing {
+	if len(s.stages) != 4 || s.stages[2] != StageAnalyzing || s.stages[3] != StageScoring {
 		t.Errorf("stages = %v", s.stages)
 	}
 	// Predictable 2 + Easily 2 + Okay 1 + Dominant 2 = 7 → 1 + 4 × 7/8 = 4.5
@@ -108,9 +114,36 @@ func TestAnalyzingStage(t *testing.T) {
 		t.Errorf("filing = %+v cost = %v", body.Filing, body.CostUSD)
 	}
 	for _, task := range agents.calls {
+		if task.Section == AgentNarrative {
+			if task.Metrics["verdict"] == nil || len(task.Documents) != 0 {
+				t.Errorf("narrative input = %v", task.Metrics)
+			}
+			continue
+		}
 		if task.Metrics["netMargin"] == nil || len(task.Documents) == 0 {
 			t.Errorf("%s task is missing metrics or documents", task.Section)
 		}
+	}
+	// The verdict uses the agents' quality score (4.5) with growth and health.
+	v := body.Verdict
+	if v == nil || v.Label == "" || v.Components[0].Score == nil || *v.Components[0].Score != 4.5 {
+		t.Fatalf("verdict = %+v", v)
+	}
+	if v.NarrativeStatus != SectionStateReady || v.Tagline != "Great business, full price." {
+		t.Errorf("narrative = %s %q %v", v.NarrativeStatus, v.Tagline, v.NarrativeErrors)
+	}
+}
+
+func TestNarrativeFailureKeepsVerdict(t *testing.T) {
+	outputs := allAgents()
+	delete(outputs, AgentNarrative) // service unreachable for the narrative
+	s, body := runWithAgents(t, &fakeAgents{outputs: outputs}, nil)
+
+	if s.outcome.Status != store.StatusDone {
+		t.Errorf("a missing narrative must not make the report partial: %+v", s.outcome)
+	}
+	if body.Verdict == nil || body.Verdict.Label == "" || body.Verdict.NarrativeStatus != SectionStateFailed {
+		t.Errorf("verdict = %+v", body.Verdict)
 	}
 }
 
@@ -139,7 +172,9 @@ func TestAgentFailuresMakeReportPartial(t *testing.T) {
 
 func TestSegmentsThatDoNotAddUpAreHidden(t *testing.T) {
 	tiny := `{"unit":"USD millions","fiscalYear":"FY2025","segments":[{"name":"A","revenue":10},{"name":"B","revenue":20}],"geography":[]}`
-	agents := &fakeAgents{outputs: map[string]string{AgentOverview: overviewOut, AgentQuality: qualityOut, AgentSegments: tiny}}
+	outputs := allAgents()
+	outputs[AgentSegments] = tiny
+	agents := &fakeAgents{outputs: outputs}
 	_, body := runWithAgents(t, agents, nil)
 
 	sec := body.Agents[AgentSegments]
@@ -150,15 +185,15 @@ func TestSegmentsThatDoNotAddUpAreHidden(t *testing.T) {
 
 func TestAgentAnswersAreCached(t *testing.T) {
 	cache := fetch.NewMemoryCache()
-	outputs := map[string]string{AgentOverview: overviewOut, AgentQuality: qualityOut, AgentSegments: segmentsOut}
+	outputs := allAgents()
 
 	first := &fakeAgents{outputs: outputs}
 	runWithAgents(t, first, cache)
 	second := &fakeAgents{outputs: outputs}
 	_, body := runWithAgents(t, second, cache)
 
-	if len(first.calls) != 3 || len(second.calls) != 0 {
-		t.Errorf("agent calls: first run %d, second run %d (want 3, 0)", len(first.calls), len(second.calls))
+	if len(first.calls) != 4 || len(second.calls) != 0 {
+		t.Errorf("agent calls: first run %d, second run %d (want 4, 0)", len(first.calls), len(second.calls))
 	}
 	if !body.Agents[AgentOverview].Cached {
 		t.Error("second run should report the cached answer")

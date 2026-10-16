@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -69,10 +70,15 @@ func run(logger *slog.Logger) error {
 		logger.Warn("marked reports interrupted by the last shutdown as failed", "count", n)
 	}
 
+	scoringCfg, err := loadScoring(logger)
+	if err != nil {
+		return err
+	}
+
 	cache := store.NewPGCache(pool)
 	fetcher := ingest.NewFetcher(cfg, cache, store.NewUsage(pool), logger)
 	broker := pipeline.NewBroker()
-	runner := pipeline.NewRunner(reports, fetcher, broker, scoring.Default(), logger, jobTimeout)
+	runner := pipeline.NewRunner(reports, fetcher, broker, scoringCfg, logger, jobTimeout)
 
 	// The AI agents stage runs only when the agents service is configured.
 	if url := os.Getenv("AGENTS_URL"); url != "" {
@@ -81,8 +87,10 @@ func run(logger *slog.Logger) error {
 			Service:       agentclient.New(url),
 			Cache:         cache,
 			FastModel:     os.Getenv("LLM_MODEL_FAST"),
+			StrongModel:   envOr("LLM_MODEL_STRONG", os.Getenv("LLM_MODEL_FAST")),
 			PromptVersion: "v1",
 			MaxDocChars:   40_000,
+			CostCapUSD:    envFloat("LLM_JOB_COST_CAP_USD", 0.25),
 		}
 		logger.Info("AI agents enabled", "url", url, "model", os.Getenv("LLM_MODEL_FAST"))
 	} else {
@@ -142,6 +150,29 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("shutdown: %w", err)
 	}
 	return nil
+}
+
+// loadScoring reads SCORING_CONFIG (config/scoring.yaml). Without it the
+// built-in defaults apply, which match the shipped file.
+func loadScoring(logger *slog.Logger) (scoring.Config, error) {
+	path := os.Getenv("SCORING_CONFIG")
+	if path == "" {
+		logger.Warn("SCORING_CONFIG not set: using built-in scoring defaults")
+		return scoring.Default(), nil
+	}
+	cfg, err := scoring.Load(path)
+	if err != nil {
+		return cfg, err
+	}
+	logger.Info("scoring config loaded", "path", path, "version", cfg.Version)
+	return cfg, nil
+}
+
+func envFloat(key string, fallback float64) float64 {
+	if v, err := strconv.ParseFloat(os.Getenv(key), 64); err == nil {
+		return v
+	}
+	return fallback
 }
 
 func envOr(key, fallback string) string {

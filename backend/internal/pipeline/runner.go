@@ -21,7 +21,7 @@ import (
 
 // BodyVersion changes whenever the report body's shape or computation
 // changes, so old reports are not reused for new requests.
-const BodyVersion = "m4.1"
+const BodyVersion = "m5.1"
 
 // Stages, in order.
 const (
@@ -69,6 +69,9 @@ type Body struct {
 	BusinessQuality *QualityScore            `json:"businessQuality,omitempty"`
 	Segments        *SegmentBreakdown        `json:"segments,omitempty"`
 	CostUSD         float64                  `json:"costUsd"`
+
+	// Filled by the scoring stage.
+	Verdict *VerdictSection `json:"verdict,omitempty"`
 }
 
 // Runner executes report jobs in background goroutines.
@@ -211,6 +214,20 @@ func (r *Runner) run(reportID, ticker string, refresh bool) {
 			j.fail(ctx.Err())
 			return
 		}
+		if !j.save(ctx) {
+			return
+		}
+	}
+
+	// Stage 4: the verdict (computed), then its narrative (LLM).
+	v, _ := timed(j, StageScoring, func() (*VerdictSection, error) {
+		return j.decide(ctx, bundle, report), nil
+	})
+	j.body.Verdict = v
+	j.section("verdict", v.Label != "", v.Rule)
+	if ctx.Err() != nil {
+		j.fail(ctx.Err())
+		return
 	}
 	j.body.TimingsMs["total"] = time.Since(start).Milliseconds()
 	if !j.save(ctx) {

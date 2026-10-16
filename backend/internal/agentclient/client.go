@@ -28,7 +28,8 @@ type Task struct {
 	CompanyName   string         `json:"companyName"`
 	PromptVersion string         `json:"promptVersion"`
 	Metrics       map[string]any `json:"metrics"`
-	Documents     []Document     `json:"documents"`
+	// omitempty: a nil slice would be sent as null, which the service rejects.
+	Documents []Document `json:"documents,omitempty"`
 }
 
 // Evidence backs a judgment with a verbatim filing quote.

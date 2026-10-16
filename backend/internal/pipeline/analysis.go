@@ -45,8 +45,10 @@ type Agents struct {
 	Service       AgentService
 	Cache         fetch.Cache // optional: caches filing sections and agent results
 	FastModel     string      // part of the cache key: a new model means new answers
+	StrongModel   string      // model of the verdict narrative (cache key)
 	PromptVersion string
-	MaxDocChars   int // per document sent to an agent (a token budget)
+	MaxDocChars   int     // per document sent to an agent (a token budget)
+	CostCapUSD    float64 // LLM spend per report; the narrative is skipped beyond it (0 = no cap)
 }
 
 // AgentSection is one agent's outcome in the report body.

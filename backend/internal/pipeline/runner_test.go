@@ -145,7 +145,7 @@ func TestRunSuccess(t *testing.T) {
 	if s.outcome == nil || s.outcome.Status != store.StatusDone {
 		t.Errorf("outcome = %+v", s.outcome)
 	}
-	if len(s.stages) != 2 || s.stages[0] != StageIngesting || s.stages[1] != StageComputing {
+	if len(s.stages) != 3 || s.stages[0] != StageIngesting || s.stages[1] != StageComputing || s.stages[2] != StageScoring {
 		t.Errorf("stages = %v", s.stages)
 	}
 	var body Body
@@ -157,6 +157,10 @@ func TestRunSuccess(t *testing.T) {
 	}
 	if s.key == "" {
 		t.Error("cache key not recorded")
+	}
+	// Without AI agents the verdict uses growth and health only, with lower confidence.
+	if body.Verdict == nil || body.Verdict.Label == "" || body.Verdict.ConfidenceLevel == "high" || body.Verdict.NarrativeStatus != "skipped" {
+		t.Errorf("verdict = %+v", body.Verdict)
 	}
 }
 
