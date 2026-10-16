@@ -53,6 +53,7 @@ tasks:
       # The CLI runs on the host, so it reaches Postgres through the published
       # port instead of the `postgres` hostname used inside Docker.
       DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable"
+      SCORING_CONFIG: ../config/scoring.yaml
     cmds:
       - go run ./cmd/cli {{.CLI_ARGS}}
 

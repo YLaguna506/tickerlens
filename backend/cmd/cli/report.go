@@ -10,6 +10,7 @@ import (
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
 	"github.com/YLaguna506/tickerlens/backend/internal/metrics"
 	"github.com/YLaguna506/tickerlens/backend/internal/scoring"
+	"github.com/YLaguna506/tickerlens/backend/internal/verdict"
 )
 
 // printReport writes the Financial overview, phase and scores.
@@ -72,6 +73,28 @@ func printReport(w io.Writer, r *metrics.Report, b *ingest.Bundle) {
 			fmt.Fprintln(w, "  -", n)
 		}
 	}
+}
+
+// printVerdict writes the verdict and how it was reached.
+func printVerdict(w io.Writer, v verdict.Result) {
+	fmt.Fprintln(w)
+	if v.Label == "" {
+		fmt.Fprintf(w, "Verdict: none (%s)\n", v.Rule)
+		return
+	}
+	fmt.Fprintf(w, "Verdict: %s · %s\n", strings.ToUpper(v.Label), v.Meaning)
+	fmt.Fprintf(w, "  %s\n", v.Rule)
+	parts := []string{}
+	for _, c := range v.Components {
+		score := "n/a"
+		if c.Score != nil {
+			score = fmt.Sprintf("%.1f", *c.Score)
+		}
+		parts = append(parts, fmt.Sprintf("%s %s × %.0f%%", c.Name, score, c.Weight*100))
+	}
+	fmt.Fprintf(w, "  B = %s\n", strings.Join(parts, " + "))
+	fmt.Fprintf(w, "  Confidence: %s (%d/100): %s\n", v.ConfidenceLevel, v.Confidence, strings.Join(v.ConfidenceReasons, "; "))
+	fmt.Fprintln(w, "  (The CLI runs no AI agents. Request the report through the API for the full verdict.)")
 }
 
 func printMetrics(w io.Writer, title string, ms []metrics.Metric) {

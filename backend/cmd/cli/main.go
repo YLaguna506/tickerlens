@@ -24,6 +24,7 @@ import (
 	"github.com/YLaguna506/tickerlens/backend/internal/metrics"
 	"github.com/YLaguna506/tickerlens/backend/internal/scoring"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
+	"github.com/YLaguna506/tickerlens/backend/internal/verdict"
 )
 
 const usage = `usage: tickerlens <command> [flags] TICKER
@@ -134,11 +135,27 @@ func runMetrics(ctx context.Context, args []string, stdout, stderr io.Writer) er
 	if err != nil {
 		return err
 	}
-	report := metrics.Compute(bundle, scoring.Default())
+	cfg := scoring.Default()
+	if path := os.Getenv("SCORING_CONFIG"); path != "" {
+		if cfg, err = scoring.Load(path); err != nil {
+			return err
+		}
+	}
+	report := metrics.Compute(bundle, cfg)
+	// The CLI runs no AI agents, so the verdict has no business quality score.
+	v := verdict.Decide(verdict.Input{
+		Growth:             report.GrowthScore.Value,
+		FinancialHealth:    report.HealthScore.Value,
+		Valuation:          report.ValuationScore.Value,
+		ValuationFellBack:  report.Bands != nil && report.Bands.FellBackFrom != "",
+		PhaseLowConfidence: report.Phase.LowConfidence,
+		MissingData:        bundle.Failed,
+	}, cfg)
 	if *c.asJSON {
-		return writeJSON(stdout, report)
+		return writeJSON(stdout, map[string]any{"metrics": report, "verdict": v})
 	}
 	printReport(stdout, &report, bundle)
+	printVerdict(stdout, v)
 	return nil
 }
 
