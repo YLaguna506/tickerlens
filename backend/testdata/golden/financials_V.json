@@ -3609,6 +3609,18 @@
       "revenue": "sum of last 4 quarters",
       "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
       "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+    },
+    "filed": {
+      "buybacks": "2026-04-29",
+      "capex": "2026-04-29",
+      "cash": "2026-04-29",
+      "dividendsPaid": "2026-04-29",
+      "interestExpense": "2026-04-29",
+      "netIncome": "2026-04-29",
+      "operatingCashFlow": "2026-04-29",
+      "operatingIncome": "2026-04-29",
+      "revenue": "2026-04-29",
+      "totalEquity": "2026-04-29"
     }
   },
   "warnings": [

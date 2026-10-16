@@ -57,6 +57,12 @@ type FinancialPeriod struct {
 	Filed map[string]string `json:"filed,omitempty"`
 }
 
+// Split is a stock split: from Date on, each share became Factor shares.
+type Split struct {
+	Date   string  `json:"date"`
+	Factor float64 `json:"factor"`
+}
+
 // Financials is the full normalized history for one company.
 type Financials struct {
 	Annual    []FinancialPeriod `json:"annual"`    // oldest first

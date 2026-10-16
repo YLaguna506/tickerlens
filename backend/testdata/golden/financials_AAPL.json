@@ -4274,6 +4274,22 @@
       "shortTermInvestments": "MarketableSecuritiesCurrent",
       "totalDebt": "derived: LongTermDebt + CommercialPaper",
       "totalEquity": "StockholdersEquity"
+    },
+    "filed": {
+      "buybacks": "2026-07-31",
+      "capex": "2026-07-31",
+      "cash": "2026-07-31",
+      "debtRepaid": "2026-07-31",
+      "dividendsPaid": "2026-07-31",
+      "epsDiluted": "2026-07-31",
+      "grossProfit": "2026-07-31",
+      "netIncome": "2026-07-31",
+      "operatingCashFlow": "2026-07-31",
+      "operatingIncome": "2026-07-31",
+      "revenue": "2026-07-31",
+      "sharesDiluted": "2026-07-31",
+      "shortTermInvestments": "2026-07-31",
+      "totalEquity": "2026-07-31"
     }
   }
 }

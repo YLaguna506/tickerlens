@@ -121,6 +121,17 @@ func LacksRecentEPS(cf *edgar.CompanyFacts) bool {
 	return err1 == nil && err2 == nil && income.Sub(eps) > 210*24*time.Hour
 }
 
+// Splits lists the stock splits in daily prices, oldest first.
+func Splits(bars []prices.Bar) []financials.Split {
+	var out []financials.Split
+	for _, b := range bars {
+		if b.SplitFactor != 0 && b.SplitFactor != 1 {
+			out = append(out, financials.Split{Date: b.Date, Factor: b.SplitFactor})
+		}
+	}
+	return out
+}
+
 // Fetch resolves the ticker and fetches all sources concurrently.
 func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 	co, err := f.Fundamentals.LookupTicker(ctx, ticker)
@@ -201,7 +212,9 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 		}
 	}
 
-	b.Financials = financials.Normalize(co, facts)
+	// Prices carry the stock splits, which normalization needs to combine
+	// per-share values filed on either side of a split.
+	b.Financials = financials.Normalize(co, facts, Splits(b.Prices))
 
 	switch {
 	case f.Prices == nil:

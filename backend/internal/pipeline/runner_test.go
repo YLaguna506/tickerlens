@@ -99,7 +99,7 @@ func visaBundle(t *testing.T) *ingest.Bundle {
 	if err := json.Unmarshal(raw, &bars); err != nil {
 		t.Fatal(err)
 	}
-	return &ingest.Bundle{Company: co, Financials: financials.Normalize(co, &facts), Prices: bars}
+	return &ingest.Bundle{Company: co, Financials: financials.Normalize(co, &facts, ingest.Splits(bars)), Prices: bars}
 }
 
 // runJob starts a job and collects its events until the terminal one.

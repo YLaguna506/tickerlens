@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,9 +37,15 @@ type series struct {
 // Normalize converts a company's XBRL facts into fiscal years, fiscal
 // quarters and TTM. It never guesses: a value that cannot be found or derived
 // from reported numbers is left nil.
-func Normalize(co edgar.Company, facts *edgar.CompanyFacts) Financials {
+//
+// Values keep the share terms of the filing they came from (see
+// FinancialPeriod.Filed). splits (nil if unknown) are used only where two
+// per-share values from different filings are combined: deriving a quarter
+// from year-to-date totals and summing TTM. Each value is first put in the
+// other's share terms, so a split between the filings does not mix them.
+func Normalize(co edgar.Company, facts *edgar.CompanyFacts, splits []Split) Financials {
 	gaap := facts.Facts["us-gaap"]
-	r := newResolver(gaap)
+	r := newResolver(gaap, splits)
 	cal := newCalendar(r, gaap)
 
 	var out Financials
@@ -59,7 +66,7 @@ func Normalize(co edgar.Company, facts *edgar.CompanyFacts) Financials {
 		out.Warnings = append(out.Warnings, fmt.Sprintf("%d quarters skipped: could not place them in a fiscal year", skipped))
 	}
 
-	ttm, warning := trailing(co, out.Quarterly, out.Annual)
+	ttm, warning := trailing(co, out.Quarterly, out.Annual, r.terms)
 	out.TTM = ttm
 	if warning != "" {
 		out.Warnings = append(out.Warnings, warning)
@@ -74,19 +81,24 @@ func Normalize(co edgar.Company, facts *edgar.CompanyFacts) Financials {
 type resolver struct {
 	specs  map[string]fieldSpec
 	series map[string][]series // field name → one series per concept, in priority order
+	terms  shareTerms
 }
 
-func newResolver(gaap map[string]edgar.Concept) *resolver {
-	r := &resolver{specs: map[string]fieldSpec{}, series: map[string][]series{}}
+func newResolver(gaap map[string]edgar.Concept, splits []Split) *resolver {
+	r := &resolver{specs: map[string]fieldSpec{}, series: map[string][]series{}, terms: splits}
 	for _, specs := range [][]fieldSpec{fields, helpers} {
 		for _, spec := range specs {
 			r.specs[spec.name] = spec
+			var terms shareTerms
+			if spec.unit == perShareUnit {
+				terms = r.terms
+			}
 			for _, concept := range spec.concepts {
 				c, ok := gaap[concept]
 				if !ok {
 					continue
 				}
-				r.series[spec.name] = append(r.series[spec.name], buildSeries(concept, c.Units[spec.unit], spec.kind))
+				r.series[spec.name] = append(r.series[spec.name], buildSeries(concept, c.Units[spec.unit], spec.kind, terms))
 			}
 		}
 	}
@@ -94,8 +106,10 @@ func newResolver(gaap map[string]edgar.Concept) *resolver {
 }
 
 // buildSeries deduplicates a concept's facts and, for flows, derives quarters
-// that filings only report as year-to-date totals.
-func buildSeries(concept string, facts []edgar.Fact, kind fieldKind) series {
+// that filings only report as year-to-date totals. terms is set for per-share
+// concepts, so YTD values filed on either side of a stock split are put in the
+// same share terms before one is subtracted from the other.
+func buildSeries(concept string, facts []edgar.Fact, kind fieldKind, terms shareTerms) series {
 	s := series{annual: map[string]value{}, quarterly: map[string]value{}, instant: map[string]value{}}
 
 	// The same period is reported by several filings (original + later
@@ -157,14 +171,20 @@ func buildSeries(concept string, facts []edgar.Fact, kind fieldKind) series {
 			if _, reported := s.quarterly[key]; reported {
 				continue
 			}
+			// The quarter is in the share terms of cur's filing.
+			source := fmt.Sprintf("%s (derived: YTD to %s minus YTD to %s", concept, key, formatDate(prev.end))
+			prevVal := prev.val
+			if f := terms.factor(prev.filed, cur.filed); f != 1 {
+				prevVal /= f
+				source += ", restated for a " + splitRatio(f) + " split"
+			}
 			s.quarterly[key] = value{
-				val:   round4(cur.val - prev.val),
-				start: qStart,
-				end:   cur.end,
-				accn:  cur.accn,
-				filed: cur.filed,
-				source: fmt.Sprintf("%s (derived: YTD to %s minus YTD to %s)",
-					concept, key, formatDate(prev.end)),
+				val:    round4(cur.val - prevVal),
+				start:  qStart,
+				end:    cur.end,
+				accn:   cur.accn,
+				filed:  cur.filed,
+				source: source + ")",
 			}
 		}
 	}
@@ -435,7 +455,9 @@ func (c calendar) containing(t time.Time) (fiscalYear, bool) {
 // --- TTM ------------------------------------------------------------------------
 
 // trailing builds the TTM period from the latest four consecutive quarters.
-func trailing(co edgar.Company, quarters, annual []FinancialPeriod) (*FinancialPeriod, string) {
+// Per-share values are summed in the share terms of the latest filing among
+// the four quarters.
+func trailing(co edgar.Company, quarters, annual []FinancialPeriod, terms shareTerms) (*FinancialPeriod, string) {
 	last := -1
 	for i := len(quarters) - 1; i >= 0; i-- {
 		if quarters[i].Revenue != nil || quarters[i].NetIncome != nil {
@@ -466,23 +488,41 @@ func trailing(co edgar.Company, quarters, annual []FinancialPeriod) (*FinancialP
 		EndDate:       latest.EndDate,
 		Accession:     latest.Accession,
 		Sources:       map[string]string{},
+		Filed:         map[string]string{},
 	}
 
 	for _, spec := range fields {
 		switch spec.kind {
 		case flow:
-			sum, ok := 0.0, true
+			filed, ok := "", true
 			for i := range q {
-				v := q[i].Get(spec.name)
-				if v == nil {
+				if q[i].Get(spec.name) == nil {
 					ok = false
 					break
 				}
-				sum += *v
+				filed = max(filed, q[i].Filed[spec.name])
 			}
-			if ok {
-				*t.field(spec.name) = ptr(round4(sum))
-				t.Sources[spec.name] = "sum of last 4 quarters"
+			if !ok {
+				continue
+			}
+			sum, restated := 0.0, false
+			for i := range q {
+				v := *q[i].Get(spec.name)
+				if spec.unit == perShareUnit && filed != "" {
+					if f := terms.factor(filedOrEnd(q[i], spec.name), filed); f != 1 {
+						v /= f
+						restated = true
+					}
+				}
+				sum += v
+			}
+			*t.field(spec.name) = ptr(round4(sum))
+			t.Sources[spec.name] = "sum of last 4 quarters"
+			if restated {
+				t.Sources[spec.name] += " (restated for stock splits)"
+			}
+			if filed != "" {
+				t.Filed[spec.name] = filed
 			}
 		case average:
 			// Use the latest quarter's weighted average; Q4 is rarely reported
@@ -490,14 +530,17 @@ func trailing(co edgar.Company, quarters, annual []FinancialPeriod) (*FinancialP
 			if v := latest.Get(spec.name); v != nil {
 				*t.field(spec.name) = ptr(*v)
 				t.Sources[spec.name] = latest.Sources[spec.name]
+				t.Filed[spec.name] = latest.Filed[spec.name]
 			} else if fy := findByEnd(annual, latest.EndDate); fy != nil && fy.Get(spec.name) != nil {
 				*t.field(spec.name) = ptr(*fy.Get(spec.name))
 				t.Sources[spec.name] = fy.Sources[spec.name] + " (fiscal year)"
+				t.Filed[spec.name] = fy.Filed[spec.name]
 			}
 		case instant:
 			if v := latest.Get(spec.name); v != nil {
 				*t.field(spec.name) = ptr(*v)
 				t.Sources[spec.name] = latest.Sources[spec.name]
+				t.Filed[spec.name] = latest.Filed[spec.name]
 			}
 		}
 	}
@@ -544,6 +587,47 @@ func missingFieldWarnings(f Financials) []string {
 		out = append(out, msg)
 	}
 	return out
+}
+
+// --- Stock splits --------------------------------------------------------------
+
+// perShareUnit is the XBRL unit of per-share values (EPS).
+const perShareUnit = "USD/shares"
+
+// shareTerms converts per-share values between the share terms of two filing
+// dates. Filings made after a split report restated (post-split) values, so a
+// value filed on from is in the terms of to once divided by factor(from, to):
+// the product of the splits after from, up to and including to (the inverse
+// when from is later). Like metrics, a filing made on a split's date counts as
+// already restated.
+type shareTerms []Split
+
+func (s shareTerms) factor(from, to string) float64 {
+	f := 1.0
+	for _, sp := range s {
+		switch {
+		case sp.Date > from && sp.Date <= to:
+			f *= sp.Factor
+		case sp.Date > to && sp.Date <= from:
+			f /= sp.Factor
+		}
+	}
+	return f
+}
+
+// splitRatio describes a split factor for sources, e.g. "10-for-1".
+func splitRatio(f float64) string {
+	if f < 1 {
+		return "1-for-" + strconv.FormatFloat(1/f, 'g', 4, 64)
+	}
+	return strconv.FormatFloat(f, 'g', 4, 64) + "-for-1"
+}
+
+func filedOrEnd(p FinancialPeriod, field string) string {
+	if d := p.Filed[field]; d != "" {
+		return d
+	}
+	return p.EndDate
 }
 
 // --- Small helpers -----------------------------------------------------------
