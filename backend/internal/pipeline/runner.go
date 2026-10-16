@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
 	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
 	"github.com/YLaguna506/tickerlens/backend/internal/estimates"
 	"github.com/YLaguna506/tickerlens/backend/internal/financials"
@@ -141,6 +142,7 @@ func (r *Runner) run(reportID, ticker string, refresh bool) {
 
 	ctx, cancel := context.WithTimeout(r.ctx, r.timeout)
 	defer cancel()
+	ctx = agentclient.WithJobID(ctx, reportID)
 
 	// A panic in one job must not crash the API; record it as a failure.
 	defer func() {
@@ -241,6 +243,20 @@ func (r *Runner) run(reportID, ticker string, refresh bool) {
 	j.finish(store.Outcome{Status: status, FailedSections: failed}, "")
 }
 
+// tokens counts the LLM tokens spent by this run (cached answers excluded).
+func (j *job) tokens() int {
+	n := 0
+	for _, s := range j.body.Agents {
+		if s != nil && !s.Cached {
+			n += s.Usage.InputTokens + s.Usage.OutputTokens
+		}
+	}
+	if v := j.body.Verdict; v != nil && v.NarrativeUsage != nil {
+		n += v.NarrativeUsage.InputTokens + v.NarrativeUsage.OutputTokens
+	}
+	return n
+}
+
 // timed runs one stage: marks it in the database, publishes start/finish
 // events and records how long it took.
 func timed[T any](j *job, stage string, fn func() (T, error)) (T, error) {
@@ -251,7 +267,11 @@ func timed[T any](j *job, stage string, fn func() (T, error)) (T, error) {
 	j.broker.Publish(j.id, Event{Type: StageStarted, Stage: stage})
 	t0 := time.Now()
 	v, err := fn()
-	j.body.TimingsMs[stage] = time.Since(t0).Milliseconds()
+	ms := time.Since(t0).Milliseconds()
+	j.mu.Lock()
+	j.body.TimingsMs[stage] = ms
+	j.mu.Unlock()
+	j.log.Info("stage finished", "stage", stage, "ms", ms, "err", err)
 	if err != nil {
 		return zero, err
 	}
@@ -289,7 +309,8 @@ func (j *job) finish(o store.Outcome, msg string) {
 	if err := j.store.Finish(ctx, j.id, o); err != nil {
 		j.log.Error("could not record report outcome", "err", err)
 	}
-	j.log.Info("report finished", "status", o.Status, "failed", o.FailedSections)
+	j.log.Info("report finished", "status", o.Status, "failed", o.FailedSections,
+		"total_ms", j.body.TimingsMs["total"], "cost_usd", j.body.CostUSD, "tokens", j.tokens(), "timings_ms", j.body.TimingsMs)
 	j.broker.Publish(j.id, Event{Type: JobDone, Status: o.Status, Message: msg})
 }
 

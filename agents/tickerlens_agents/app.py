@@ -5,14 +5,20 @@ The Go API calls:
 - POST /analyze/{section} with an AgentTask, for each report section.
 
 The service is stateless: Go owns caching, retries across calls, and timeouts.
+Every request carries the report id in X-Job-ID; each log line repeats it, so
+these logs line up with the API's.
 """
 
 from __future__ import annotations
 
+import logging
+import time
+from collections.abc import Awaitable, Callable
+from contextvars import ContextVar
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel
 
 from tickerlens_agents.agents import AGENTS, run_agent
@@ -22,6 +28,42 @@ from tickerlens_agents.llm.factory import Models, models_from_env
 from tickerlens_agents.models import AgentResult, AgentTask
 
 app = FastAPI(title="TickerLens agents")
+
+job_id: ContextVar[str] = ContextVar("job_id", default="-")
+
+
+class _JobFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.job = job_id.get()
+        return True
+
+
+log = logging.getLogger("tickerlens.agents")
+if not log.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s job=%(job)s %(message)s"))
+    log.addHandler(_handler)
+    log.addFilter(_JobFilter())
+    log.setLevel(logging.INFO)
+    log.propagate = False
+
+
+@app.middleware("http")
+async def tag_with_job(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    """Reads X-Job-ID for the logs and logs each request with its duration."""
+    token = job_id.set(request.headers.get("x-job-id", "-"))
+    start = time.perf_counter()
+    try:
+        response = await call_next(request)
+        if request.url.path != "/healthz":
+            ms = (time.perf_counter() - start) * 1000
+            path, status = request.url.path, response.status_code
+            log.info("%s %s -> %d in %.0f ms", request.method, path, status, ms)
+        return response
+    finally:
+        job_id.reset(token)
 
 
 class Health(BaseModel):
@@ -76,4 +118,11 @@ def analyze(
             jobId=task.jobId, section=section, status="failed", promptVersion=task.promptVersion,
             errors=["LLM not configured: set LLM_PROVIDER and its API key"],
         )  # fmt: skip
-    return run_agent(task, llm, models)
+    result = run_agent(task, llm, models)
+    u = result.usage
+    log.info(
+        "agent %s %s after %d attempt(s): model=%s tokens=%d+%d cost=%s",
+        section, result.status, result.attempts, u.model, u.inputTokens, u.outputTokens,
+        f"${u.costUsd:.4f}" if u.costKnown else "not reported",
+    )  # fmt: skip
+    return result

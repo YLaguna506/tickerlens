@@ -108,11 +108,21 @@ export interface Evidence {
   quote: string;
 }
 
+export interface Usage {
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  costKnown: boolean;
+}
+
 export interface AgentSection<T> {
   status: "ready" | "failed";
   output?: T;
   evidence?: Evidence[];
   errors?: string[];
+  usage?: Usage;
+  cached?: boolean;
 }
 
 export interface Overview {
@@ -156,6 +166,7 @@ export interface Verdict {
   tagline?: string;
   rationale?: string;
   narrativeStatus: string;
+  narrativeUsage?: Usage;
 }
 
 export interface EarningsQuarter {
@@ -174,6 +185,8 @@ export interface ReportBody {
   earnings?: EarningsQuarter[];
   notes?: string[];
   warnings?: string[];
+  timingsMs?: Record<string, number>;
+  costUsd?: number;
   filing?: { accession: string; reportDate: string; url: string };
   agents?: {
     business_overview?: AgentSection<Overview>;

@@ -117,6 +117,18 @@ func (c *Client) Analyze(ctx context.Context, task Task) (Result, error) {
 	return out, nil
 }
 
+// JobIDHeader carries the report id on every request, so the agents
+// service's logs line up with the API's.
+const JobIDHeader = "X-Job-ID"
+
+type jobIDKey struct{}
+
+// WithJobID returns a context whose requests to the agents service carry id
+// in the X-Job-ID header.
+func WithJobID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, jobIDKey{}, id)
+}
+
 // errClient marks 4xx responses, which a retry would not fix.
 var errClient = errors.New("rejected by agents service")
 
@@ -126,6 +138,9 @@ func (c *Client) post(ctx context.Context, path, contentType string, body []byte
 		return err
 	}
 	req.Header.Set("Content-Type", contentType)
+	if id, ok := ctx.Value(jobIDKey{}).(string); ok && id != "" {
+		req.Header.Set(JobIDHeader, id)
+	}
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return err

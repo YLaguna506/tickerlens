@@ -186,6 +186,33 @@ def test_analyze_endpoint(client: TestClient) -> None:
     assert body["status"] == "ok" and body["section"] == "business_overview"
 
 
+def test_logs_carry_the_job_id(client: TestClient) -> None:
+    import logging
+
+    from tickerlens_agents.app import log
+
+    records: list[logging.LogRecord] = []
+    handler = logging.Handler()
+    handler.emit = records.append  # type: ignore[method-assign,assignment]
+    log.addHandler(handler)
+    try:
+        resp = client.post(
+            "/analyze/business_overview",
+            json=task("").model_dump(),
+            headers={"X-Job-ID": "report-42"},
+        )
+    finally:
+        log.removeHandler(handler)
+
+    assert resp.status_code == 200
+    messages = [(r.job, r.getMessage()) for r in records]  # type: ignore[attr-defined]
+    assert [job for job, _ in messages] == ["report-42", "report-42"]
+    assert messages[0][1].startswith(
+        "agent business_overview ok after 1 attempt(s): model=fast-model"
+    )
+    assert messages[1][1].startswith("POST /analyze/business_overview -> 200 in ")
+
+
 def test_analyze_unknown_section(client: TestClient) -> None:
     assert client.post("/analyze/nope", json=task("").model_dump()).status_code == 404
 

@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type MetricsReport, type ReportBody, type SegmentShare, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
 import { QUALITY_QUESTIONS, STAGES, fallbackNote, incomeRows, isPending, metricOf, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
@@ -514,6 +515,9 @@ export function Terminal({ id }: { id: string }) {
             {body?.filing && <> · 10-K {shortDate(body.filing.reportDate).toUpperCase()}</>} · SCORING {m.scoringVersion}
           </p>
         )}
+        <div className="max-w-3xl pt-1 text-t-text">
+          <RunDetails body={body} />
+        </div>
         <p>EDUCATIONAL ONLY. NOT FINANCIAL ADVICE. DATA: SEC EDGAR, TIINGO, ALPHA VANTAGE.</p>
       </footer>
     </div>

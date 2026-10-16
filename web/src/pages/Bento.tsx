@@ -5,7 +5,8 @@ import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
-import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
+import { RunDetails } from "../components/RunDetails";
+import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, toneFor, usd, wholePrice, yearTicks } from "../format";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
@@ -102,7 +103,7 @@ function HeroTile({ m, name, ticker }: { m?: MetricsReport; name: string; ticker
                   <stop offset="100%" stopColor={INDIGO} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} minTickGap={50} />
+              <XAxis dataKey="date" ticks={yearTicks(data)} tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} />
               <YAxis hide domain={["auto", "auto"]} />
               <Tooltip {...TIP} formatter={(v) => price(Number(v))} />
               <Area type="monotone" dataKey="value" name="Price" stroke={INDIGO} strokeWidth={2.5} fill="url(#bentoPrice)" isAnimationActive={false} />
@@ -474,7 +475,10 @@ export function Bento({ id }: { id: string }) {
               {m && <EarningsTile m={m} body={body} />}
               <QualityTile body={body} />
             </main>
-            <p className="mt-6 text-center text-xs text-slate-400">
+            <div className="mx-auto mt-6 max-w-2xl text-slate-500">
+              <RunDetails body={body} />
+            </div>
+            <p className="mt-4 text-center text-xs text-slate-400">
               {m && <>Financials through {shortDate(m.financialsThrough)} · </>}Educational only, not financial advice.
             </p>
           </>

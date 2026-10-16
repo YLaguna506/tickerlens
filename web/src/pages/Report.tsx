@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createReport, isFinished, type Report as ReportT } from "../api";
 import { PriceChart } from "../components/charts";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { RunDetails } from "../components/RunDetails";
 import { BusinessSection, FinancialsSection, PhaseSection, ValuationSection, VerdictSection } from "../components/sections";
 import { Disclaimer } from "../components/ui";
 import { price, shortDate, signedPct, titleCase } from "../format";
@@ -171,6 +172,9 @@ export function Report({ id }: { id: string }) {
           {report.status === "partial" && <> · some sections are missing ({report.failedSections.join(", ")})</>}
         </p>
       )}
+      <div className="mx-auto mt-4 max-w-2xl text-muted">
+        <RunDetails body={body} />
+      </div>
       <Disclaimer />
     </div>
   );

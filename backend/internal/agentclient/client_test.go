@@ -12,11 +12,13 @@ import (
 
 func TestAnalyze(t *testing.T) {
 	var gotTask Task
+	var gotJobID string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/analyze/business_overview" {
 			http.NotFound(w, r)
 			return
 		}
+		gotJobID = r.Header.Get(JobIDHeader)
 		_ = json.NewDecoder(r.Body).Decode(&gotTask)
 		_, _ = w.Write([]byte(`{"section":"business_overview","status":"ok","promptVersion":"v1",
 			"output":{"whatItDoes":"x"},"evidence":[{"claim":"c","documentId":"10k-item1","quote":"q"}],
@@ -24,15 +26,15 @@ func TestAnalyze(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	res, err := New(srv.URL).Analyze(t.Context(), Task{Section: "business_overview", Ticker: "V"})
+	res, err := New(srv.URL).Analyze(WithJobID(t.Context(), "job-1"), Task{Section: "business_overview", Ticker: "V"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !res.OK() || len(res.Evidence) != 1 || res.Usage.InputTokens != 10 || string(res.Output) != `{"whatItDoes":"x"}` {
 		t.Errorf("result = %+v", res)
 	}
-	if gotTask.Ticker != "V" {
-		t.Errorf("server got %+v", gotTask)
+	if gotTask.Ticker != "V" || gotJobID != "job-1" {
+		t.Errorf("server got %+v, job id %q", gotTask, gotJobID)
 	}
 }
 

@@ -45,6 +45,14 @@ export const shortDate = (iso: string) =>
 export const monthYear = (iso: string) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
 
+/** One x-axis tick per year (its first date in the data). A first year that
+ * starts after June is left out, so its label does not crowd the next one. */
+export function yearTicks(points: { date: string }[]): string[] {
+  return points
+    .filter((p, i) => (i === 0 ? p.date.slice(5, 7) <= "06" : p.date.slice(0, 4) !== points[i - 1]!.date.slice(0, 4)))
+    .map((p) => p.date);
+}
+
 /** Color tone for a 1–5 score. */
 export const toneFor = (v: number | null): "good" | "mid" | "bad" =>
   v == null ? "mid" : v >= 3.5 ? "good" : v >= 2.5 ? "mid" : "bad";

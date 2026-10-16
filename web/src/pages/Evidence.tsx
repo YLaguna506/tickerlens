@@ -5,7 +5,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type Evidence as Quote, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
-import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
+import { RunDetails } from "../components/RunDetails";
+import { metricValue, monthYear, multiple, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
 
@@ -629,7 +630,6 @@ function PriceSection({ m }: { m: MetricsReport }) {
   const change = m.priceChange5y.value ?? 0;
   const color = change >= 0 ? "#059669" : "#e11d48";
   // One tick per year: the first trading day shown in it.
-  const yearStarts = data.filter((p, i) => i === 0 || p.date.slice(0, 4) !== data[i - 1]!.date.slice(0, 4)).map((p) => p.date);
   return (
     <section className="mb-10">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -648,7 +648,7 @@ function PriceSection({ m }: { m: MetricsReport }) {
                 <stop offset="100%" stopColor={color} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="date" ticks={yearStarts} tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} />
+            <XAxis dataKey="date" ticks={yearTicks(data)} tickFormatter={(d: string) => d.slice(0, 4)} tick={AXIS} axisLine={false} tickLine={false} />
             <YAxis domain={["auto", "auto"]} tickFormatter={(x: number) => `$${Math.round(x)}`} tick={AXIS} axisLine={false} tickLine={false} width={48} />
             <Tooltip formatter={(x) => price(Number(x))} />
             <Area dataKey="value" name="Price" stroke={color} strokeWidth={2} fill="url(#evPrice)" isAnimationActive={false} />
@@ -730,7 +730,10 @@ export function Evidence({ id }: { id: string }) {
                   {report.status === "partial" && <> · some sections are missing ({report.failedSections.join(", ")})</>}
                 </p>
               )}
-              <p className="mt-1 font-semibold text-zinc-700">Educational project. Not financial advice.</p>
+              <div className="mt-3">
+                <RunDetails body={body} />
+              </div>
+              <p className="mt-3 font-semibold text-zinc-700">Educational project. Not financial advice.</p>
             </footer>
           </main>
         </div>

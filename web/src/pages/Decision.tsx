@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
 import { DesignSwitch } from "../components/DesignSwitch";
+import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, pct, price, shortDate, titleCase, wholePrice } from "../format";
 import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
 import { navigate } from "../router";
@@ -300,7 +301,10 @@ export function Decision({ id }: { id: string }) {
               )}
             </div>
             <Flow m={m} body={body} />
-            <p className="mt-8 text-center text-xs text-slate-400">
+            <div className="mt-8 text-slate-500">
+              <RunDetails body={body} />
+            </div>
+            <p className="mt-4 text-center text-xs text-slate-400">
               {m && <>Financials through {shortDate(m.financialsThrough)} · </>}Educational only, not financial advice.
             </p>
           </>

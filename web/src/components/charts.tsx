@@ -15,7 +15,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Bands, EarningsQuarter, Point, SegmentShare } from "../api";
-import { monthYear, pct, price, signedPct, usd, wholePrice } from "../format";
+import { monthYear, pct, price, signedPct, usd, wholePrice, yearTicks } from "../format";
 
 const GREEN = "#3f8f4a";
 const INK = "#34343c";
@@ -28,7 +28,6 @@ const POINT_LABEL = { fontSize: 12, fill: INK, stroke: "#fff", strokeWidth: 4, p
 export function PriceChart({ points }: { points: Point[] }) {
   // One point per week keeps the SVG light; the shape is unchanged.
   const data = points.filter((_, i) => i % 5 === 0 || i === points.length - 1);
-  const years = [...new Set(data.map((p) => p.date.slice(0, 4)))];
   return (
     <div className="h-64 w-full sm:h-72">
       <ResponsiveContainer>
@@ -42,7 +41,7 @@ export function PriceChart({ points }: { points: Point[] }) {
           <CartesianGrid vertical={false} stroke={GRID} />
           <XAxis
             dataKey="date"
-            ticks={years.map((y) => data.find((p) => p.date.startsWith(y))!.date)}
+            ticks={yearTicks(data)}
             tickFormatter={(d: string) => d.slice(0, 4)}
             tick={AXIS}
             axisLine={false}

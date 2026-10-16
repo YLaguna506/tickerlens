@@ -28,6 +28,8 @@ type VerdictSection struct {
 	Rationale       string   `json:"rationale,omitempty"`
 	NarrativeStatus string   `json:"narrativeStatus"` // ready | failed | skipped
 	NarrativeErrors []string `json:"narrativeErrors,omitempty"`
+	// The narrative call's tokens and cost; nil when it came from the cache.
+	NarrativeUsage *agentclient.Usage `json:"narrativeUsage,omitempty"`
 }
 
 // decide computes the verdict from the scores, then asks the narrative agent
@@ -134,6 +136,8 @@ func (j *job) narrate(ctx context.Context, v *VerdictSection, report *metrics.Re
 		return
 	}
 	j.body.CostUSD += res.Usage.CostUSD
+	usage := res.Usage
+	v.NarrativeUsage = &usage
 	if !res.OK() {
 		v.NarrativeStatus, v.NarrativeErrors = SectionStateFailed, res.Errors
 		return
