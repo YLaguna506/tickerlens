@@ -1,0 +1,15 @@
+{
+  "_comment": "Expected properties per ticker. 'answers' lists the acceptable answers for a business-quality question. Every case also requires the overview and quality agents to pass validation (quotes verbatim, no unsupported numbers); segments are checked only via segmentsInclude.",
+  "cases": [
+    {"ticker": "V", "answers": {"pricingPower": ["Easily"], "competitivePosition": ["Dominant"]}},
+    {"ticker": "AAPL", "answers": {"competitivePosition": ["Dominant"]}, "segmentsInclude": ["iPhone"]},
+    {"ticker": "MSFT", "answers": {"revenuePredictability": ["Predictable"], "competitivePosition": ["Dominant"]}},
+    {"ticker": "KO", "answers": {"recessionResistance": ["Strong"], "pricingPower": ["Sometimes", "Easily"]}},
+    {"ticker": "XOM", "answers": {"revenuePredictability": ["Unpredictable", "Modest"], "pricingPower": ["No", "Sometimes"]}},
+    {"ticker": "F", "answers": {"recessionResistance": ["Weak"], "pricingPower": ["No", "Sometimes"]}},
+    {"ticker": "WMT", "answers": {"recessionResistance": ["Okay", "Strong"]}},
+    {"ticker": "SNOW", "phase": "Hypergrowth", "answers": {"revenuePredictability": ["Modest", "Predictable"]}},
+    {"ticker": "NVDA", "answers": {"competitivePosition": ["Dominant"]}},
+    {"ticker": "JPM", "answers": {"competitivePosition": ["Average", "Dominant"]}}
+  ]
+}

@@ -16,6 +16,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+agents/evals/results.json
 
 # Web
 node_modules/
