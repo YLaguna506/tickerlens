@@ -155,6 +155,8 @@ A failed check gets one repair attempt, where the agent is told exactly what was
 | **Hold** | B ≥ 3.0 and V ≥ 3 | Solid business at a fair price |
 | **Pass** | anything else | Not compelling at this price |
 
+A **Buy** also needs the business quality score. If the AI's quality judgment is missing, B rests on growth and health alone, so the verdict is capped at **Watch**.
+
 Every threshold and weight lives in [`config/scoring.yaml`](config/scoring.yaml). Edit it and restart the API (`docker compose restart api`); the file's version is stored on every report. Example: Visa scores B 4.7 (quality 5, growth 4, health 5) and V 2, so its verdict is **Watch**.
 
 A multiple's own history is only a fair yardstick if what it divides by was stable. When EPS or free cash flow collapsed during the 5 years (Salesforce's EPS fell to $0.21 in 2022, which made its "typical" P/E 68×), the report switches to the next multiple and says why.

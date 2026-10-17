@@ -76,6 +76,10 @@ func Decide(in Input, cfg scoring.Config) Result {
 		return r
 	}
 	r.Label, r.Rule = apply(*r.Business, r.Valuation, cfg.Verdict)
+	if r.Label == Buy && in.BusinessQuality == nil && cfg.Verdict.BuyNeedsQuality {
+		r.Label = Watch
+		r.Rule = fmt.Sprintf("Watch: would be %s, but there is no business quality score", r.Rule)
+	}
 	r.Meaning = meanings[r.Label]
 	return r
 }

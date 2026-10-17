@@ -54,16 +54,19 @@ type Weights struct {
 // VerdictRules are the thresholds of the verdict rules. B is the business
 // composite, V the valuation score (both 1–5).
 type VerdictRules struct {
-	SellBelow           float64 `yaml:"sell_below"`            // Sell: B < this
-	SellWeakBelow       float64 `yaml:"sell_weak_below"`       // ...or B < this
-	SellWeakMaxV        float64 `yaml:"sell_weak_max_v"`       //    and V ≤ this
-	BuyMinB             float64 `yaml:"buy_min_b"`             // Buy: B ≥ this
-	BuyMinV             float64 `yaml:"buy_min_v"`             //    and V ≥ this
-	BuyCheapMinB        float64 `yaml:"buy_cheap_min_b"`       // ...or B ≥ this
-	BuyCheapMinV        float64 `yaml:"buy_cheap_min_v"`       //    and V ≥ this
-	WatchMinB           float64 `yaml:"watch_min_b"`           // Watch: B ≥ this
-	HoldMinB            float64 `yaml:"hold_min_b"`            // Hold: B ≥ this
-	HoldMinV            float64 `yaml:"hold_min_v"`            //    and V ≥ this
+	SellBelow     float64 `yaml:"sell_below"`      // Sell: B < this
+	SellWeakBelow float64 `yaml:"sell_weak_below"` // ...or B < this
+	SellWeakMaxV  float64 `yaml:"sell_weak_max_v"` //    and V ≤ this
+	BuyMinB       float64 `yaml:"buy_min_b"`       // Buy: B ≥ this
+	BuyMinV       float64 `yaml:"buy_min_v"`       //    and V ≥ this
+	BuyCheapMinB  float64 `yaml:"buy_cheap_min_b"` // ...or B ≥ this
+	BuyCheapMinV  float64 `yaml:"buy_cheap_min_v"` //    and V ≥ this
+	WatchMinB     float64 `yaml:"watch_min_b"`     // Watch: B ≥ this
+	HoldMinB      float64 `yaml:"hold_min_b"`      // Hold: B ≥ this
+	HoldMinV      float64 `yaml:"hold_min_v"`      //    and V ≥ this
+	// A Buy needs the AI's business quality judgment; without it the
+	// verdict is capped at Watch.
+	BuyNeedsQuality     bool    `yaml:"buy_needs_quality"`
 	HighConfidenceMin   float64 `yaml:"high_confidence_min"`   // confidence ≥ this is "high"
 	MediumConfidenceMin float64 `yaml:"medium_confidence_min"` // confidence ≥ this is "medium"
 }
@@ -72,7 +75,7 @@ type VerdictRules struct {
 // with the same values; anything left out of the file keeps its default.
 func Default() Config {
 	return Config{
-		Version:               "2026-10-16.1",
+		Version:               "2026-10-17.1",
 		GrowthBands:           [4]float64{0, 0.05, 0.12, 0.20},
 		MinInterestCoverage:   10,
 		MaxDebtToEquity:       1,
@@ -91,6 +94,7 @@ func Default() Config {
 			BuyMinB: 4.0, BuyMinV: 4, BuyCheapMinB: 3.5, BuyCheapMinV: 5,
 			WatchMinB: 4.0,
 			HoldMinB:  3.0, HoldMinV: 3,
+			BuyNeedsQuality:   true,
 			HighConfidenceMin: 80, MediumConfidenceMin: 55,
 		},
 	}

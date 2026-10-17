@@ -5,7 +5,7 @@
 #
 # Scores are 1–5. Fractions are written as decimals (0.12 = 12%).
 
-version: "2026-10-16.1"
+version: "2026-10-17.1"
 
 # --- Growth score -------------------------------------------------------------
 # Average of revenue and EPS CAGRs (3y and 5y, whichever exist).
@@ -60,6 +60,10 @@ verdict:
   watch_min_b: 4.0
   hold_min_b: 3.0
   hold_min_v: 3
+  # A Buy needs the business quality score (the AI's judgment of the 10-K).
+  # When it is missing, B rests on growth and health alone, so a Buy is
+  # capped at Watch.
+  buy_needs_quality: true
   # Confidence (0–100) bands.
   high_confidence_min: 80
   medium_confidence_min: 55

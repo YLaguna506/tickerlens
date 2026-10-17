@@ -248,6 +248,8 @@ const PATTERNS: Rule[] = [
   [/^Sell: business score B (\S+) is below (\S+)$/, (m) => `Vender: el puntaje del negocio B ${m[1]} está por debajo de ${m[2]}`],
   [/^Sell: B (\S+) is below (\S+) and valuation V (\S+) is (\S+) or lower \(expensive\)$/,
     (m) => `Vender: B ${m[1]} está por debajo de ${m[2]} y la valuación V ${m[3]} es ${m[4]} o menos (caro)`],
+  [/^Watch: would be (Buy: .+), but there is no business quality score$/,
+    (m) => `Vigilar: sería ${tx(m[1]!)}, pero no hay puntaje de calidad del negocio`],
   [/^−(\d+): (.+)$/, (m) => `−${m[1]}: ${tx(m[2]!)}`],
   [/^AI analysis failed: (.+)$/, (m) => `falló el análisis de IA: ${m[1]}`],
   [/^missing data: (.+)$/, (m) => `faltan datos: ${m[1]}`],

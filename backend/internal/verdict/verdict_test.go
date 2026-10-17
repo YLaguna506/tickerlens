@@ -105,6 +105,18 @@ func TestDecide(t *testing.T) {
 		t.Errorf("confidence = %d %s %v", r.Confidence, r.ConfidenceLevel, r.ConfidenceReasons)
 	}
 
+	// Netflix-like with the AI's quality judgment missing: growth 5 and
+	// health 5 alone give B 5 and a cheap price, but a Buy needs quality.
+	noQuality := Input{Growth: f(5), FinancialHealth: f(5), Valuation: f(4), FailedAnalysis: []string{"business_quality"}}
+	if r := Decide(noQuality, cfg); r.Label != Watch || r.Rule != "Watch: would be Buy: B 5.00 is at least 4 and V 4 is at least 4, but there is no business quality score" {
+		t.Errorf("without quality: %s (%s)", r.Label, r.Rule)
+	}
+	cfg.Verdict.BuyNeedsQuality = false
+	if r := Decide(noQuality, cfg); r.Label != Buy {
+		t.Errorf("with the cap off: %s, want Buy", r.Label)
+	}
+	cfg.Verdict.BuyNeedsQuality = true
+
 	if r := Decide(Input{Valuation: f(5)}, cfg); r.Label != "" {
 		t.Errorf("no business scores should give no verdict, got %s", r.Label)
 	}
