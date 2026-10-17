@@ -47,8 +47,39 @@ _UNIFY = str.maketrans(
 )  # fmt: skip
 
 
+# A parenthetical aside in the filing: "Netflix, Inc. (“Netflix”, the “Company”)".
+_PAREN_RE = re.compile(r"\s*\([^()]{1,200}\)")
+# Where a quote marks words it left out.
+_ELLIPSIS_RE = re.compile(r"\s*(?:\.\.\.|…)\s*")
+MIN_PART_WORDS = 4
+
+
+def _is_verbatim(quote: str, doc: str, doc_without_asides: str) -> bool:
+    """The quote appears in the document word for word, allowing two harmless
+    cuts: a parenthetical aside left out of the filing's sentence, and words
+    left out where the quote says so with an ellipsis (each remaining piece
+    must be at least MIN_PART_WORDS words, in the filing's order)."""
+    parts = [normalize(p) for p in _ELLIPSIS_RE.split(quote)]
+    parts = [p for p in parts if p]
+    if not parts:
+        return False
+    if len(parts) > 1 and any(len(p.split()) < MIN_PART_WORDS for p in parts):
+        return False
+    for text in (doc, doc_without_asides):
+        pos = 0
+        for part in parts:
+            found = text.find(part, pos)
+            if found < 0:
+                break
+            pos = found + len(part)
+        else:
+            return True
+    return False
+
+
 def check_evidence(evidence: Iterable[Evidence], documents: list[Document]) -> list[str]:
     docs = {d.id: normalize(d.text) for d in documents}
+    asides = {d.id: normalize(_PAREN_RE.sub("", d.text)) for d in documents}
     errors: list[str] = []
     for e in evidence:
         if e.documentId not in docs:
@@ -59,8 +90,7 @@ def check_evidence(evidence: Iterable[Evidence], documents: list[Document]) -> l
         words = len(e.quote.split())
         if words > MAX_QUOTE_WORDS:
             errors.append(f"quote has {words} words (max {MAX_QUOTE_WORDS}): {e.quote[:80]!r}")
-        q = normalize(e.quote)
-        if not q or q not in docs[e.documentId]:
+        if not _is_verbatim(e.quote, docs[e.documentId], asides[e.documentId]):
             errors.append(f"quote is not verbatim from {e.documentId}: {e.quote[:120]!r}")
     return errors
 

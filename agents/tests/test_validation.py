@@ -100,3 +100,48 @@ def test_normalize() -> None:
         normalize("World" + RSQUO + "s  LEADER " + EMDASH + " payments!")
         == "world s leader payments"
     )
+
+
+NFLX = (
+    "Netflix, Inc. (\u201cNetflix\u201d, the \u201cCompany\u201d, or \u201cus\u201d) "
+    "is one of the world\u2019s leading entertainment services offering TV series, "
+    "films, games and live programming "
+    "across a wide variety of genres and languages. Members can play, pause and resume."
+)
+
+
+def nflx(quote: str) -> Evidence:
+    return Evidence(claim="c", documentId="10k-item1", quote=quote)
+
+
+def test_quotes_may_leave_out_a_parenthetical_or_use_an_ellipsis() -> None:
+    doc = Document(id="10k-item1", source="Item 1", text=NFLX)
+    ok = [
+        nflx(
+            "Netflix, Inc. is one of the world's leading entertainment services offering TV series"
+        ),
+        nflx(
+            "Netflix, Inc. is one of the world's leading entertainment services"
+            " … across a wide variety of genres"
+        ),
+        nflx(
+            "one of the world's leading entertainment services..."
+            " Members can play, pause and resume"
+        ),
+    ]
+    assert check_evidence(ok, [doc]) == []
+
+
+def test_ellipsis_does_not_allow_made_up_or_reordered_text() -> None:
+    doc = Document(id="10k-item1", source="Item 1", text=NFLX)
+    bad = [
+        nflx("Netflix, Inc. is the world's largest entertainment service"),  # invented
+        nflx(
+            "Members can play, pause and resume … leading entertainment services offering TV"
+        ),  # reordered
+        nflx("Netflix … films … languages"),  # pieces too short to mean anything
+        nflx(
+            "Netflix, Inc. (the best company) is one of the world's leading entertainment services"
+        ),  # fake aside
+    ]
+    assert len(check_evidence(bad, [doc])) == len(bad)
