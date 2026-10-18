@@ -17,13 +17,14 @@ import (
 	"github.com/YLaguna506/tickerlens/backend/internal/financials"
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
 	"github.com/YLaguna506/tickerlens/backend/internal/metrics"
+	"github.com/YLaguna506/tickerlens/backend/internal/peers"
 	"github.com/YLaguna506/tickerlens/backend/internal/scoring"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
 )
 
 // BodyVersion changes whenever the report body's shape or computation
 // changes, so old reports are not reused for new requests.
-const BodyVersion = "m5.9"
+const BodyVersion = "m6.0"
 
 // Stages, in order.
 const (
@@ -70,6 +71,10 @@ type Body struct {
 	Agents          map[string]*AgentSection `json:"agents,omitempty"`
 	BusinessQuality *QualityScore            `json:"businessQuality,omitempty"`
 	Segments        *SegmentBreakdown        `json:"segments,omitempty"`
+	Peers           *peers.Group             `json:"peers,omitempty"`
+	Moat            *MoatScore               `json:"moat,omitempty"`
+	Risk            *RiskScore               `json:"risk,omitempty"`
+	Management      *ManagementInfo          `json:"management,omitempty"`
 	CostUSD         float64                  `json:"costUsd"`
 
 	// Filled by the scoring stage.

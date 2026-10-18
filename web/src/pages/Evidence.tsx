@@ -1,6 +1,7 @@
 // Prototype design: the verdict and its four scores stay pinned on the left;
 // the right side holds the evidence, grouped by the score each number feeds.
 
+import { MoreSections } from "../components/deepSections";
 import { useEffect, useState, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type Evidence as Quote, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
@@ -740,6 +741,15 @@ export function Evidence({ id }: { id: string }) {
                     <Waiting text={t("Computing metrics from SEC filings…")} />
                   </div>
                 )}
+                <MoreSections
+                  body={body}
+                  m={m}
+                  report={report}
+                  look="look-light"
+                  idPrefix="ev-"
+                  sectionClass="scroll-mt-20 space-y-4 pt-12 lg:scroll-mt-6"
+                  titleClass="font-grotesk text-sm font-bold tracking-widest text-zinc-400 uppercase"
+                />
               </>
             )}
             <footer className="mt-16 border-t border-zinc-200 pt-6 text-xs text-zinc-500">

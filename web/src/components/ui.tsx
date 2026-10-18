@@ -125,15 +125,18 @@ function formatInput(v: number) {
 /** Verbatim filing quotes behind an AI judgment. */
 export function EvidenceList({ evidence, filingUrl }: { evidence?: Evidence[]; filingUrl?: string }) {
   if (!evidence?.length) return null;
+  const fromProxy = evidence.every((e) => e.documentId.startsWith("proxy-"));
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer text-xs font-semibold text-good">{t("Evidence from the 10-K ({n})", { n: evidence.length })}</summary>
+      <summary className="cursor-pointer text-xs font-semibold text-good">
+        {fromProxy ? t("Evidence from the proxy statement ({n})", { n: evidence.length }) : t("Evidence from the 10-K ({n})", { n: evidence.length })}
+      </summary>
       <ul className="mt-2 space-y-2">
         {evidence.map((e, i) => (
           <li key={i} className="border-l-2 border-good-soft pl-3 text-muted">
             <q className="italic">{e.quote}</q>
             <span className="block text-xs">
-              {e.documentId.replace("10k-item", t("10-K Item "))}
+              {documentName(e.documentId)}
               {filingUrl && (
                 <>
                   {" · "}
@@ -148,6 +151,12 @@ export function EvidenceList({ evidence, filingUrl }: { evidence?: Evidence[]; f
       </ul>
     </details>
   );
+}
+
+function documentName(id: string) {
+  if (id === "proxy-ownership") return t("Proxy statement, ownership table");
+  if (id === "proxy-ceo") return t("Proxy statement, CEO passages");
+  return id.replace("10k-item", t("10-K Item "));
 }
 
 export function Skeleton({ lines = 3, label }: { lines?: number; label?: string }) {

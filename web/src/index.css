@@ -57,6 +57,41 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* The Moat, Risk and Management panels are built from the Classic tokens.
+   These classes remap the tokens for the light designs and the terminal. */
+.look-light {
+  --color-paper: #f4f4f5;
+  --color-card: #ffffff;
+  --color-line: #e4e4e7;
+  --color-ink: #18181b;
+  --color-muted: #71717a;
+  --color-good: #059669;
+  --color-good-strong: #047857;
+  --color-good-soft: #ecfdf5;
+  --color-mid: #d97706;
+  --color-mid-soft: #fffbeb;
+  --color-bad: #e11d48;
+  --color-bad-soft: #fff1f2;
+  --color-navy: #3730a3;
+  color: var(--color-ink);
+}
+.look-terminal {
+  --color-paper: var(--color-t-bg);
+  --color-card: var(--color-t-panel);
+  --color-line: var(--color-t-line);
+  --color-ink: var(--color-t-text);
+  --color-muted: var(--color-t-dim);
+  --color-good: #238636;
+  --color-good-strong: var(--color-t-up);
+  --color-good-soft: #0f2a17;
+  --color-mid: var(--color-t-amber);
+  --color-mid-soft: #2d2410;
+  --color-bad: var(--color-t-down);
+  --color-bad-soft: #2d1414;
+  --color-navy: var(--color-t-blue);
+  color: var(--color-ink);
+}
+
 @layer components {
   .card {
     @apply rounded-2xl border border-line bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.3)] sm:p-6;

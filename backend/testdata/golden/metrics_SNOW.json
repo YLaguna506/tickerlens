@@ -623,6 +623,36 @@
     "avgSurprisePercent": 26.3671875,
     "latestQuarter": "2026-07-31"
   },
+  "capitalAllocation": {
+    "from": "FY2022",
+    "to": "FY2026",
+    "years": 5,
+    "operatingCashFlow": 3685646000,
+    "uses": [
+      {
+        "key": "capex",
+        "label": "Capital expenditure",
+        "amount": 224342000,
+        "share": 0.06086911222618776
+      },
+      {
+        "key": "buybacks",
+        "label": "Buybacks",
+        "amount": 3397602000,
+        "share": 0.9218470791823198
+      },
+      {
+        "key": "debtPaydown",
+        "label": "Net new borrowing",
+        "amount": -2300000000,
+        "share": -0.6240425694708608
+      }
+    ],
+    "shareCountChange": 0.12395386864619873,
+    "notes": [
+      "Net new borrowing reported for 4 of 5 years"
+    ]
+  },
   "phase": {
     "number": 2,
     "name": "Hypergrowth",

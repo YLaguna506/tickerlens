@@ -51,6 +51,8 @@ type FinancialPeriod struct {
 	Buybacks             *float64 `json:"buybacks"`
 	DebtRepaid           *float64 `json:"debtRepaid"`
 	DebtIssued           *float64 `json:"debtIssued"`
+	// Acquisitions is cash paid for businesses, net of the cash they held.
+	Acquisitions *float64 `json:"acquisitions,omitempty"`
 
 	// Sources records where each value came from: an XBRL concept name, or a
 	// description of how it was derived.
@@ -117,6 +119,8 @@ func (p *FinancialPeriod) field(name string) **float64 {
 		return &p.DebtRepaid
 	case "debtIssued":
 		return &p.DebtIssued
+	case "acquisitions":
+		return &p.Acquisitions
 	default:
 		panic("financials: unknown field " + name) // programming error, caught by tests
 	}
@@ -133,6 +137,6 @@ func FieldNames() []string {
 		"revenue", "grossProfit", "operatingIncome", "netIncome", "epsDiluted", "epsContinuing", "sharesDiluted",
 		"operatingCashFlow", "capex", "freeCashFlow",
 		"cash", "shortTermInvestments", "totalDebt", "totalEquity",
-		"interestExpense", "dividendsPaid", "buybacks", "debtRepaid", "debtIssued",
+		"interestExpense", "dividendsPaid", "buybacks", "debtRepaid", "debtIssued", "acquisitions",
 	}
 }

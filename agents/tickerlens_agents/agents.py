@@ -97,6 +97,79 @@ class VerdictNarrative(BaseModel):
     )
 
 
+Rating = Literal["None", "Weak", "Moderate", "Strong"]
+SourceDirection = Literal["Narrowing", "Stable", "Widening"]
+
+
+class MoatSource(BaseModel):
+    rating: Rating
+    direction: SourceDirection
+    justification: str = Field(description="1-2 sentences")
+    evidence: list[Evidence]
+
+
+class MoatSources(BaseModel):
+    switchingCosts: MoatSource
+    networkEffects: MoatSource
+    intangibleAssets: MoatSource = Field(description="Brands, patents, licenses, regulation")
+    costAdvantage: MoatSource = Field(description="Low-cost production, scale, unique assets")
+    counterPositioning: MoatSource = Field(
+        description="A business model rivals cannot copy without hurting their own"
+    )
+
+
+class Moat(BaseModel):
+    width: Literal["None", "Thin", "Narrow", "Broad", "Wide"]
+    direction: Literal["Narrowing", "Slightly narrowing", "Stable", "Slightly widening", "Widening"]
+    summary: str = Field(description="2-4 sentences, using the peer comparison where it helps")
+    sources: MoatSources
+
+
+RiskLevel = Literal["Severe", "High", "Moderate", "Low", "Minimal"]
+
+
+class DiversificationAnswer(BaseModel):
+    answer: Literal[
+        "Very concentrated", "Concentrated", "Moderate", "Diversified", "Very diversified"
+    ]
+    justification: str = Field(description="1-3 sentences")
+    evidence: list[Evidence]
+
+
+class RiskAnswer(BaseModel):
+    answer: RiskLevel
+    justification: str = Field(description="1-3 sentences")
+    evidence: list[Evidence]
+
+
+class Risk(BaseModel):
+    revenueDiversification: DiversificationAnswer
+    disruptionThreat: RiskAnswer
+    externalExposure: RiskAnswer = Field(
+        description="Regulation, commodity prices, currencies, politics, single suppliers"
+    )
+
+
+class Management(BaseModel):
+    ceoName: str
+    ceoSince: int | None = Field(description="The year the CEO took the role, or null")
+    sharesOwned: float | None = Field(
+        description="Shares the CEO beneficially owns, as written in the ownership table"
+    )
+    percentOfClass: float | None = Field(
+        description="The CEO's percent of the class as written, or null if shown as "
+        "less than 1% (often an asterisk)"
+    )
+    lessThanOnePercent: bool
+    directorsAndOfficersPercent: float | None = Field(
+        description="All directors and executive officers as a group, percent as written"
+    )
+    notes: str = Field(
+        description="1-2 sentences, e.g. what the ownership figure includes (options, trusts)"
+    )
+    evidence: list[Evidence]
+
+
 # --- Agent-specific checks ----------------------------------------------------------
 
 
@@ -137,6 +210,52 @@ def _segments_checks(out: BaseModel, task: AgentTask) -> list[str]:
     return errors
 
 
+def _moat_checks(out: BaseModel, task: AgentTask) -> list[str]:
+    assert isinstance(out, Moat)
+    errors = []
+    sources = list(out.sources)
+    for name, src in sources:
+        if src.rating != "None" and not src.evidence:
+            errors.append(f"sources.{name}: cite at least one quote for a {src.rating} rating")
+    ratings = [src.rating for _, src in sources]
+    if out.width in ("Broad", "Wide") and "Strong" not in ratings:
+        errors.append(
+            f"a {out.width} moat needs at least one Strong source; lower the width or a rating"
+        )
+    if out.width == "None" and any(r in ("Moderate", "Strong") for r in ratings):
+        errors.append("width None contradicts a Moderate or Strong source")
+    return errors
+
+
+def _risk_checks(out: BaseModel, task: AgentTask) -> list[str]:
+    assert isinstance(out, Risk)
+    return [f"{name}: cite at least one quote" for name, ans in out if not ans.evidence]
+
+
+def _management_checks(out: BaseModel, task: AgentTask) -> list[str]:
+    assert isinstance(out, Management)
+    quotes = [e.quote for e in out.evidence]
+    quoted = [n for q in quotes for n in numbers_in(q)]
+    errors = []
+
+    def check(label: str, v: float | None) -> None:
+        if v is not None and not any(abs(v - q) <= max(0.5, abs(q) * 0.001) for q in quoted):
+            errors.append(
+                f"{label} {v:g} does not appear in any of your quotes; quote it or set it to null"
+            )
+
+    check("ceoSince", out.ceoSince)
+    check("sharesOwned", out.sharesOwned)
+    check("percentOfClass", out.percentOfClass)
+    check("directorsAndOfficersPercent", out.directorsAndOfficersPercent)
+    last = out.ceoName.split()[-1].lower() if out.ceoName.split() else ""
+    if not any(last and last in q.lower() for q in quotes):
+        errors.append(f"quote a passage that names the CEO ({out.ceoName})")
+    if out.lessThanOnePercent and out.percentOfClass is not None and out.percentOfClass >= 1:
+        errors.append("lessThanOnePercent contradicts percentOfClass")
+    return errors
+
+
 def _no_checks(out: BaseModel, task: AgentTask) -> list[str]:
     return []
 
@@ -154,6 +273,9 @@ AGENTS: dict[str, AgentSpec] = {
     "business_overview": AgentSpec("business_overview", BusinessOverview, "fast", _overview_checks),
     "segments": AgentSpec("segments", Segments, "fast", _segments_checks),
     "business_quality": AgentSpec("business_quality", BusinessQuality, "fast", _quality_checks),
+    "moat": AgentSpec("moat", Moat, "fast", _moat_checks),
+    "risk": AgentSpec("risk", Risk, "fast", _risk_checks),
+    "management": AgentSpec("management", Management, "fast", _management_checks),
     "verdict_narrative": AgentSpec(
         "verdict_narrative", VerdictNarrative, "strong", _no_checks, needs_documents=False
     ),

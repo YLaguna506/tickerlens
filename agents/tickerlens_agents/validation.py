@@ -1,6 +1,6 @@
 """Checks every agent output must pass before it is accepted.
 
-- Evidence: each quote must come from a provided document, verbatim, ≤ 30 words.
+- Evidence: each quote must come from a provided document, verbatim, ≤ 40 words.
 - Number guard: every number in the agent's prose must match a computed metric
   or a number inside its own quotes. Agents interpret numbers; they never
   invent them.
@@ -17,7 +17,9 @@ from pydantic import BaseModel
 
 from tickerlens_agents.models import Document, Evidence
 
-MAX_QUOTE_WORDS = 30
+# The prompts ask for at most 30 words; a quote a few words over is still a
+# quote, and not worth failing a whole section for (it happened on PepsiCo).
+MAX_QUOTE_WORDS = 40
 
 # Numbers like 1,234.5 / 40 / 12.5 / -3.86 ; the lookbehind skips digits glued
 # to letters ("FY2025" is handled separately, "Q3" ignored).

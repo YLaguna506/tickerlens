@@ -1,6 +1,7 @@
 // Prototype design: a light "bento" grid of tiles in different sizes, like a
 // modern product page. As complete as the terminal, friendlier to read.
 
+import { MoreSections } from "../components/deepSections";
 import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type MetricsReport, type ReportBody, type Verdict } from "../api";
@@ -500,6 +501,15 @@ export function Bento({ id }: { id: string }) {
               <IncomeTile body={body} />
               {m && <EarningsTile m={m} body={body} />}
               <QualityTile body={body} />
+              <MoreSections
+                body={body}
+                m={m}
+                report={report}
+                look="look-light"
+                idPrefix="bento-"
+                sectionClass="space-y-4 rounded-3xl bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.08)] sm:col-span-2 sm:p-6 lg:col-span-4"
+                titleClass="text-sm font-semibold tracking-wide text-slate-500 uppercase"
+              />
             </main>
             <div className="mx-auto mt-6 max-w-2xl text-slate-500">
               <RunDetails report={report} />

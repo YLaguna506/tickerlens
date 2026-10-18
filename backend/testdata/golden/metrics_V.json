@@ -616,6 +616,39 @@
     "avgSurprisePercent": 3.3473375,
     "latestQuarter": "2026-06-30"
   },
+  "capitalAllocation": {
+    "from": "FY2021",
+    "to": "FY2025",
+    "years": 5,
+    "operatingCashFlow": 97840000000,
+    "uses": [
+      {
+        "key": "capex",
+        "label": "Capital expenditure",
+        "amount": 5473000000,
+        "share": 0.05593826655764513
+      },
+      {
+        "key": "dividends",
+        "label": "Dividends",
+        "amount": 18603000000,
+        "share": 0.1901369582992641
+      },
+      {
+        "key": "buybacks",
+        "label": "Buybacks",
+        "amount": 67395000000,
+        "share": 0.6888286999182338
+      },
+      {
+        "key": "debtPaydown",
+        "label": "Net new borrowing",
+        "amount": -892000000,
+        "share": -0.00911692559280458
+      }
+    ],
+    "shareCountChange": -0.10146252285191959
+  },
   "phase": {
     "number": 4,
     "name": "Capital return",

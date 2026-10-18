@@ -93,6 +93,18 @@ func (c *Client) Sections(ctx context.Context, html []byte) (map[string]string, 
 	return out.Items, nil
 }
 
+// Proxy returns a proxy statement's beneficial ownership table ("ownership")
+// and the passages about the CEO ("ceo") as plain text.
+func (c *Client) Proxy(ctx context.Context, html []byte) (map[string]string, error) {
+	var out struct {
+		Items map[string]string `json:"items"`
+	}
+	if err := c.post(ctx, "/filings/proxy", "text/html", html, &out); err != nil {
+		return nil, fmt.Errorf("proxy statement: %w", err)
+	}
+	return out.Items, nil
+}
+
 // ModelChoice is an LLM the agents service can use.
 type ModelChoice struct {
 	ID       string `json:"id"` // "provider:model"

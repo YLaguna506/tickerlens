@@ -18,6 +18,7 @@ import (
 	"github.com/YLaguna506/tickerlens/backend/internal/fetch"
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
 	"github.com/YLaguna506/tickerlens/backend/internal/metrics"
+	"github.com/YLaguna506/tickerlens/backend/internal/peers"
 )
 
 // StageAnalyzing runs the AI agents.
@@ -45,8 +46,11 @@ type AgentService interface {
 
 // Agents configures the analyzing stage. A nil *Agents skips it.
 type Agents struct {
-	Filings       FilingSource
-	Service       AgentService
+	Filings FilingSource
+	Service AgentService
+	// Peers builds the moat section's comparison group (edgar.Client);
+	// optional.
+	Peers         peers.Source
 	Cache         fetch.Cache // optional: caches filing sections and agent results
 	FastModel     string      // part of the cache key: a new model means new answers
 	StrongModel   string      // model of the verdict narrative (cache key)
@@ -124,7 +128,7 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 	ctx, cancel := context.WithTimeout(ctx, limit)
 	defer cancel()
 	j.body.Agents = map[string]*AgentSection{}
-	sections := []string{AgentOverview, AgentQuality, AgentSegments}
+	sections := []string{AgentOverview, AgentQuality, AgentSegments, AgentMoat, AgentRisk, AgentManagement}
 	failAll := func(msg string) []string {
 		for _, s := range sections {
 			j.body.Agents[s] = &AgentSection{Status: SectionStateFailed, Errors: []string{msg}}
@@ -162,13 +166,45 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 	if business.Text == "" {
 		return failAll("the 10-K's Item 1 (Business) could not be found")
 	}
+	riskDocs := []agentclient.Document{business}
+	if r := doc("1A", "Risk Factors"); r.Text != "" {
+		riskDocs = []agentclient.Document{r, business}
+	}
 	docs := map[string][]agentclient.Document{
 		AgentOverview: {business},
 		AgentQuality:  {business, mdna},
 		// Revenue tables are in MD&A; sending only Item 7 halves the reading.
 		AgentSegments: {segmentsDoc},
+		AgentMoat:     {business, mdna},
+		AgentRisk:     riskDocs,
 	}
 	facts := agentFacts(report)
+
+	// The moat agent compares the company with its industry peers; without
+	// them it judges from the filing alone.
+	moatFacts := facts
+	if a.Peers != nil {
+		if g, err := peers.Build(ctx, a.Peers, bundle.Company.CIK, time.Now()); err != nil {
+			j.body.Notes = append(j.body.Notes, "peer group: "+err.Error())
+		} else {
+			j.body.Peers = g
+			moatFacts = map[string]any{}
+			for k, v := range facts {
+				moatFacts[k] = v
+			}
+			for k, v := range peerFacts(g) {
+				moatFacts[k] = v
+			}
+		}
+	}
+	sectionFacts := map[string]map[string]any{AgentMoat: moatFacts, AgentManagement: {}}
+
+	// The management agent reads the proxy statement, not the 10-K.
+	proxy, proxyDocs, proxyErr := j.proxyDocuments(ctx, bundle.Company.CIK)
+	if proxyErr == nil {
+		docs[AgentManagement] = proxyDocs
+		j.body.Management = &ManagementInfo{Proxy: &FilingRef{Accession: proxy.Accession, ReportDate: proxy.FilingDate, URL: a.Filings.DocumentURL(bundle.Company.CIK, proxy)}}
+	}
 
 	results := make([]*AgentSection, len(sections))
 	var g errgroup.Group // no shared cancellation: one agent failing must not stop the others
@@ -176,14 +212,26 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 		g.SetLimit(a.Concurrency)
 	}
 	for i, s := range sections {
+		if s == AgentManagement && proxyErr != nil {
+			results[i] = &AgentSection{Status: SectionStateFailed, Errors: []string{proxyErr.Error()}}
+			continue
+		}
+		f := facts
+		if sf, ok := sectionFacts[s]; ok {
+			f = sf
+		}
+		keyID := filing.Accession
+		if s == AgentManagement {
+			keyID = proxy.Accession
+		}
 		g.Go(func() error {
-			results[i] = j.runAgent(ctx, filing, j.choose(agentclient.Task{
+			results[i] = j.runAgent(ctx, keyID, j.choose(agentclient.Task{
 				JobID:         j.id,
 				Section:       s,
 				Ticker:        bundle.Company.Ticker,
 				CompanyName:   bundle.Company.Name,
 				PromptVersion: a.promptFor(s),
-				Metrics:       facts,
+				Metrics:       f,
 				Documents:     docs[s],
 			}))
 			return nil
@@ -212,28 +260,56 @@ func (j *job) analyze(ctx context.Context, bundle *ingest.Bundle, report *metric
 				} else {
 					j.body.Segments = seg
 				}
+			case AgentMoat:
+				if m, err := moatScore(sec.Output); err != nil {
+					sec.Status, sec.Errors = SectionStateFailed, []string{err.Error()}
+				} else {
+					j.body.Moat = m
+				}
+			case AgentRisk:
+				if r, err := riskScore(sec.Output, report.HealthScore); err != nil {
+					sec.Status, sec.Errors = SectionStateFailed, []string{err.Error()}
+				} else {
+					j.body.Risk = r
+				}
+			case AgentManagement:
+				if m, err := managementInfo(sec.Output, report.Price, time.Now()); err != nil {
+					sec.Status, sec.Errors = SectionStateFailed, []string{err.Error()}
+				} else {
+					m.Proxy = j.body.Management.Proxy
+					j.body.Management = m
+				}
 			}
 		}
 		ok := sec.Status == SectionStateReady
 		j.section(s, ok, strings.Join(sec.Errors, "; "))
 		// Segments are best-effort: many companies disclose no breakdown, so
 		// a missing one hides the section without marking the report partial.
-		if !ok && s != AgentSegments {
+		// So is management without a proxy statement (some companies put
+		// those facts in the 10-K instead).
+		if !ok && s != AgentSegments && (s != AgentManagement || proxyErr == nil) {
 			failed = append(failed, s)
 		}
 	}
 	return failed
 }
 
-// runAgent calls one agent, using the cached answer for the same filing,
-// section, prompt version and model when there is one.
-func (j *job) runAgent(ctx context.Context, filing edgar.Filing, task agentclient.Task) *AgentSection {
+// runAgent calls one agent, using the cached answer for the same filing
+// (accession), section, prompt version and model when there is one.
+func (j *job) runAgent(ctx context.Context, accession string, task agentclient.Task) *AgentSection {
 	a := j.agents
-	key := fmt.Sprintf("agent:%s:%s:%s:%s:%s", task.Ticker, filing.Accession, task.Section, task.PromptVersion, modelOr(j.opt, a.FastModel)) + langSuffix(j.opt)
-	if task.Section == AgentSegments {
-		// Which stretch of Item 7 the segments agent reads can change, so its
-		// answer is also keyed by the text it was given.
+	key := fmt.Sprintf("agent:%s:%s:%s:%s:%s", task.Ticker, accession, task.Section, task.PromptVersion, modelOr(j.opt, a.FastModel)) + langSuffix(j.opt)
+	switch task.Section {
+	case AgentSegments, AgentManagement:
+		// Which stretch of a document the agent reads (Item 7 for segments,
+		// the proxy excerpts for management) can change, so its answer is
+		// also keyed by the text it was given.
 		key += ":" + docsHash(task.Documents)
+	case AgentMoat:
+		// The peer comparison changes as companies file.
+		if b, err := json.Marshal(task.Metrics["peerGroup"]); err == nil {
+			key += ":" + docsHash([]agentclient.Document{{ID: "peers", Text: string(b) + fmt.Sprint(task.Metrics["peerMedianOperatingMargin"])}})
+		}
 	}
 	if a.Cache != nil {
 		if b, ok, err := a.Cache.Get(ctx, key); err == nil && ok {
@@ -270,6 +346,59 @@ func (j *job) runAgent(ctx context.Context, filing edgar.Filing, task agentclien
 		}
 	}
 	return sec
+}
+
+// proxyDocuments returns the latest proxy statement's ownership table and CEO
+// passages, from the cache when possible.
+func (j *job) proxyDocuments(ctx context.Context, cik string) (edgar.Filing, []agentclient.Document, error) {
+	a := j.agents
+	pf, ok1 := a.Filings.(ProxyFilings)
+	pr, ok2 := a.Service.(ProxyReader)
+	if !ok1 || !ok2 {
+		return edgar.Filing{}, nil, errors.New("proxy statements are not available")
+	}
+	filing, err := pf.LatestProxy(ctx, cik)
+	if err != nil {
+		return filing, nil, err
+	}
+	// v2: the ownership table is also found under headings like Microsoft's
+	// "Stock Ownership Information".
+	key := "sec:proxy:v2:" + filing.Accession
+	var parts map[string]string
+	if a.Cache != nil {
+		if b, ok, err := a.Cache.Get(ctx, key); err == nil && ok {
+			_ = json.Unmarshal(b, &parts)
+		}
+	}
+	if parts == nil {
+		html, err := a.Filings.PrimaryDocument(ctx, cik, filing)
+		if err != nil {
+			return filing, nil, err
+		}
+		if parts, err = pr.Proxy(ctx, html); err != nil {
+			return filing, nil, err
+		}
+		if a.Cache != nil {
+			if b, err := json.Marshal(parts); err == nil {
+				_ = a.Cache.Set(ctx, key, b, 10*365*24*time.Hour)
+			}
+		}
+	}
+	if parts["ownership"] == "" && parts["ceo"] == "" {
+		return filing, nil, fmt.Errorf("the proxy statement filed %s has no ownership table", filing.FilingDate)
+	}
+	src := func(what string) string {
+		return fmt.Sprintf("Proxy statement (DEF 14A) filed %s, %s", filing.FilingDate, what)
+	}
+	url := a.Filings.DocumentURL(cik, filing)
+	var docs []agentclient.Document
+	if t := parts["ownership"]; t != "" {
+		docs = append(docs, agentclient.Document{ID: "proxy-ownership", Source: src("beneficial ownership table"), URL: url, Text: t})
+	}
+	if t := parts["ceo"]; t != "" {
+		docs = append(docs, agentclient.Document{ID: "proxy-ceo", Source: src("passages about the chief executive officer"), URL: url, Text: t})
+	}
+	return filing, docs, nil
 }
 
 // filingSections returns the latest 10-K split by Item, from the cache when

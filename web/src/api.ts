@@ -87,6 +87,7 @@ export interface MetricsReport {
   priceChange5y: Metric;
   totalReturn5y: Metric;
   earnings: { quarters: number; beats: number; avgSurprisePercent: number | null; latestQuarter?: string };
+  capitalAllocation?: CapitalAllocation;
   phase: Phase;
   growthScore: Score;
   healthScore: Score;
@@ -147,6 +148,68 @@ export type Quality = Record<
   QualityAnswer
 >;
 
+export interface CashUse {
+  key: "capex" | "acquisitions" | "dividends" | "buybacks" | "debtPaydown";
+  label: string;
+  amount: number;
+  share: number | null;
+}
+
+export interface CapitalAllocation {
+  from: string;
+  to: string;
+  years: number;
+  operatingCashFlow: number;
+  uses: CashUse[];
+  shareCountChange: number | null;
+  notes?: string[];
+}
+
+export interface MoatSourceAnswer {
+  rating: "None" | "Weak" | "Moderate" | "Strong";
+  direction: "Narrowing" | "Stable" | "Widening";
+  justification: string;
+  evidence: Evidence[];
+}
+
+export interface MoatOutput {
+  width: string;
+  direction: string;
+  summary: string;
+  sources: Record<"switchingCosts" | "networkEffects" | "intangibleAssets" | "costAdvantage" | "counterPositioning", MoatSourceAnswer>;
+}
+
+export type RiskOutput = Record<"revenueDiversification" | "disruptionThreat" | "externalExposure", QualityAnswer>;
+
+export interface ManagementOutput {
+  ceoName: string;
+  ceoSince: number | null;
+  notes: string;
+}
+
+export interface PeerCompany {
+  cik: string;
+  ticker?: string;
+  name: string;
+  revenue: number;
+  revenueGrowth: number | null;
+  grossMargin: number | null;
+  operatingMargin: number | null;
+  netMargin: number | null;
+}
+
+export interface PeerGroup {
+  sic: string;
+  industry: string;
+  basis: string;
+  year: number;
+  company: PeerCompany | null;
+  peers: PeerCompany[];
+  medians: Omit<PeerCompany, "cik" | "ticker" | "name" | "revenue"> & { revenue: number | null };
+  rank?: number;
+  of: number;
+}
+
 export interface SegmentShare {
   name: string;
   revenue: number;
@@ -195,9 +258,27 @@ export interface ReportBody {
     business_overview?: AgentSection<Overview>;
     business_quality?: AgentSection<Quality>;
     segments?: AgentSection<unknown>;
+    moat?: AgentSection<MoatOutput>;
+    risk?: AgentSection<RiskOutput>;
+    management?: AgentSection<ManagementOutput>;
   };
   businessQuality?: { score: number; points: number; answers: Record<string, string> };
   segments?: { fiscalYear: string; segments?: SegmentShare[]; geography?: SegmentShare[] };
+  peers?: PeerGroup;
+  moat?: { width: number; widthName: string; direction: number; directionName: string; sources: Record<string, { rating: string; direction: string }> };
+  risk?: { score: number; answers: Record<string, string>; points: Record<string, number> };
+  management?: {
+    ceoName?: string;
+    ceoSince?: number | null;
+    tenureYears?: number | null;
+    sharesOwned?: number | null;
+    ownedValueUsd?: number | null;
+    percentOfClass?: number | null;
+    lessThanOnePercent?: boolean;
+    directorsAndOfficersPercent?: number | null;
+    notes?: string;
+    proxy?: { accession: string; reportDate: string; url: string };
+  };
   verdict?: Verdict;
 }
 

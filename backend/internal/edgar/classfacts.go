@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -35,6 +36,27 @@ type Filing struct {
 
 // Filings returns the company's recent 10-K and 10-Q filings, newest first.
 func (c *Client) Filings(ctx context.Context, cik string) ([]Filing, error) {
+	return c.recentFilings(ctx, cik, "10-K", "10-Q")
+}
+
+// submissions is the part of the company's submissions document TickerLens
+// reads. The "recent" block is column-oriented: parallel arrays, one per field.
+type submissions struct {
+	SIC            string `json:"sic"`
+	SICDescription string `json:"sicDescription"`
+	Filings        struct {
+		Recent struct {
+			Accession       []string `json:"accessionNumber"`
+			Form            []string `json:"form"`
+			ReportDate      []string `json:"reportDate"`
+			FilingDate      []string `json:"filingDate"`
+			PrimaryDocument []string `json:"primaryDocument"`
+			InlineXBRL      []int    `json:"isInlineXBRL"`
+		} `json:"recent"`
+	} `json:"filings"`
+}
+
+func (c *Client) submissions(ctx context.Context, cik string) (*submissions, error) {
 	body, err := c.fetch.Get(ctx, fetch.Request{
 		URL:      fmt.Sprintf("%s/submissions/CIK%s.json", c.opts.DataBaseURL, cik),
 		CacheKey: "sec:submissions:" + cik,
@@ -43,21 +65,19 @@ func (c *Client) Filings(ctx context.Context, cik string) ([]Filing, error) {
 	if err != nil {
 		return nil, fmt.Errorf("sec submissions %s: %w", cik, err)
 	}
-	// The "recent" block is column-oriented: parallel arrays, one per field.
-	var raw struct {
-		Filings struct {
-			Recent struct {
-				Accession       []string `json:"accessionNumber"`
-				Form            []string `json:"form"`
-				ReportDate      []string `json:"reportDate"`
-				FilingDate      []string `json:"filingDate"`
-				PrimaryDocument []string `json:"primaryDocument"`
-				InlineXBRL      []int    `json:"isInlineXBRL"`
-			} `json:"recent"`
-		} `json:"filings"`
-	}
+	var raw submissions
 	if err := json.Unmarshal(body, &raw); err != nil {
 		return nil, fmt.Errorf("sec submissions %s: decode: %w", cik, err)
+	}
+	return &raw, nil
+}
+
+// recentFilings returns the company's recent filings of the given forms,
+// newest first.
+func (c *Client) recentFilings(ctx context.Context, cik string, forms ...string) ([]Filing, error) {
+	raw, err := c.submissions(ctx, cik)
+	if err != nil {
+		return nil, err
 	}
 	r := raw.Filings.Recent
 	var out []Filing
@@ -65,7 +85,7 @@ func (c *Client) Filings(ctx context.Context, cik string) ([]Filing, error) {
 		if i >= len(r.Form) || i >= len(r.ReportDate) || i >= len(r.PrimaryDocument) {
 			break
 		}
-		if r.Form[i] != "10-K" && r.Form[i] != "10-Q" {
+		if !slices.Contains(forms, r.Form[i]) {
 			continue
 		}
 		f := Filing{

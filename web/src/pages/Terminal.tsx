@@ -1,6 +1,7 @@
 // Prototype design: a dark, dense, one-screen dashboard in the spirit of a
 // trading terminal. Same data as the classic report, laid out as panels.
 
+import { MoreSections } from "../components/deepSections";
 import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type MetricsReport, type ReportBody, type SegmentShare, type Verdict } from "../api";
@@ -526,6 +527,15 @@ export function Terminal({ id }: { id: string }) {
           <SegmentsPanel body={body} />
           <BusinessPanel body={body} />
           {m && <EarningsPanel m={m} body={body} />}
+          <MoreSections
+            body={body}
+            m={m}
+            report={report}
+            look="look-terminal"
+            idPrefix="t-"
+            sectionClass="min-w-0 space-y-3 bg-t-panel p-3 lg:col-span-12"
+            titleClass="border-b border-t-line pb-1.5 font-mono text-[11px] tracking-wider text-t-amber uppercase"
+          />
         </main>
       )}
 

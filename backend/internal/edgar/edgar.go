@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -117,8 +119,20 @@ func (c *Client) Tickers(ctx context.Context) ([]Company, error) {
 	if err := json.Unmarshal(body, &raw); err != nil {
 		return nil, fmt.Errorf("sec ticker list: decode: %w", err)
 	}
+	// Keep the file's order (by market value), so a company's main listing
+	// comes before its other share classes and foreign lines.
+	keys := make([]string, 0, len(raw))
+	for k := range raw {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		a, _ := strconv.Atoi(keys[i])
+		b, _ := strconv.Atoi(keys[j])
+		return a < b
+	})
 	companies := make([]Company, 0, len(raw))
-	for _, e := range raw {
+	for _, k := range keys {
+		e := raw[k]
 		companies = append(companies, Company{
 			Ticker: strings.ToUpper(e.Ticker),
 			CIK:    PadCIK(e.CIK),

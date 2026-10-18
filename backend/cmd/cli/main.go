@@ -4,6 +4,7 @@
 //	tickerlens metrics V          print the Financial overview, phase and scores
 //	tickerlens fetch -json AAPL   print the full data as JSON
 //	tickerlens health             check the data of many tickers for errors
+//	tickerlens peers PEP          print the company's comparison group
 //
 // Settings come from the environment (`task cli -- fetch V` loads .env).
 package main
@@ -34,6 +35,7 @@ commands:
   fetch     fetch and print normalized financials, prices and earnings
   metrics   compute and print the Financial overview, phase and scores
   health    check many tickers' data for signs it was read wrongly
+  peers     print the comparison group (same industry code) and its medians
 
 run "tickerlens <command> -h" for flags`
 
@@ -54,6 +56,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		err = runFetch(ctx, args[1:], stdout, stderr)
 	case "metrics":
 		err = runMetrics(ctx, args[1:], stdout, stderr)
+	case "peers":
+		err = runPeers(ctx, args[1:], stdout, stderr)
 	case "health":
 		var failed bool
 		failed, err = runHealth(ctx, args[1:], stdout, stderr)

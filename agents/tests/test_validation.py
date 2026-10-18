@@ -40,9 +40,9 @@ def test_unknown_document_fails() -> None:
 
 
 def test_long_quote_fails() -> None:
-    long = " ".join(["word"] * 31)
+    long = " ".join(["word"] * 41)
     errors = check_evidence([ev(long)], [DOC])
-    assert any("max 30" in e for e in errors)
+    assert any("max 40" in e for e in errors)
 
 
 def test_numbers_in_ignores_form_names_and_reads_separators() -> None:

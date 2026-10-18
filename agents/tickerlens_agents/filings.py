@@ -94,3 +94,76 @@ def sections_from_html(html: str, max_chars: int = 60_000) -> dict[str, str]:
     """Item id → text, each truncated to max_chars (a token budget)."""
     items = split_items(html_to_text(html))
     return {k: v[:max_chars] for k, v in items.items()}
+
+
+# --- Proxy statements (DEF 14A) ----------------------------------------------------
+
+_OWNERSHIP_RE = re.compile(
+    r"(security|stock|share)\s+ownership\s+of\s+(certain\s+)?(beneficial\s+owners|directors"
+    r"|officers|management|executive)|beneficial\s+ownership\s+of\s+(common\s+stock|shares"
+    r"|securities)",
+    re.IGNORECASE,
+)
+_CEO_RE = re.compile(r"chief\s+executive\s+officer|\bCEO\b", re.IGNORECASE)
+_YEAR_RE = re.compile(r"\b(19[5-9]\d|20[0-4]\d)\b")
+
+
+def _ownership_window(text: str, size: int) -> str:
+    """The ownership table: of the headings that name it (the table of
+    contents names it too, and the 5% holders often have their own table),
+    the one followed by the directors and officers "as a group" row and the
+    most percentages."""
+    starts = [m.start() for m in _OWNERSHIP_RE.finditer(text)]
+    # Short heading lines that mention ownership ("Stock Ownership
+    # Information" at Microsoft), other than ownership policies.
+    pos = 0
+    for line in text.split("\n"):
+        low = line.lower()
+        if len(line) <= 100 and "ownership" in low and not any(w in low for w in _POLICY_WORDS):
+            starts.append(pos)
+        pos += len(line) + 1
+    best, best_score = "", -1
+    for start in starts:
+        window = text[start : start + size]
+        head = window[:15000].lower()
+        score = head.count("%")
+        score += 100 if "beneficial" in head[:3000] else 0
+        score += 200 if "officers as a group" in head else 0
+        if score > best_score:
+            best, best_score = window, score
+    return best
+
+
+_POLICY_WORDS = ("policy", "policies", "requirement", "guideline")
+
+
+def _ceo_passages(text: str, size: int) -> str:
+    """Sentences that mention the CEO together with a year: biographies
+    ("has served as Chief Executive Officer since 2019")."""
+    out: list[str] = []
+    seen: set[str] = set()
+    total = 0
+    # Proxy text often breaks lines mid-sentence: rejoin each paragraph.
+    paragraphs = (" ".join(p.split("\n")) for p in text.split("\n\n"))
+    for paragraph in paragraphs:
+        for sentence in re.split(r"(?<=[.;])\s+(?=[A-Z])", paragraph):
+            if len(sentence) > 600 or not _CEO_RE.search(sentence) or not _YEAR_RE.search(sentence):
+                continue
+            key = sentence.strip().lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(sentence.strip())
+            total += len(sentence) + 1
+            if total >= size:
+                return "\n".join(out)
+    return "\n".join(out)
+
+
+def proxy_sections(html: str, max_chars: int = 30_000) -> dict[str, str]:
+    """The parts of a proxy statement the management agent reads."""
+    text = html_to_text(html)
+    return {
+        "ownership": _ownership_window(text, max_chars),
+        "ceo": _ceo_passages(text, max_chars // 2),
+    }

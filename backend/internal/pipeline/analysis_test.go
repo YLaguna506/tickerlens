@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"math"
 	"strings"
 	"sync"
 	"testing"
@@ -68,13 +69,17 @@ const (
 	overviewOut = `{"mission":null,"whatItDoes":"Payments network.","howItMakesMoney":"Fees.","payingCustomers":"Banks.","whyTheyBuy":"Acceptance."}`
 	qualityOut  = `{"revenuePredictability":{"answer":"Predictable"},"pricingPower":{"answer":"Easily"},"recessionResistance":{"answer":"Okay"},"competitivePosition":{"answer":"Dominant"}}`
 	// Visa FY2025 net revenue is $40,000M; gross segment revenue is higher.
-	segmentsOut  = `{"unit":"USD millions","fiscalYear":"FY2025","segments":[{"name":"Service","revenue":18000,"priorRevenue":16000},{"name":"Data processing","revenue":21000},{"name":"International","revenue":15000}],"geography":[]}`
-	narrativeOut = `{"tagline":"Great business, full price.","rationale":"Quality and health are strong; the price is high."}`
+	segmentsOut   = `{"unit":"USD millions","fiscalYear":"FY2025","segments":[{"name":"Service","revenue":18000,"priorRevenue":16000},{"name":"Data processing","revenue":21000},{"name":"International","revenue":15000}],"geography":[]}`
+	narrativeOut  = `{"tagline":"Great business, full price.","rationale":"Quality and health are strong; the price is high."}`
+	moatOut       = `{"width":"Wide","direction":"Stable","summary":"A network.","sources":{"switchingCosts":{"rating":"Moderate","direction":"Stable"},"networkEffects":{"rating":"Strong","direction":"Widening"},"intangibleAssets":{"rating":"Strong","direction":"Stable"},"costAdvantage":{"rating":"Moderate","direction":"Stable"},"counterPositioning":{"rating":"None","direction":"Stable"}}}`
+	riskOut       = `{"revenueDiversification":{"answer":"Diversified"},"disruptionThreat":{"answer":"Moderate"},"externalExposure":{"answer":"High"}}`
+	managementOut = `{"ceoName":"Ryan McInerney","ceoSince":2023,"sharesOwned":245118,"percentOfClass":null,"lessThanOnePercent":true,"directorsAndOfficersPercent":null,"notes":""}`
 )
 
 // allAgents answers every agent successfully.
 func allAgents() map[string]string {
-	return map[string]string{AgentOverview: overviewOut, AgentQuality: qualityOut, AgentSegments: segmentsOut, AgentNarrative: narrativeOut}
+	return map[string]string{AgentOverview: overviewOut, AgentQuality: qualityOut, AgentSegments: segmentsOut,
+		AgentMoat: moatOut, AgentRisk: riskOut, AgentManagement: managementOut, AgentNarrative: narrativeOut}
 }
 
 func runWithAgents(t *testing.T, agents *fakeAgents, cache fetch.Cache) (*fakeStore, Body) {
@@ -164,6 +169,8 @@ func TestAgentFailuresMakeReportPartial(t *testing.T) {
 	agents := &fakeAgents{outputs: map[string]string{
 		AgentOverview: overviewOut,
 		AgentQuality:  "", // agent's validation failed
+		AgentMoat:     moatOut,
+		AgentRisk:     riskOut,
 		// segments: service unreachable
 	}}
 	s, body := runWithAgents(t, agents, nil)
@@ -205,8 +212,10 @@ func TestAgentAnswersAreCached(t *testing.T) {
 	second := &fakeAgents{outputs: outputs}
 	_, body := runWithAgents(t, second, cache)
 
-	if len(first.calls) != 4 || len(second.calls) != 0 {
-		t.Errorf("agent calls: first run %d, second run %d (want 4, 0)", len(first.calls), len(second.calls))
+	// Overview, quality, segments, moat, risk and the narrative; management
+	// needs a proxy statement, which these fakes do not have.
+	if len(first.calls) != 6 || len(second.calls) != 0 {
+		t.Errorf("agent calls: first run %d, second run %d (want 6, 0)", len(first.calls), len(second.calls))
 	}
 	if !body.Agents[AgentOverview].Cached {
 		t.Error("second run should report the cached answer")
@@ -272,5 +281,67 @@ func TestQualityScoreRejectsUnknownAnswer(t *testing.T) {
 	_, err := qualityScore(json.RawMessage(`{"revenuePredictability":{"answer":"Very"},"pricingPower":{"answer":"No"},"recessionResistance":{"answer":"Weak"},"competitivePosition":{"answer":"Weak"}}`))
 	if err == nil {
 		t.Error("an answer outside the scale must be rejected")
+	}
+}
+
+// fakeProxyFilings also finds proxy statements, and fakeProxyAgents reads them.
+type fakeProxyFilings struct{ fakeFilings }
+
+func (f *fakeProxyFilings) LatestProxy(context.Context, string) (edgar.Filing, error) {
+	return edgar.Filing{Accession: "0001403161-25-000120", Form: "DEF 14A", FilingDate: "2025-12-10", PrimaryDocument: "proxy.htm"}, nil
+}
+
+type fakeProxyAgents struct{ *fakeAgents }
+
+func (f fakeProxyAgents) Proxy(context.Context, []byte) (map[string]string, error) {
+	return map[string]string{"ownership": "Ryan McInerney 245,118 *", "ceo": "McInerney has served as our Chief Executive Officer since 2023."}, nil
+}
+
+func TestNewSectionsMoatRiskManagement(t *testing.T) {
+	agents := &fakeAgents{outputs: allAgents()}
+	s := &fakeStore{}
+	broker := NewBroker()
+	r := NewRunner(s, fakeFetcher{bundle: visaBundle(t)}, broker, scoring.Default(), slog.New(slog.NewTextHandler(io.Discard, nil)), time.Minute)
+	r.Agents = &Agents{Filings: &fakeProxyFilings{}, Service: fakeProxyAgents{agents}, FastModel: "m", PromptVersion: "v1"}
+	events, unsubscribe := broker.Subscribe("r1")
+	defer unsubscribe()
+	r.Start("r1", "V", true, store.Options{})
+	for e := range events {
+		if e.Terminal() {
+			break
+		}
+	}
+	var body Body
+	if err := json.Unmarshal(s.body, &body); err != nil {
+		t.Fatal(err)
+	}
+	if s.outcome.Status != store.StatusDone {
+		t.Fatalf("outcome = %+v", s.outcome)
+	}
+	if m := body.Moat; m == nil || m.Width != 5 || m.Direction != 3 || m.Sources["networkEffects"].Rating != "Strong" {
+		t.Errorf("moat = %+v", body.Moat)
+	}
+	// Diversified 4, Moderate 3, High 2, and the health score.
+	if r := body.Risk; r == nil || r.Points["revenueDiversification"] != 4 || r.Points["externalExposure"] != 2 {
+		t.Errorf("risk = %+v", body.Risk)
+	} else if h := body.Metrics.HealthScore.Value; h != nil {
+		if want := math.Round((4+3+2+*h)/4*100) / 100; r.Score != want {
+			t.Errorf("risk score = %v, want %v", r.Score, want)
+		}
+	}
+	m := body.Management
+	if m == nil || m.CEOName != "Ryan McInerney" || m.TenureYears == nil || *m.TenureYears != time.Now().Year()-2023 {
+		t.Fatalf("management = %+v", m)
+	}
+	if m.OwnedValueUSD == nil || m.Proxy == nil || m.Proxy.Accession != "0001403161-25-000120" {
+		t.Errorf("management = %+v", m)
+	}
+	for _, c := range agents.calls {
+		if c.Section == AgentManagement && (len(c.Documents) != 2 || c.Documents[0].ID != "proxy-ownership") {
+			t.Errorf("management documents = %+v", c.Documents)
+		}
+		if c.Section == AgentRisk && c.Documents[0].ID != "10k-item1" {
+			t.Errorf("risk documents: %+v", c.Documents[0].ID) // the fake 10-K has no Item 1A
+		}
 	}
 }

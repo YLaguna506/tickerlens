@@ -37,6 +37,9 @@ Every report has the same data, shown in five designs you can switch between at 
 
 - **Business:** mission, what the company does, how it makes money, who pays and why, with quotes from the 10-K; revenue by segment and region with year-over-year change.
 - **Business quality:** four questions (predictable revenue? pricing power? recession-proof? competitive position?), each answered with a justification and filing quotes.
+- **Moat:** how wide the competitive advantage is (None → Wide) and which way it is moving, with five sources rated (switching costs, network effects, intangible assets, cost advantage, counter-positioning). The company is compared with the largest companies under the same SEC industry code: revenue, growth and margins for the latest calendar year, from the SEC's cross-company data.
+- **Risk:** four questions scored 1–5 (5 is the lowest risk): how spread out revenue is, the threat of disruption and exposure to things outside the company's control, judged from the 10-K's risk factors, plus financial health from the balance sheet.
+- **Management:** the CEO's tenure and shareholding from the latest proxy statement, valued at today's price; the record of beating analyst estimates; and how five years of operating cash flow were spent (capex, acquisitions, dividends, buybacks, debt) with the change in share count.
 - **Financials:** margins, 3/5/10-year growth, debt and coverage, valuation multiples, shareholder yield, EPS against analyst estimates. Tap any number to see its formula and inputs.
 - **Phase:** where the company is in its life cycle (startup → hypergrowth → operating leverage → capital return → decline), which picks the right valuation multiple.
 - **Valuation:** today's multiple against its own 5-year history, translated into cheap / typical / expensive share prices.
@@ -66,7 +69,7 @@ A report moves through four stages, and the page updates live after each one:
 
 1. **Ingesting:** fetch SEC company facts, the latest filings, prices and estimates (cached in Postgres, rate limited, retried).
 2. **Computing:** normalize the financials and compute every metric, the phase, and the growth, health and valuation scores.
-3. **Analyzing:** the AI agents read Items 1 and 7 of the latest 10-K.
+3. **Analyzing:** the AI agents read Items 1, 1A and 7 of the latest 10-K, and the latest proxy statement; the moat agent also gets the peer comparison.
 4. **Scoring:** apply the verdict rules, then ask the narrative agent to summarize them.
 
 | Layer | Tech |
@@ -138,6 +141,7 @@ Each agent's answer must pass these checks before it's accepted:
 2. **Quotes:** every judgment cites a quote that must appear **word for word** in the filing.
 3. **Number guard:** every number in the prose must match a computed metric or a number inside the agent's own quotes, at the precision written. An invented figure fails.
 4. **Segments:** each figure must appear in a quote, and the segments must roughly add up to reported revenue.
+5. **Moat and management:** a Broad or Wide moat needs at least one Strong source; every CEO figure (start year, shares, percentages) must appear in a quote from the proxy statement.
 
 A failed check gets one repair attempt, where the agent is told exactly what was wrong. If that fails too, the section is left out and the report is marked partial. `task eval` runs the agents on 10 companies and checks their answers against expected results.
 
@@ -221,6 +225,12 @@ task cli -- health
 ```
 
 Checks the data of about 90 companies for signs it was read wrongly from their filings: missing or overlapping quarters, quarters that do not add up to the year, impossible negatives, a debt or share count that jumps for one quarter, EPS that disagrees with net income ÷ shares, share counts filed without their scale, and missing scores or valuation. It runs no AI agents. The list (in `backend/cmd/cli/health_tickers.txt`) covers unusual calendars, several share classes, splits and heavy debt; pass tickers to check others (`task cli -- health KR PEP`). Prices are on by default; Tiingo's free tier allows 50 requests an hour, so `-prices=false` checks the filings alone in a few minutes. It exits with status 1 when any ticker has an error.
+
+```bash
+task cli -- peers PEP
+```
+
+Prints the company's comparison group (the largest companies under its SEC industry code) with revenue, growth and margins, and their medians.
 
 ## Development
 

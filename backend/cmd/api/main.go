@@ -89,6 +89,7 @@ func run(logger *slog.Logger) error {
 		runner.Agents = &pipeline.Agents{
 			Filings:       fetcher.SEC,
 			Service:       agents,
+			Peers:         fetcher.SEC,
 			Cache:         cache,
 			FastModel:     fastModel(),
 			StrongModel:   envOr("LLM_MODEL_STRONG", fastModel()),
@@ -96,9 +97,10 @@ func run(logger *slog.Logger) error {
 			// segments v2 adds prior-year figures for year-over-year growth.
 			PromptVersions: map[string]string{pipeline.AgentSegments: "v2"},
 			MaxDocChars:    40_000,
-			StageTimeout:   6 * time.Minute,
-			Concurrency:    int(envFloat("AGENT_CONCURRENCY", 0)),
-			CostCapUSD:     envFloat("LLM_JOB_COST_CAP_USD", 0.25),
+			// Six agents; on a free model they can take a minute each.
+			StageTimeout: 8 * time.Minute,
+			Concurrency:  int(envFloat("AGENT_CONCURRENCY", 0)),
+			CostCapUSD:   envFloat("LLM_JOB_COST_CAP_USD", 0.25),
 		}
 		logger.Info("AI agents enabled", "url", url, "provider", os.Getenv("LLM_PROVIDER"), "model", fastModel())
 	} else {

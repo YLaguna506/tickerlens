@@ -4,7 +4,8 @@ import { PriceChart } from "../components/charts";
 import { LangNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { BusinessSection, FinancialsSection, PhaseSection, ValuationSection, VerdictSection } from "../components/sections";
-import { Disclaimer } from "../components/ui";
+import { ManagementPanel, MoatPanel, RiskPanel } from "../components/deepSections";
+import { Disclaimer, Section } from "../components/ui";
 import { price, shortDate, signedPct, titleCase } from "../format";
 import { t, tx } from "../i18n";
 import { STAGES, useLiveReport } from "../live";
@@ -12,9 +13,12 @@ import { navigate } from "../router";
 
 const TABS = [
   { id: "business", label: "Business" },
+  { id: "moat", label: "Moat" },
   { id: "financials", label: "Financials" },
   { id: "phase", label: "Phase" },
   { id: "valuation", label: "Valuation" },
+  { id: "risk", label: "Risk" },
+  { id: "management", label: "Management" },
   { id: "verdict", label: "Verdict" },
 ];
 
@@ -160,9 +164,18 @@ export function Report({ id }: { id: string }) {
       {report.status !== "failed" && (
         <>
           <BusinessSection body={body} />
+          <Section id="moat" title={t("Moat")}>
+            <MoatPanel body={body} report={report} />
+          </Section>
           <FinancialsSection m={m} body={body} />
           <PhaseSection m={m} body={body} />
           <ValuationSection m={m} />
+          <Section id="risk" title={t("Risk")}>
+            <RiskPanel body={body} m={m} report={report} />
+          </Section>
+          <Section id="management" title={t("Management")}>
+            <ManagementPanel body={body} m={m} report={report} />
+          </Section>
           <VerdictSection body={body} m={m} />
         </>
       )}

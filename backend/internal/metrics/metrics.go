@@ -67,7 +67,10 @@ type Report struct {
 	TotalReturn5y Metric   `json:"totalReturn5y"`
 
 	Earnings EarningsRecord `json:"earnings"`
-	Phase    phase.Result   `json:"phase"`
+	// Capital is how the cash from operations was spent over five years
+	// (nil without enough cash flow history).
+	Capital *CapitalAllocation `json:"capitalAllocation,omitempty"`
+	Phase   phase.Result       `json:"phase"`
 
 	GrowthScore    scoring.Score `json:"growthScore"`
 	HealthScore    scoring.Score `json:"healthScore"`
@@ -135,6 +138,7 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 		}
 	}
 	r.Returns = c.returns(mcap)
+	r.Capital = capitalAllocation(b.Financials, sp)
 	r.PriceChange5y = priceChange(b, sp, false)
 	r.TotalReturn5y = priceChange(b, sp, true)
 	r.Earnings = earningsRecord(b.Earnings)

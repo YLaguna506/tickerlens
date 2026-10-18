@@ -2,6 +2,8 @@
 
 The Go API calls:
 - POST /filings/sections with a 10-K's HTML, to get its text split by Item;
+- POST /filings/proxy with a proxy statement's HTML, for its ownership table
+  and the passages about the CEO;
 - POST /analyze/{section} with an AgentTask, for each report section.
 
 The service is stateless: Go owns caching, retries across calls, and timeouts.
@@ -22,7 +24,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel
 
 from tickerlens_agents.agents import AGENTS, run_agent
-from tickerlens_agents.filings import sections_from_html
+from tickerlens_agents.filings import proxy_sections, sections_from_html
 from tickerlens_agents.llm import LLMClient, LLMError, client_from_env
 from tickerlens_agents.llm.factory import (
     Models,
@@ -92,6 +94,16 @@ async def filing_sections(request: Request) -> Sections:
     if not html.strip():
         raise HTTPException(status_code=400, detail="empty body: send the filing HTML")
     return Sections(items=sections_from_html(html))
+
+
+@app.post("/filings/proxy")
+async def proxy(request: Request) -> Sections:
+    """Body: a proxy statement's raw HTML. Returns the ownership table and the
+    passages about the CEO."""
+    html = (await request.body()).decode("utf-8", errors="replace")
+    if not html.strip():
+        raise HTTPException(status_code=400, detail="empty body: send the proxy HTML")
+    return Sections(items=proxy_sections(html))
 
 
 # Dependencies are functions so tests can swap them (app.dependency_overrides).

@@ -87,6 +87,7 @@ var fields = []fieldSpec{
 		"RepaymentsOfDebt",
 		"RepaymentsOfConvertibleDebt",
 	}},
+	{"acquisitions", flow, "USD", []string{"PaymentsToAcquireBusinessesNetOfCashAcquired"}},
 	{"debtIssued", flow, "USD", []string{
 		"ProceedsFromIssuanceOfLongTermDebt",
 		"ProceedsFromIssuanceOfDebt",
@@ -118,7 +119,7 @@ var helpers = []fieldSpec{
 var nonNegative = map[string]bool{"revenue": true, "capex": true, "dividendsPaid": true, "buybacks": true}
 
 // optional fields are often absent for good reason and get no warning.
-var optional = map[string]bool{"epsContinuing": true}
+var optional = map[string]bool{"epsContinuing": true, "acquisitions": true}
 
 // missingHints explains common reasons a field has no data at all.
 var missingHints = map[string]string{

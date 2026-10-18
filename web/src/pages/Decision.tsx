@@ -1,6 +1,7 @@
 // Prototype design: the verdict as a chain of questions. Each step shows its
 // answer and why, and opens to the numbers behind it.
 
+import { MoreSections } from "../components/deepSections";
 import type { ReactNode } from "react";
 import { Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
@@ -319,6 +320,7 @@ export function Decision({ id }: { id: string }) {
               )}
             </div>
             <Flow m={m} body={body} />
+            <MoreSections body={body} m={m} report={report} look="look-light" idPrefix="dec-" sectionClass="mt-10 space-y-4" titleClass="text-2xl font-bold tracking-tight" />
             <div className="mt-8 text-slate-500">
               <RunDetails report={report} />
             </div>
