@@ -96,9 +96,10 @@ func TestCompanyFacts(t *testing.T) {
 	}
 }
 
-// Some new registrants' feeds have the CIK as a string (ExxonMobil Holdings).
+// Some new registrants' feeds have the CIK as a string (ExxonMobil Holdings),
+// zero-padded for others (Apollo, BlackRock, GE Vernova in 2026).
 func TestCompanyFactsCIKAsString(t *testing.T) {
-	for _, raw := range []string{`{"cik": 2115436}`, `{"cik": "2115436"}`} {
+	for _, raw := range []string{`{"cik": 2115436}`, `{"cik": "2115436"}`, `{"cik": "0002115436"}`} {
 		var cf CompanyFacts
 		if err := json.Unmarshal([]byte(raw), &cf); err != nil || cf.CIK.String() != "2115436" {
 			t.Errorf("%s: cik %q, err %v", raw, cf.CIK, err)

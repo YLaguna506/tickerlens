@@ -27,13 +27,34 @@ type Company struct {
 
 // CompanyFacts is the raw companyfacts document.
 type CompanyFacts struct {
-	// CIK is a number, except for some new registrants, whose feed has it
-	// as a string (ExxonMobil Holdings in 2026); json.Number accepts both.
-	CIK        json.Number `json:"cik"`
-	EntityName string      `json:"entityName"`
+	CIK        FactsCIK `json:"cik"`
+	EntityName string   `json:"entityName"`
 	// Facts maps taxonomy ("us-gaap", "dei") → concept name → data.
 	Facts map[string]map[string]Concept `json:"facts"`
 }
+
+// FactsCIK is the CIK in a companyfacts document: a number, except for some
+// new registrants, whose feed has it as a string, sometimes zero-padded
+// ("2115436" for ExxonMobil Holdings, "0001858681" for Apollo in 2026).
+type FactsCIK string
+
+// UnmarshalJSON accepts a number or a string, padded or not.
+func (c *FactsCIK) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" {
+		return nil
+	}
+	s := strings.TrimLeft(strings.Trim(string(b), `"`), "0")
+	if s == "" {
+		s = "0"
+	}
+	if _, err := strconv.ParseUint(s, 10, 64); err != nil {
+		return fmt.Errorf("cik %s: %w", b, err)
+	}
+	*c = FactsCIK(s)
+	return nil
+}
+
+func (c FactsCIK) String() string { return string(c) }
 
 // Concept holds every reported value of one XBRL concept, grouped by unit.
 type Concept struct {
