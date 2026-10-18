@@ -97,7 +97,19 @@ func writeTickers(ctx context.Context, sec *edgar.Client, tickers []string) erro
 	if err != nil {
 		return err
 	}
+	path := filepath.Join("testdata", "edgar", "company_tickers.json")
 	keep := append(slices.Clone(tickers), extraTickers...)
+	// Keep the tickers already recorded, so one company can be re-recorded alone.
+	if b, err := os.ReadFile(path); err == nil {
+		var old map[string]struct {
+			Ticker string `json:"ticker"`
+		}
+		if json.Unmarshal(b, &old) == nil {
+			for _, o := range old {
+				keep = append(keep, o.Ticker)
+			}
+		}
+	}
 	subset := map[string]map[string]any{}
 	for _, co := range all {
 		if !slices.Contains(keep, co.Ticker) {
@@ -107,7 +119,7 @@ func writeTickers(ctx context.Context, sec *edgar.Client, tickers []string) erro
 		_, _ = fmt.Sscan(strings.TrimLeft(co.CIK, "0"), &cik)
 		subset[fmt.Sprint(len(subset))] = map[string]any{"cik_str": cik, "ticker": co.Ticker, "title": co.Name}
 	}
-	return writeJSON(filepath.Join("testdata", "edgar", "company_tickers.json"), subset)
+	return writeJSON(path, subset)
 }
 
 func writeCompany(ctx context.Context, sec *edgar.Client, fetcher *ingest.Fetcher, ticker string) error {

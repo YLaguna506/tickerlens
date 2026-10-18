@@ -70,6 +70,15 @@ export interface Bands {
   expensivePrice: number;
 }
 
+export interface Sector {
+  kind: "bank" | "broker" | "insurer" | "reit";
+  about: string;
+  metrics: Metric[];
+  valuationMetric: string; // P/B or P/FFO
+  scoreName?: string; // "Financial strength": stands in for financial health
+  trend?: { label: string; unit: "percent" | "usd/share"; points: Point[] };
+}
+
 export interface MetricsReport {
   ticker: string;
   name: string;
@@ -89,6 +98,9 @@ export interface MetricsReport {
   earnings: { quarters: number; beats: number; avgSurprisePercent: number | null; latestQuarter?: string };
   capitalAllocation?: CapitalAllocation;
   industry?: { sic: string; sicDescription: string };
+  /** Banks, broker-dealers, insurers and REITs, read on their own terms. */
+  sector?: Sector;
+  /** Set instead of sector when the filings lack what it needs. */
   limitedSupport?: { kind: "bank" | "broker" | "insurer" | "reit"; reason: string; noHealthScore: boolean };
   insiders?: InsiderSummary;
   nextEarnings?: NextEarnings;

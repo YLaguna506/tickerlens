@@ -587,4 +587,19 @@ export const ES: Record<string, string> = {
   "Rebuild {ticker} from scratch?": "¿Reconstruir {ticker} desde cero?",
   "Delete and rebuild": "Borrar y reconstruir",
   "Deletes every saved {ticker} report and its cached data (filings, prices, AI answers), then builds a new report.": "Borra todos los reportes guardados de {ticker} y sus datos en caché (filings, precios, respuestas de IA) y genera un reporte nuevo.",
+  // Banks, insurers and REITs
+  "Financial strength score": "Puntaje de solidez financiera",
+  "Banks and insurers earn a return on the equity they hold, so the price is compared with book value.": "Los bancos y las aseguradoras ganan un retorno sobre el patrimonio que mantienen, así que el precio se compara con el valor en libros.",
+  "Depreciation makes a REIT's earnings look low, so the price is compared with funds from operations.": "La depreciación hace que la utilidad de un REIT parezca baja, así que el precio se compara con los fondos de operaciones.",
+  "{label} by fiscal year": "{label} por año fiscal",
+  "Bank metrics": "Métricas bancarias",
+  "Broker-dealer metrics": "Métricas de casa de bolsa",
+  "Insurance metrics": "Métricas de seguros",
+  "REIT metrics": "Métricas de REIT",
+  // Compare: financial companies
+  "Banks, insurers and REITs": "Bancos, aseguradoras y REITs",
+  // Health block for financial companies
+  "Debt is {d} of assets; FFO covers interest {cov}.": "La deuda es el {d} de los activos; el FFO cubre los intereses {cov}.",
+  "Return on equity {roe}; equity is {eq} of assets.": "Rentabilidad sobre el patrimonio {roe}; el patrimonio es el {eq} de los activos.",
+  "Returns and capital": "Rentabilidad y capital",
 };

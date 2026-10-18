@@ -11,9 +11,10 @@ import type {
 } from "../api";
 import { pct, shortDate, signedPct, titleCase, usd } from "../format";
 import { t, tx } from "../i18n";
-import { isPending } from "../live";
+import { SECTOR_TITLE, isPending } from "../live";
 import { NextEarningsLine } from "./NextEarnings";
 import { ReverseDCFCard } from "./ReverseDCF";
+import { SectorPanel } from "./SectorPanel";
 import { EvidenceList, Skeleton, StepScale, Unavailable } from "./ui";
 
 const MOAT_WIDTHS = ["None", "Thin", "Narrow", "Broad", "Wide"];
@@ -629,9 +630,11 @@ export function MoreSections({
   sectionClass: string;
   titleClass: string;
 }) {
+  const sector = m?.limitedSupport ? undefined : m?.sector;
   const sections = [
-    // Classic shows this inside its Valuation section; the other designs
-    // get it here.
+    // Classic shows these inside its Financial overview and Valuation
+    // sections; the other designs get them here.
+    ...(sector ? [{ id: "sector", title: t(SECTOR_TITLE[sector.kind]), panel: <SectorPanel m={m} /> }] : []),
     ...(m?.reverseDcf
       ? [{ id: "expectations", title: t("What the price expects"), panel: <ReverseDCFCard m={m} /> }]
       : []),

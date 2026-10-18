@@ -78,12 +78,12 @@ tasks:
       - go run ./cmd/cli {{.CLI_ARGS}}
 
   fixtures:
-    desc: Re-record test fixtures for V, AAPL and SNOW (uses the Postgres cache)
+    desc: Re-record test fixtures (default V, AAPL, SNOW, JPM, PGR, O; or `task fixtures -- JPM`). Uses the Postgres cache
     dir: backend
     env:
       DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable"
     cmds:
-      - go run ./tools/fixturegen V AAPL SNOW
+      - go run ./tools/fixturegen {{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}V AAPL SNOW JPM PGR O{{end}}
 
   eval:
     desc: Run the AI agent eval set against the running stack (e.g. `task eval -- V AAPL`)

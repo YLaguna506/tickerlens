@@ -9,7 +9,7 @@ import { LangNotice, LimitedNotice, ReportControls } from "../components/Control
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, toneFor, usd, wholePrice, yearTicks } from "../format";
 import { t, tx } from "../i18n";
-import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith, withPrices } from "../live";
+import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith, withPrices, healthMetrics } from "../live";
 import { navigate } from "../router";
 
 const INDIGO = "#6366f1";
@@ -347,7 +347,7 @@ function HealthTile({ m }: { m: MetricsReport }) {
   return (
     <Tile title={t("Balance sheet")}>
       <ul className="space-y-2 text-sm">
-        {m.health.map((x) => (
+        {healthMetrics(m).map((x) => (
           <li key={x.key} className="flex justify-between gap-2" title={tx(x.formula)}>
             <span className="truncate text-slate-500">{x.key === "cashAndInvestments" ? t("Cash") : tx(x.label)}</span>
             <span className="font-bold tabular-nums">{metricValue(x)}</span>

@@ -38,20 +38,20 @@ func TestReverseDCFComparesWithActualGrowth(t *testing.T) {
 		want string
 	}{{0.01, "low"}, {0.06, "in line"}, {0.12, "high"}, {0.20, "very high"}} {
 		mcap := dcfValue(fcf, tc.g, cfg.DiscountRate, cfg.TerminalGrowth, cfg.Years)
-		d := c.reverseDCF(&mcap, growth, nil, cfg)
+		d := c.reverseDCF(&mcap, growth, "", cfg)
 		if d.ImpliedGrowth == nil || math.Abs(*d.ImpliedGrowth-tc.g) > 0.0001 || d.Expectations != tc.want || d.ReferenceName != "revenue growth, 5 years" {
 			t.Errorf("implied %v: %+v, want %q", tc.g, d, tc.want)
 		}
 	}
 	// Banks: no model, with the reason.
 	mcap := 10e9
-	if d := c.reverseDCF(&mcap, growth, &LimitedSupport{Kind: "bank"}, cfg); d.ImpliedGrowth != nil || d.Note == "" {
+	if d := c.reverseDCF(&mcap, growth, "bank", cfg); d.ImpliedGrowth != nil || d.Note == "" {
 		t.Errorf("bank: %+v", d)
 	}
 	// Negative cash flow and no positive 3-year average: nothing to grow.
 	neg := -1e9
 	c.ttm.FreeCashFlow = &neg
-	if d := c.reverseDCF(&mcap, growth, nil, cfg); d.ImpliedGrowth != nil || d.Note == "" {
+	if d := c.reverseDCF(&mcap, growth, "", cfg); d.ImpliedGrowth != nil || d.Note == "" {
 		t.Errorf("negative FCF: %+v", d)
 	}
 }
@@ -64,7 +64,7 @@ func TestReverseDCFAdjustsV(t *testing.T) {
 	c := &calc{ttm: &financials.FinancialPeriod{FreeCashFlow: &fcf}, period: "TTM"}
 	growth := []Metric{{Key: "revenueCagr5y", Value: &past}}
 	mcap := dcfValue(fcf, 0.27, cfg.DiscountRate, cfg.TerminalGrowth, cfg.Years)
-	d := c.reverseDCF(&mcap, growth, nil, cfg)
+	d := c.reverseDCF(&mcap, growth, "", cfg)
 	if !d.Capped || *d.JudgedAgainst != 0.15 || d.Expectations != "very high" {
 		t.Fatalf("judged %+v", d)
 	}
@@ -78,7 +78,7 @@ func TestReverseDCFAdjustsV(t *testing.T) {
 	// Low expectations at V 5 cannot go higher: no change, no reason.
 	slow := 0.10
 	mcap = dcfValue(fcf, 0.02, cfg.DiscountRate, cfg.TerminalGrowth, cfg.Years)
-	d = c.reverseDCF(&mcap, []Metric{{Key: "revenueCagr5y", Value: &slow}}, nil, cfg)
+	d = c.reverseDCF(&mcap, []Metric{{Key: "revenueCagr5y", Value: &slow}}, "", cfg)
 	five := 5.0
 	v = scoring.Score{Value: &five}
 	adjustValuation(&v, d, cfg)

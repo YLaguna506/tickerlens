@@ -82,7 +82,7 @@ func TestBandsSkipDistortedHistory(t *testing.T) {
 	ph := phase.Result{ValuationMetric: phase.PE, Fallbacks: []string{phase.PFCF}}
 	price := 100.0
 
-	bands, score, _, notes := valuationBands(b, scoring.Default(), ph, quarterlyTTM(collapse), nil, &price)
+	bands, score, _, notes := valuationBands(b, scoring.Default(), ph, nil, quarterlyTTM(collapse), nil, &price)
 
 	if bands == nil || bands.Metric != phase.PFCF {
 		t.Fatalf("metric = %+v, want P/FCF", bands)
@@ -115,7 +115,7 @@ func TestBandsKeepDistortedMetricAsLastResort(t *testing.T) {
 	ph := phase.Result{ValuationMetric: phase.PE, Fallbacks: []string{phase.PFCF}}
 	price := 100.0
 
-	bands, score, _, _ := valuationBands(b, scoring.Default(), ph, rolling, nil, &price)
+	bands, score, _, _ := valuationBands(b, scoring.Default(), ph, nil, rolling, nil, &price)
 
 	if bands == nil || bands.Metric != phase.PE || bands.FellBackFrom != "" {
 		t.Fatalf("bands = %+v, want P/E with no fallback", bands)

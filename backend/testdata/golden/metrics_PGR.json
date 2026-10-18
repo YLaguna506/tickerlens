@@ -1,0 +1,2112 @@
+{
+  "ticker": "PGR",
+  "name": "PROGRESSIVE CORP/OH/",
+  "scoringVersion": "2026-10-18.3",
+  "priceDate": "2026-10-16",
+  "price": 218.49,
+  "financialsThrough": "2026-06-30",
+  "latestFiscalYear": 2025,
+  "marketCap": {
+    "key": "marketCap",
+    "label": "Market cap",
+    "value": 127641858000,
+    "unit": "usd",
+    "period": "price on 2026-10-16",
+    "formula": "price × diluted shares",
+    "inputs": [
+      {
+        "name": "price",
+        "value": 218.49,
+        "period": "2026-10-16"
+      },
+      {
+        "name": "diluted shares",
+        "value": 584200000,
+        "period": "TTM to 2026-06-30"
+      }
+    ]
+  },
+  "profitability": [
+    {
+      "key": "grossMargin",
+      "label": "Gross margin",
+      "value": null,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "gross profit ÷ revenue",
+      "inputs": [
+        {
+          "name": "gross profit",
+          "value": null
+        },
+        {
+          "name": "revenue",
+          "value": 91055000000
+        }
+      ],
+      "note": "gross profit not reported"
+    },
+    {
+      "key": "operatingMargin",
+      "label": "Operating margin",
+      "value": null,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "operating income ÷ revenue",
+      "inputs": [
+        {
+          "name": "operating income",
+          "value": null
+        },
+        {
+          "name": "revenue",
+          "value": 91055000000
+        }
+      ],
+      "note": "operating income not reported"
+    },
+    {
+      "key": "netMargin",
+      "label": "Net margin",
+      "value": 0.1284388556367031,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "net income ÷ revenue",
+      "inputs": [
+        {
+          "name": "net income",
+          "value": 11695000000
+        },
+        {
+          "name": "revenue",
+          "value": 91055000000
+        }
+      ]
+    },
+    {
+      "key": "fcfMargin",
+      "label": "FCF margin",
+      "value": 0.17517983636263795,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "free cash flow ÷ revenue",
+      "inputs": [
+        {
+          "name": "free cash flow",
+          "value": 15951000000
+        },
+        {
+          "name": "revenue",
+          "value": 91055000000
+        }
+      ]
+    }
+  ],
+  "growth": [
+    {
+      "key": "revenueCagr1y",
+      "label": "Revenue CAGR 1y",
+      "value": 0.10492913309387442,
+      "unit": "percent",
+      "period": "TTM to 2025-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/1) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 82408000000,
+          "period": "TTM to 2025-06-30"
+        },
+        {
+          "name": "end",
+          "value": 91055000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "revenueCagr3y",
+      "label": "Revenue CAGR 3y",
+      "value": 0.1765558207812734,
+      "unit": "percent",
+      "period": "TTM to 2023-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/3) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 55907000000,
+          "period": "TTM to 2023-06-30"
+        },
+        {
+          "name": "end",
+          "value": 91055000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "revenueCagr5y",
+      "label": "Revenue CAGR 5y",
+      "value": 0.14776105624990654,
+      "unit": "percent",
+      "period": "TTM to 2021-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/5) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 45713700000,
+          "period": "TTM to 2021-06-30"
+        },
+        {
+          "name": "end",
+          "value": 91055000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "revenueCagr10y",
+      "label": "Revenue CAGR 10y",
+      "value": 0.15235311861786593,
+      "unit": "percent",
+      "period": "TTM to 2016-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/10) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 22052000000,
+          "period": "TTM to 2016-06-30"
+        },
+        {
+          "name": "end",
+          "value": 91055000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "epsCagr1y",
+      "label": "EPS CAGR 1y",
+      "value": 0.12338028169014081,
+      "unit": "percent",
+      "period": "TTM to 2025-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/1) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 17.75,
+          "period": "TTM to 2025-06-30"
+        },
+        {
+          "name": "end",
+          "value": 19.94,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "epsCagr3y",
+      "label": "EPS CAGR 3y",
+      "value": 0.899375018540135,
+      "unit": "percent",
+      "period": "TTM to 2023-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/3) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 2.91,
+          "period": "TTM to 2023-06-30"
+        },
+        {
+          "name": "end",
+          "value": 19.94,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "epsCagr5y",
+      "label": "EPS CAGR 5y",
+      "value": 0.1650428207393131,
+      "unit": "percent",
+      "period": "TTM to 2021-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/5) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 9.29,
+          "period": "TTM to 2021-06-30"
+        },
+        {
+          "name": "end",
+          "value": 19.94,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "epsCagr10y",
+      "label": "EPS CAGR 10y",
+      "value": 0.2718774424021393,
+      "unit": "percent",
+      "period": "TTM to 2016-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/10) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 1.8,
+          "period": "TTM to 2016-06-30"
+        },
+        {
+          "name": "end",
+          "value": 19.94,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "fcfCagr3y",
+      "label": "FCF CAGR 3y",
+      "value": 0.28860332633825836,
+      "unit": "percent",
+      "period": "TTM to 2023-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/3) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 7454700000,
+          "period": "TTM to 2023-06-30"
+        },
+        {
+          "name": "end",
+          "value": 15951000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "fcfCagr5y",
+      "label": "FCF CAGR 5y",
+      "value": 0.15518436832591398,
+      "unit": "percent",
+      "period": "TTM to 2021-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/5) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 7754100000,
+          "period": "TTM to 2021-06-30"
+        },
+        {
+          "name": "end",
+          "value": 15951000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    },
+    {
+      "key": "fcfCagr10y",
+      "label": "FCF CAGR 10y",
+      "value": 0.21646371949228382,
+      "unit": "percent",
+      "period": "TTM to 2016-06-30 → TTM to 2026-06-30",
+      "formula": "(end ÷ start)^(1/10) − 1",
+      "inputs": [
+        {
+          "name": "start",
+          "value": 2248000000,
+          "period": "TTM to 2016-06-30"
+        },
+        {
+          "name": "end",
+          "value": 15951000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "key": "cashAndInvestments",
+      "label": "Cash \u0026 short-term investments",
+      "value": 2171000000,
+      "unit": "usd",
+      "period": "balance sheet at 2026-06-30",
+      "formula": "cash + short-term investments",
+      "inputs": [
+        {
+          "name": "cash",
+          "value": 193000000
+        },
+        {
+          "name": "short-term investments",
+          "value": 1978000000
+        }
+      ]
+    },
+    {
+      "key": "totalDebt",
+      "label": "Total debt",
+      "value": null,
+      "unit": "usd",
+      "period": "balance sheet at 2026-06-30",
+      "inputs": [
+        {
+          "name": "total debt",
+          "value": null
+        }
+      ],
+      "note": "no debt reported"
+    },
+    {
+      "key": "debtToEquity",
+      "label": "Debt / equity",
+      "value": null,
+      "unit": "multiple",
+      "period": "balance sheet at 2026-06-30",
+      "formula": "total debt ÷ shareholders' equity",
+      "inputs": [
+        {
+          "name": "total debt",
+          "value": null
+        },
+        {
+          "name": "equity",
+          "value": 34333000000
+        }
+      ],
+      "note": "debt or equity not reported"
+    },
+    {
+      "key": "interestCoverage",
+      "label": "EBIT / interest",
+      "value": null,
+      "unit": "multiple",
+      "period": "TTM to 2026-06-30",
+      "formula": "operating income ÷ interest expense",
+      "inputs": [
+        {
+          "name": "operating income",
+          "value": null,
+          "period": "TTM to 2026-06-30"
+        },
+        {
+          "name": "interest expense",
+          "value": 297000000,
+          "period": "TTM to 2026-06-30"
+        }
+      ],
+      "note": "operating income not reported"
+    },
+    {
+      "key": "fcfToDebt",
+      "label": "FCF / total debt",
+      "value": null,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "free cash flow ÷ total debt",
+      "inputs": [
+        {
+          "name": "free cash flow",
+          "value": 15951000000
+        },
+        {
+          "name": "total debt",
+          "value": null
+        }
+      ],
+      "note": "no debt"
+    }
+  ],
+  "valuation": [
+    {
+      "key": "ps",
+      "label": "P/S",
+      "value": 1.401810532095986,
+      "unit": "multiple",
+      "period": "TTM to 2026-06-30",
+      "formula": "market cap ÷ revenue",
+      "inputs": [
+        {
+          "name": "market cap",
+          "value": 127641858000
+        },
+        {
+          "name": "revenue",
+          "value": 91055000000
+        }
+      ]
+    },
+    {
+      "key": "pe",
+      "label": "P/E",
+      "value": 10.957372116349047,
+      "unit": "multiple",
+      "period": "TTM to 2026-06-30",
+      "formula": "price ÷ diluted EPS",
+      "inputs": [
+        {
+          "name": "price",
+          "value": 218.49
+        },
+        {
+          "name": "diluted EPS",
+          "value": 19.94
+        }
+      ]
+    },
+    {
+      "key": "pb",
+      "label": "P/B",
+      "value": 3.717760114175866,
+      "unit": "multiple",
+      "period": "balance sheet at 2026-06-30",
+      "formula": "market cap ÷ shareholders' equity",
+      "inputs": [
+        {
+          "name": "market cap",
+          "value": 127641858000
+        },
+        {
+          "name": "equity",
+          "value": 34333000000
+        }
+      ]
+    },
+    {
+      "key": "pfcf",
+      "label": "P/FCF",
+      "value": 8.002122625540718,
+      "unit": "multiple",
+      "period": "TTM to 2026-06-30",
+      "formula": "market cap ÷ free cash flow",
+      "inputs": [
+        {
+          "name": "market cap",
+          "value": 127641858000
+        },
+        {
+          "name": "free cash flow",
+          "value": 15951000000
+        }
+      ]
+    }
+  ],
+  "returns": [
+    {
+      "key": "dividendYield",
+      "label": "Dividend yield",
+      "value": 0.06382702451730216,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "dividends paid ÷ market cap",
+      "inputs": [
+        {
+          "name": "dividends paid",
+          "value": 8147000000
+        },
+        {
+          "name": "market cap",
+          "value": 127641858000
+        }
+      ]
+    },
+    {
+      "key": "buybackYield",
+      "label": "Buyback yield",
+      "value": null,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "buybacks ÷ market cap",
+      "inputs": [
+        {
+          "name": "buybacks",
+          "value": null
+        },
+        {
+          "name": "market cap",
+          "value": 127641858000
+        }
+      ],
+      "note": "buybacks not reported"
+    },
+    {
+      "key": "debtPaydownYield",
+      "label": "Debt paydown yield",
+      "value": 0,
+      "unit": "percent",
+      "period": "FY2025",
+      "formula": "net debt repaid ÷ market cap",
+      "inputs": [
+        {
+          "name": "net debt repaid",
+          "value": 0
+        },
+        {
+          "name": "market cap",
+          "value": 127641858000
+        }
+      ]
+    },
+    {
+      "key": "shareholderYield",
+      "label": "Total shareholder yield",
+      "value": 0.06382702451730216,
+      "unit": "percent",
+      "period": "TTM to 2026-06-30",
+      "formula": "dividend yield + buyback yield + debt paydown yield",
+      "inputs": [
+        {
+          "name": "Dividend yield",
+          "value": 0.06382702451730216,
+          "period": "TTM to 2026-06-30"
+        },
+        {
+          "name": "Buyback yield",
+          "value": null,
+          "period": "TTM to 2026-06-30"
+        },
+        {
+          "name": "Debt paydown yield",
+          "value": 0,
+          "period": "FY2025"
+        }
+      ],
+      "note": "sum of the components that are reported"
+    }
+  ],
+  "priceChange5y": {
+    "key": "priceChange5y",
+    "label": "5-year price change",
+    "value": 1.4185299977861412,
+    "unit": "percent",
+    "period": "2021-10-18 → 2026-10-16",
+    "formula": "split-adjusted close today ÷ split-adjusted close 5 years ago − 1",
+    "inputs": [
+      {
+        "name": "start",
+        "value": 90.34,
+        "period": "2021-10-18"
+      },
+      {
+        "name": "end",
+        "value": 218.49,
+        "period": "2026-10-16"
+      }
+    ]
+  },
+  "totalReturn5y": {
+    "key": "totalReturn5y",
+    "label": "5-year total return",
+    "value": 1.7037555979184646,
+    "unit": "percent",
+    "period": "2021-10-18 → 2026-10-16",
+    "formula": "adjusted close today ÷ adjusted close 5 years ago − 1 (dividends reinvested)",
+    "inputs": [
+      {
+        "name": "start",
+        "value": 80.8098188195,
+        "period": "2021-10-18"
+      },
+      {
+        "name": "end",
+        "value": 218.49,
+        "period": "2026-10-16"
+      }
+    ]
+  },
+  "earnings": {
+    "quarters": 0,
+    "beats": 0,
+    "avgSurprisePercent": null
+  },
+  "industry": {
+    "sic": "6331",
+    "sicDescription": "FIRE, MARINE \u0026 CASUALTY INSURANCE"
+  },
+  "sector": {
+    "kind": "insurer",
+    "about": "Insurers collect premiums now and pay claims later, investing the money in between. They are read on what they earn on their shareholders' equity (ROE), how much of their premiums go to claims and how their book value grows, and valued on book value (P/B).",
+    "metrics": [
+      {
+        "key": "roe",
+        "label": "Return on equity",
+        "value": 0.3494330489863603,
+        "unit": "percent",
+        "period": "TTM to 2026-06-30",
+        "formula": "net income ÷ average common equity (average of 2025-06-30 and 2026-06-30)",
+        "inputs": [
+          {
+            "name": "net income",
+            "value": 11695000000
+          },
+          {
+            "name": "average common equity",
+            "value": 33468500000
+          }
+        ]
+      },
+      {
+        "key": "roa",
+        "label": "Return on assets",
+        "value": 0.09729414945612612,
+        "unit": "percent",
+        "period": "TTM to 2026-06-30",
+        "formula": "net income ÷ average total assets (average of 2025-06-30 and 2026-06-30)",
+        "inputs": [
+          {
+            "name": "net income",
+            "value": 11695000000
+          },
+          {
+            "name": "average total assets",
+            "value": 120202500000
+          }
+        ]
+      },
+      {
+        "key": "equityToAssets",
+        "label": "Equity ÷ assets",
+        "value": 0.27482889733840304,
+        "unit": "percent",
+        "period": "balance sheet at 2026-06-30",
+        "formula": "shareholders' equity ÷ total assets",
+        "inputs": [
+          {
+            "name": "equity",
+            "value": 34333000000
+          },
+          {
+            "name": "total assets",
+            "value": 124925000000
+          }
+        ]
+      },
+      {
+        "key": "bookValuePerShare",
+        "label": "Book value per share",
+        "value": 58.7692571037316,
+        "unit": "usd/share",
+        "period": "balance sheet at 2026-06-30",
+        "formula": "common equity (shareholders' equity − preferred stock) ÷ diluted shares",
+        "inputs": [
+          {
+            "name": "common equity",
+            "value": 34333000000
+          },
+          {
+            "name": "diluted shares",
+            "value": 584200000
+          }
+        ]
+      },
+      {
+        "key": "bookValueCagr5y",
+        "label": "Book value per share CAGR 5y",
+        "value": 0.12862268547101574,
+        "unit": "percent",
+        "period": "FY2020 → FY2025",
+        "formula": "(end ÷ start)^(1/5) − 1, book value per share at fiscal year ends",
+        "inputs": [
+          {
+            "name": "start",
+            "value": 28.1564,
+            "period": "FY2020"
+          },
+          {
+            "name": "end",
+            "value": 51.561,
+            "period": "FY2025"
+          }
+        ]
+      },
+      {
+        "key": "lossRatio",
+        "label": "Claims ÷ premiums",
+        "value": 0.6622515772403915,
+        "unit": "percent",
+        "period": "TTM to 2026-06-30",
+        "formula": "claims and policyholder benefits ÷ premiums earned (the loss ratio); lower is better",
+        "inputs": [
+          {
+            "name": "claims and benefits",
+            "value": 55949000000
+          },
+          {
+            "name": "premiums earned",
+            "value": 84483000000
+          }
+        ]
+      },
+      {
+        "key": "investmentIncomeShare",
+        "label": "Investment income ÷ revenue",
+        "value": 0.04127175882708253,
+        "unit": "percent",
+        "period": "TTM to 2026-06-30",
+        "formula": "net investment income ÷ revenue",
+        "inputs": [
+          {
+            "name": "net investment income",
+            "value": 3758000000
+          },
+          {
+            "name": "revenue",
+            "value": 91055000000
+          }
+        ]
+      },
+      {
+        "key": "premiumGrowth1y",
+        "label": "Premium growth 1y",
+        "value": 0.1534202460486731,
+        "unit": "percent",
+        "period": "FY2024 → FY2025",
+        "formula": "latest fiscal year ÷ the year before − 1",
+        "inputs": [
+          {
+            "name": "start",
+            "value": 70799000000,
+            "period": "FY2024"
+          },
+          {
+            "name": "end",
+            "value": 81661000000,
+            "period": "FY2025"
+          }
+        ]
+      },
+      {
+        "key": "premiumGrowth5y",
+        "label": "Premium CAGR 5y",
+        "value": 0.15773547214736472,
+        "unit": "percent",
+        "period": "FY2020 → FY2025",
+        "formula": "(end ÷ start)^(1/5) − 1",
+        "inputs": [
+          {
+            "name": "start",
+            "value": 39261600000,
+            "period": "FY2020"
+          },
+          {
+            "name": "end",
+            "value": 81661000000,
+            "period": "FY2025"
+          }
+        ]
+      }
+    ],
+    "valuationMetric": "P/B",
+    "scoreName": "Financial strength",
+    "trend": {
+      "label": "Return on equity",
+      "unit": "percent",
+      "points": [
+        {
+          "date": "2016-12-31",
+          "value": 0.1352
+        },
+        {
+          "date": "2017-12-31",
+          "value": 0.1847
+        },
+        {
+          "date": "2018-12-31",
+          "value": 0.2645
+        },
+        {
+          "date": "2019-12-31",
+          "value": 0.3355
+        },
+        {
+          "date": "2020-12-31",
+          "value": 0.382
+        },
+        {
+          "date": "2021-12-31",
+          "value": 0.1939
+        },
+        {
+          "date": "2022-12-31",
+          "value": 0.0419
+        },
+        {
+          "date": "2023-12-31",
+          "value": 0.2197
+        },
+        {
+          "date": "2024-12-31",
+          "value": 0.373
+        },
+        {
+          "date": "2025-12-31",
+          "value": 0.4045
+        }
+      ]
+    }
+  },
+  "reverseDcf": {
+    "impliedGrowth": null,
+    "years": 10,
+    "discountRate": 0.09,
+    "terminalGrowth": 0.025,
+    "marketCap": 127641858000,
+    "baseFcf": null,
+    "history": [
+      {
+        "name": "revenue growth, 5 years",
+        "value": 0.14776105624990654
+      },
+      {
+        "name": "free cash flow growth, 5 years",
+        "value": 0.15518436832591398
+      },
+      {
+        "name": "EPS growth, 5 years",
+        "value": 0.1650428207393131
+      },
+      {
+        "name": "revenue growth, 3 years",
+        "value": 0.1765558207812734
+      }
+    ],
+    "reference": 0.14776105624990654,
+    "referenceName": "revenue growth, 5 years",
+    "judgedAgainst": null,
+    "vAdjustment": 0,
+    "note": "not meaningful for insurers: free cash flow means something different for them"
+  },
+  "capitalAllocation": {
+    "from": "FY2021",
+    "to": "FY2025",
+    "years": 5,
+    "operatingCashFlow": 57920700000,
+    "uses": [
+      {
+        "key": "capex",
+        "label": "Capital expenditure",
+        "amount": 1420500000,
+        "share": 0.0245249107831915
+      },
+      {
+        "key": "acquisitions",
+        "label": "Acquisitions",
+        "amount": 313200000,
+        "share": 0.005407393211753311
+      },
+      {
+        "key": "dividends",
+        "label": "Dividends",
+        "amount": 7759500000,
+        "share": 0.13396764887164692
+      },
+      {
+        "key": "debtPaydown",
+        "label": "Net new borrowing",
+        "amount": -1482000000,
+        "share": -0.02558670734297065
+      }
+    ],
+    "shareCountChange": 0.001703287344575033,
+    "notes": [
+      "Acquisitions reported for 3 of 5 years"
+    ]
+  },
+  "phase": {
+    "number": 4,
+    "name": "Capital return",
+    "valuationMetric": "P/B",
+    "fallbacks": [
+      "P/E"
+    ],
+    "lowConfidence": false,
+    "reason": "profitable, growing, and returning capital (shareholder yield 6.4%, 51.1% of FCF)",
+    "checks": [
+      {
+        "question": "Is revenue growing?",
+        "answer": true,
+        "detail": "TTM revenue +10.5% vs a year earlier"
+      },
+      {
+        "question": "Is it profitable?",
+        "answer": true,
+        "detail": "TTM net income $11.7B (net margin 12.8%)"
+      },
+      {
+        "question": "Is it returning capital to shareholders?",
+        "answer": true,
+        "detail": "dividends + buybacks = 6.4% of market cap, 51.1% of FCF"
+      }
+    ]
+  },
+  "growthScore": {
+    "value": 5,
+    "max": 5,
+    "reasons": [
+      "EPS CAGR 3y: 89.9%",
+      "EPS CAGR 5y: 16.5%",
+      "revenue CAGR 3y: 17.7%",
+      "revenue CAGR 5y: 14.8%",
+      "average 34.7% → 5/5"
+    ]
+  },
+  "healthScore": {
+    "value": 5,
+    "max": 5,
+    "reasons": [
+      "✓ return on equity 34.9% (≥ 10.0%)",
+      "✓ book value per share grew 25.3% a year over 3 years",
+      "✓ premiums earned grew 15.3% in the latest fiscal year",
+      "✓ a profit in each of the last 3 years",
+      "4 of 4 criteria met → 5.0/5"
+    ]
+  },
+  "valuationScore": {
+    "value": 4,
+    "max": 5,
+    "reasons": [
+      "P/B today 3.7× vs 5-year range: cheap below 3.8×, expensive above 5.7×",
+      "today is higher than 18% of the last 1255 trading days → 4/5"
+    ]
+  },
+  "valuationBands": {
+    "metric": "P/B",
+    "historyFrom": "2021-10-18",
+    "historyTo": "2026-10-16",
+    "days": 1255,
+    "current": 3.7178,
+    "cheapBelow": 3.8385,
+    "median": 4.8969,
+    "expensiveAbove": 5.6719,
+    "percentile": 0.1785,
+    "zone": "cheap",
+    "perShareBasis": "book value per share",
+    "perShare": 58.7693,
+    "basisPeriod": "TTM to 2026-06-30",
+    "price": 218.49,
+    "cheapPrice": 225.59,
+    "medianPrice": 287.79,
+    "expensivePrice": 333.33
+  },
+  "charts": {
+    "price": null,
+    "revenueFY": [
+      {
+        "date": "2013-12-31",
+        "value": 18170900000
+      },
+      {
+        "date": "2014-12-31",
+        "value": 19391400000
+      },
+      {
+        "date": "2015-12-31",
+        "value": 20853800000
+      },
+      {
+        "date": "2016-12-31",
+        "value": 23441400000
+      },
+      {
+        "date": "2017-12-31",
+        "value": 26839000000
+      },
+      {
+        "date": "2018-12-31",
+        "value": 31979000000
+      },
+      {
+        "date": "2019-12-31",
+        "value": 39022300000
+      },
+      {
+        "date": "2020-12-31",
+        "value": 42658100000
+      },
+      {
+        "date": "2021-12-31",
+        "value": 47702000000
+      },
+      {
+        "date": "2022-12-31",
+        "value": 49611000000
+      },
+      {
+        "date": "2023-12-31",
+        "value": 62109000000
+      },
+      {
+        "date": "2024-12-31",
+        "value": 75372000000
+      },
+      {
+        "date": "2025-12-31",
+        "value": 87671000000
+      }
+    ],
+    "netIncomeFY": [
+      {
+        "date": "2013-12-31",
+        "value": 1165400000
+      },
+      {
+        "date": "2014-12-31",
+        "value": 1281000000
+      },
+      {
+        "date": "2015-12-31",
+        "value": 1267600000
+      },
+      {
+        "date": "2016-12-31",
+        "value": 1031000000
+      },
+      {
+        "date": "2017-12-31",
+        "value": 1592200000
+      },
+      {
+        "date": "2018-12-31",
+        "value": 2615300000
+      },
+      {
+        "date": "2019-12-31",
+        "value": 3970300000
+      },
+      {
+        "date": "2020-12-31",
+        "value": 5704600000
+      },
+      {
+        "date": "2021-12-31",
+        "value": 3350900000
+      },
+      {
+        "date": "2022-12-31",
+        "value": 722000000
+      },
+      {
+        "date": "2023-12-31",
+        "value": 3903000000
+      },
+      {
+        "date": "2024-12-31",
+        "value": 8480000000
+      },
+      {
+        "date": "2025-12-31",
+        "value": 11308000000
+      }
+    ],
+    "valuation1y": [
+      {
+        "date": "2025-10-16",
+        "value": 3.9976
+      },
+      {
+        "date": "2025-10-17",
+        "value": 4.0674
+      },
+      {
+        "date": "2025-10-20",
+        "value": 3.9551
+      },
+      {
+        "date": "2025-10-21",
+        "value": 3.9951
+      },
+      {
+        "date": "2025-10-22",
+        "value": 4.0137
+      },
+      {
+        "date": "2025-10-23",
+        "value": 3.9769
+      },
+      {
+        "date": "2025-10-24",
+        "value": 3.9499
+      },
+      {
+        "date": "2025-10-27",
+        "value": 3.9048
+      },
+      {
+        "date": "2025-10-28",
+        "value": 3.8204
+      },
+      {
+        "date": "2025-10-29",
+        "value": 3.7494
+      },
+      {
+        "date": "2025-10-30",
+        "value": 3.7314
+      },
+      {
+        "date": "2025-10-31",
+        "value": 3.7139
+      },
+      {
+        "date": "2025-11-03",
+        "value": 3.6724
+      },
+      {
+        "date": "2025-11-04",
+        "value": 3.7786
+      },
+      {
+        "date": "2025-11-05",
+        "value": 3.7669
+      },
+      {
+        "date": "2025-11-06",
+        "value": 3.7789
+      },
+      {
+        "date": "2025-11-07",
+        "value": 3.917
+      },
+      {
+        "date": "2025-11-10",
+        "value": 3.9217
+      },
+      {
+        "date": "2025-11-11",
+        "value": 3.9646
+      },
+      {
+        "date": "2025-11-12",
+        "value": 4
+      },
+      {
+        "date": "2025-11-13",
+        "value": 4.0231
+      },
+      {
+        "date": "2025-11-14",
+        "value": 3.7368
+      },
+      {
+        "date": "2025-11-17",
+        "value": 3.7396
+      },
+      {
+        "date": "2025-11-18",
+        "value": 3.7318
+      },
+      {
+        "date": "2025-11-19",
+        "value": 3.6995
+      },
+      {
+        "date": "2025-11-20",
+        "value": 3.7504
+      },
+      {
+        "date": "2025-11-21",
+        "value": 3.7655
+      },
+      {
+        "date": "2025-11-24",
+        "value": 3.7351
+      },
+      {
+        "date": "2025-11-25",
+        "value": 3.7572
+      },
+      {
+        "date": "2025-11-26",
+        "value": 3.8027
+      },
+      {
+        "date": "2025-11-28",
+        "value": 3.7967
+      },
+      {
+        "date": "2025-12-01",
+        "value": 3.7806
+      },
+      {
+        "date": "2025-12-02",
+        "value": 3.7962
+      },
+      {
+        "date": "2025-12-03",
+        "value": 3.77
+      },
+      {
+        "date": "2025-12-04",
+        "value": 3.7685
+      },
+      {
+        "date": "2025-12-05",
+        "value": 3.6988
+      },
+      {
+        "date": "2025-12-08",
+        "value": 3.7033
+      },
+      {
+        "date": "2025-12-09",
+        "value": 3.7562
+      },
+      {
+        "date": "2025-12-10",
+        "value": 3.6975
+      },
+      {
+        "date": "2025-12-11",
+        "value": 3.8241
+      },
+      {
+        "date": "2025-12-12",
+        "value": 3.8973
+      },
+      {
+        "date": "2025-12-15",
+        "value": 3.9223
+      },
+      {
+        "date": "2025-12-16",
+        "value": 3.8468
+      },
+      {
+        "date": "2025-12-17",
+        "value": 3.7715
+      },
+      {
+        "date": "2025-12-18",
+        "value": 3.7315
+      },
+      {
+        "date": "2025-12-19",
+        "value": 3.7219
+      },
+      {
+        "date": "2025-12-22",
+        "value": 3.773
+      },
+      {
+        "date": "2025-12-23",
+        "value": 3.7818
+      },
+      {
+        "date": "2025-12-24",
+        "value": 3.778
+      },
+      {
+        "date": "2025-12-26",
+        "value": 3.7692
+      },
+      {
+        "date": "2025-12-29",
+        "value": 3.7921
+      },
+      {
+        "date": "2025-12-30",
+        "value": 3.8163
+      },
+      {
+        "date": "2025-12-31",
+        "value": 3.779
+      },
+      {
+        "date": "2026-01-02",
+        "value": 3.5201
+      },
+      {
+        "date": "2026-01-05",
+        "value": 3.5333
+      },
+      {
+        "date": "2026-01-06",
+        "value": 3.5239
+      },
+      {
+        "date": "2026-01-07",
+        "value": 3.47
+      },
+      {
+        "date": "2026-01-08",
+        "value": 3.5372
+      },
+      {
+        "date": "2026-01-09",
+        "value": 3.5705
+      },
+      {
+        "date": "2026-01-12",
+        "value": 3.5928
+      },
+      {
+        "date": "2026-01-13",
+        "value": 3.4029
+      },
+      {
+        "date": "2026-01-14",
+        "value": 3.4102
+      },
+      {
+        "date": "2026-01-15",
+        "value": 3.3774
+      },
+      {
+        "date": "2026-01-16",
+        "value": 3.3583
+      },
+      {
+        "date": "2026-01-20",
+        "value": 3.384
+      },
+      {
+        "date": "2026-01-21",
+        "value": 3.3687
+      },
+      {
+        "date": "2026-01-22",
+        "value": 3.4338
+      },
+      {
+        "date": "2026-01-23",
+        "value": 3.419
+      },
+      {
+        "date": "2026-01-26",
+        "value": 3.4517
+      },
+      {
+        "date": "2026-01-27",
+        "value": 3.453
+      },
+      {
+        "date": "2026-01-28",
+        "value": 3.5304
+      },
+      {
+        "date": "2026-01-29",
+        "value": 3.456
+      },
+      {
+        "date": "2026-01-30",
+        "value": 3.4517
+      },
+      {
+        "date": "2026-02-02",
+        "value": 3.3694
+      },
+      {
+        "date": "2026-02-03",
+        "value": 3.336
+      },
+      {
+        "date": "2026-02-04",
+        "value": 3.4109
+      },
+      {
+        "date": "2026-02-05",
+        "value": 3.4444
+      },
+      {
+        "date": "2026-02-06",
+        "value": 3.3569
+      },
+      {
+        "date": "2026-02-09",
+        "value": 3.3443
+      },
+      {
+        "date": "2026-02-10",
+        "value": 3.3621
+      },
+      {
+        "date": "2026-02-11",
+        "value": 3.4578
+      },
+      {
+        "date": "2026-02-12",
+        "value": 3.4094
+      },
+      {
+        "date": "2026-02-13",
+        "value": 3.3941
+      },
+      {
+        "date": "2026-02-17",
+        "value": 3.45
+      },
+      {
+        "date": "2026-02-18",
+        "value": 3.3734
+      },
+      {
+        "date": "2026-02-19",
+        "value": 3.3483
+      },
+      {
+        "date": "2026-02-20",
+        "value": 3.3867
+      },
+      {
+        "date": "2026-02-23",
+        "value": 3.3802
+      },
+      {
+        "date": "2026-02-24",
+        "value": 3.4198
+      },
+      {
+        "date": "2026-02-25",
+        "value": 3.3943
+      },
+      {
+        "date": "2026-02-26",
+        "value": 3.5136
+      },
+      {
+        "date": "2026-02-27",
+        "value": 3.5456
+      },
+      {
+        "date": "2026-03-02",
+        "value": 3.5415
+      },
+      {
+        "date": "2026-03-03",
+        "value": 3.5405
+      },
+      {
+        "date": "2026-03-04",
+        "value": 3.5081
+      },
+      {
+        "date": "2026-03-05",
+        "value": 3.4945
+      },
+      {
+        "date": "2026-03-06",
+        "value": 3.4948
+      },
+      {
+        "date": "2026-03-09",
+        "value": 3.4318
+      },
+      {
+        "date": "2026-03-10",
+        "value": 3.4344
+      },
+      {
+        "date": "2026-03-11",
+        "value": 3.3392
+      },
+      {
+        "date": "2026-03-12",
+        "value": 3.4049
+      },
+      {
+        "date": "2026-03-13",
+        "value": 3.4047
+      },
+      {
+        "date": "2026-03-16",
+        "value": 3.9703
+      },
+      {
+        "date": "2026-03-17",
+        "value": 3.9524
+      },
+      {
+        "date": "2026-03-18",
+        "value": 3.9016
+      },
+      {
+        "date": "2026-03-19",
+        "value": 3.9309
+      },
+      {
+        "date": "2026-03-20",
+        "value": 3.9953
+      },
+      {
+        "date": "2026-03-23",
+        "value": 3.9778
+      },
+      {
+        "date": "2026-03-24",
+        "value": 3.9993
+      },
+      {
+        "date": "2026-03-25",
+        "value": 3.934
+      },
+      {
+        "date": "2026-03-26",
+        "value": 3.9351
+      },
+      {
+        "date": "2026-03-27",
+        "value": 3.8564
+      },
+      {
+        "date": "2026-03-30",
+        "value": 3.9059
+      },
+      {
+        "date": "2026-03-31",
+        "value": 3.8448
+      },
+      {
+        "date": "2026-04-01",
+        "value": 3.7501
+      },
+      {
+        "date": "2026-04-02",
+        "value": 3.7868
+      },
+      {
+        "date": "2026-04-06",
+        "value": 3.8087
+      },
+      {
+        "date": "2026-04-07",
+        "value": 3.8178
+      },
+      {
+        "date": "2026-04-08",
+        "value": 3.8419
+      },
+      {
+        "date": "2026-04-09",
+        "value": 3.8766
+      },
+      {
+        "date": "2026-04-10",
+        "value": 3.7651
+      },
+      {
+        "date": "2026-04-13",
+        "value": 3.8706
+      },
+      {
+        "date": "2026-04-14",
+        "value": 3.8128
+      },
+      {
+        "date": "2026-04-15",
+        "value": 3.9028
+      },
+      {
+        "date": "2026-04-16",
+        "value": 3.9462
+      },
+      {
+        "date": "2026-04-17",
+        "value": 3.9289
+      },
+      {
+        "date": "2026-04-20",
+        "value": 3.9522
+      },
+      {
+        "date": "2026-04-21",
+        "value": 4.0244
+      },
+      {
+        "date": "2026-04-22",
+        "value": 3.9315
+      },
+      {
+        "date": "2026-04-23",
+        "value": 3.9823
+      },
+      {
+        "date": "2026-04-24",
+        "value": 3.8962
+      },
+      {
+        "date": "2026-04-27",
+        "value": 3.9173
+      },
+      {
+        "date": "2026-04-28",
+        "value": 3.9377
+      },
+      {
+        "date": "2026-04-29",
+        "value": 3.8917
+      },
+      {
+        "date": "2026-04-30",
+        "value": 3.9037
+      },
+      {
+        "date": "2026-05-01",
+        "value": 3.8655
+      },
+      {
+        "date": "2026-05-04",
+        "value": 3.8642
+      },
+      {
+        "date": "2026-05-05",
+        "value": 3.8351
+      },
+      {
+        "date": "2026-05-06",
+        "value": 3.8168
+      },
+      {
+        "date": "2026-05-07",
+        "value": 3.7965
+      },
+      {
+        "date": "2026-05-08",
+        "value": 3.7625
+      },
+      {
+        "date": "2026-05-11",
+        "value": 3.819
+      },
+      {
+        "date": "2026-05-12",
+        "value": 3.8483
+      },
+      {
+        "date": "2026-05-13",
+        "value": 3.8005
+      },
+      {
+        "date": "2026-05-14",
+        "value": 3.8184
+      },
+      {
+        "date": "2026-05-15",
+        "value": 3.6587
+      },
+      {
+        "date": "2026-05-18",
+        "value": 3.7369
+      },
+      {
+        "date": "2026-05-19",
+        "value": 3.7162
+      },
+      {
+        "date": "2026-05-20",
+        "value": 3.7113
+      },
+      {
+        "date": "2026-05-21",
+        "value": 3.6448
+      },
+      {
+        "date": "2026-05-22",
+        "value": 3.6547
+      },
+      {
+        "date": "2026-05-26",
+        "value": 3.6413
+      },
+      {
+        "date": "2026-05-27",
+        "value": 3.6071
+      },
+      {
+        "date": "2026-05-28",
+        "value": 3.5631
+      },
+      {
+        "date": "2026-05-29",
+        "value": 3.4878
+      },
+      {
+        "date": "2026-06-01",
+        "value": 3.5294
+      },
+      {
+        "date": "2026-06-02",
+        "value": 3.6054
+      },
+      {
+        "date": "2026-06-03",
+        "value": 3.5439
+      },
+      {
+        "date": "2026-06-04",
+        "value": 3.579
+      },
+      {
+        "date": "2026-06-05",
+        "value": 3.7373
+      },
+      {
+        "date": "2026-06-08",
+        "value": 3.6684
+      },
+      {
+        "date": "2026-06-09",
+        "value": 3.666
+      },
+      {
+        "date": "2026-06-10",
+        "value": 3.7406
+      },
+      {
+        "date": "2026-06-11",
+        "value": 3.7051
+      },
+      {
+        "date": "2026-06-12",
+        "value": 3.7206
+      },
+      {
+        "date": "2026-06-15",
+        "value": 3.7278
+      },
+      {
+        "date": "2026-06-16",
+        "value": 3.749
+      },
+      {
+        "date": "2026-06-17",
+        "value": 3.7446
+      },
+      {
+        "date": "2026-06-18",
+        "value": 3.7529
+      },
+      {
+        "date": "2026-06-22",
+        "value": 3.7988
+      },
+      {
+        "date": "2026-06-23",
+        "value": 3.9511
+      },
+      {
+        "date": "2026-06-24",
+        "value": 4.0392
+      },
+      {
+        "date": "2026-06-25",
+        "value": 3.9483
+      },
+      {
+        "date": "2026-06-26",
+        "value": 4.1095
+      },
+      {
+        "date": "2026-06-29",
+        "value": 4.0275
+      },
+      {
+        "date": "2026-06-30",
+        "value": 4.0016
+      },
+      {
+        "date": "2026-07-01",
+        "value": 4.1271
+      },
+      {
+        "date": "2026-07-02",
+        "value": 4.2539
+      },
+      {
+        "date": "2026-07-06",
+        "value": 4.2438
+      },
+      {
+        "date": "2026-07-07",
+        "value": 4.2938
+      },
+      {
+        "date": "2026-07-08",
+        "value": 4.2663
+      },
+      {
+        "date": "2026-07-09",
+        "value": 4.2044
+      },
+      {
+        "date": "2026-07-10",
+        "value": 4.2264
+      },
+      {
+        "date": "2026-07-13",
+        "value": 4.2953
+      },
+      {
+        "date": "2026-07-14",
+        "value": 4.1506
+      },
+      {
+        "date": "2026-07-15",
+        "value": 3.7593
+      },
+      {
+        "date": "2026-07-16",
+        "value": 3.7699
+      },
+      {
+        "date": "2026-07-17",
+        "value": 3.8093
+      },
+      {
+        "date": "2026-07-20",
+        "value": 3.8877
+      },
+      {
+        "date": "2026-07-21",
+        "value": 3.7717
+      },
+      {
+        "date": "2026-07-22",
+        "value": 3.7468
+      },
+      {
+        "date": "2026-07-23",
+        "value": 3.7932
+      },
+      {
+        "date": "2026-07-24",
+        "value": 3.917
+      },
+      {
+        "date": "2026-07-27",
+        "value": 3.9524
+      },
+      {
+        "date": "2026-07-28",
+        "value": 4.0212
+      },
+      {
+        "date": "2026-07-29",
+        "value": 4.0298
+      },
+      {
+        "date": "2026-07-30",
+        "value": 3.9069
+      },
+      {
+        "date": "2026-07-31",
+        "value": 3.8729
+      },
+      {
+        "date": "2026-08-03",
+        "value": 3.8553
+      },
+      {
+        "date": "2026-08-04",
+        "value": 3.8606
+      },
+      {
+        "date": "2026-08-05",
+        "value": 3.8974
+      },
+      {
+        "date": "2026-08-06",
+        "value": 3.9447
+      },
+      {
+        "date": "2026-08-07",
+        "value": 3.9445
+      },
+      {
+        "date": "2026-08-10",
+        "value": 3.9192
+      },
+      {
+        "date": "2026-08-11",
+        "value": 3.8899
+      },
+      {
+        "date": "2026-08-12",
+        "value": 3.7987
+      },
+      {
+        "date": "2026-08-13",
+        "value": 3.8261
+      },
+      {
+        "date": "2026-08-14",
+        "value": 3.5665
+      },
+      {
+        "date": "2026-08-17",
+        "value": 3.4685
+      },
+      {
+        "date": "2026-08-18",
+        "value": 3.5262
+      },
+      {
+        "date": "2026-08-19",
+        "value": 3.697
+      },
+      {
+        "date": "2026-08-20",
+        "value": 3.7492
+      },
+      {
+        "date": "2026-08-21",
+        "value": 3.7312
+      },
+      {
+        "date": "2026-08-24",
+        "value": 3.8102
+      },
+      {
+        "date": "2026-08-25",
+        "value": 3.779
+      },
+      {
+        "date": "2026-08-26",
+        "value": 3.7862
+      },
+      {
+        "date": "2026-08-27",
+        "value": 3.7035
+      },
+      {
+        "date": "2026-08-28",
+        "value": 3.7203
+      },
+      {
+        "date": "2026-08-31",
+        "value": 3.7108
+      },
+      {
+        "date": "2026-09-01",
+        "value": 3.7526
+      },
+      {
+        "date": "2026-09-02",
+        "value": 3.7669
+      },
+      {
+        "date": "2026-09-03",
+        "value": 3.8093
+      },
+      {
+        "date": "2026-09-04",
+        "value": 3.7256
+      },
+      {
+        "date": "2026-09-08",
+        "value": 3.6567
+      },
+      {
+        "date": "2026-09-09",
+        "value": 3.6669
+      },
+      {
+        "date": "2026-09-10",
+        "value": 3.6786
+      },
+      {
+        "date": "2026-09-11",
+        "value": 3.703
+      },
+      {
+        "date": "2026-09-14",
+        "value": 3.7608
+      },
+      {
+        "date": "2026-09-15",
+        "value": 3.7657
+      },
+      {
+        "date": "2026-09-16",
+        "value": 3.6922
+      },
+      {
+        "date": "2026-09-17",
+        "value": 3.6803
+      },
+      {
+        "date": "2026-09-18",
+        "value": 3.6325
+      },
+      {
+        "date": "2026-09-21",
+        "value": 3.6114
+      },
+      {
+        "date": "2026-09-22",
+        "value": 3.5212
+      },
+      {
+        "date": "2026-09-23",
+        "value": 3.4564
+      },
+      {
+        "date": "2026-09-24",
+        "value": 3.4401
+      },
+      {
+        "date": "2026-09-25",
+        "value": 3.4967
+      },
+      {
+        "date": "2026-09-28",
+        "value": 3.5643
+      },
+      {
+        "date": "2026-09-29",
+        "value": 3.5821
+      },
+      {
+        "date": "2026-09-30",
+        "value": 3.5275
+      },
+      {
+        "date": "2026-10-01",
+        "value": 3.5896
+      },
+      {
+        "date": "2026-10-02",
+        "value": 3.5786
+      },
+      {
+        "date": "2026-10-05",
+        "value": 3.6179
+      },
+      {
+        "date": "2026-10-06",
+        "value": 3.6082
+      },
+      {
+        "date": "2026-10-07",
+        "value": 3.6434
+      },
+      {
+        "date": "2026-10-08",
+        "value": 3.7218
+      },
+      {
+        "date": "2026-10-09",
+        "value": 3.6997
+      },
+      {
+        "date": "2026-10-12",
+        "value": 3.7482
+      },
+      {
+        "date": "2026-10-13",
+        "value": 3.7925
+      },
+      {
+        "date": "2026-10-14",
+        "value": 3.6322
+      },
+      {
+        "date": "2026-10-15",
+        "value": 3.6371
+      },
+      {
+        "date": "2026-10-16",
+        "value": 3.7178
+      }
+    ]
+  }
+}

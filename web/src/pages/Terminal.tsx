@@ -9,7 +9,7 @@ import { LangNotice, LimitedNotice, ReportControls } from "../components/Control
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
 import { t, tx } from "../i18n";
-import { QUALITY_QUESTIONS, STAGES, fallbackNote, incomeRows, isPending, metricOf, useLiveReport, valuedWith, withPrices } from "../live";
+import { QUALITY_QUESTIONS, STAGES, fallbackNote, incomeRows, isPending, metricOf, useLiveReport, valuedWith, withPrices, healthMetrics } from "../live";
 import { navigate } from "../router";
 
 const AMBER = "#e3b341";
@@ -183,7 +183,7 @@ function FundamentalsPanel({ m }: { m: MetricsReport }) {
             </tbody>
           </table>
         </div>
-        {group("Health", m.health)}
+        {group("Health", healthMetrics(m))}
         {group("Valuation", [m.marketCap, ...m.valuation])}
         {group("Shareholder yield", m.returns)}
       </div>

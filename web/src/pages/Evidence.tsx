@@ -9,7 +9,7 @@ import { LangNotice, LimitedNotice, ReportControls } from "../components/Control
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
 import { t, tx } from "../i18n";
-import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith, withPrices } from "../live";
+import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith, withPrices, healthMetrics, sectorOf } from "../live";
 import { navigate } from "../router";
 
 // Each score has its own color, used on the left and in its section.
@@ -518,8 +518,8 @@ function HealthSection({ m, body }: { m: MetricsReport; body?: ReportBody }) {
   const weight = body?.verdict?.components.find((c) => c.name === "Financial health")?.weight;
   return (
     <ScoreSection k="health" value={m.healthScore.value} feeds={feeds(weight)} reasons={m.healthScore.reasons}>
-      <Block title={t("Balance sheet and coverage")}>
-        {m.health.map((x) => (
+      <Block title={sectorOf(m) ? t("Returns and capital") : t("Balance sheet and coverage")}>
+        {healthMetrics(m).map((x) => (
           <MetricLine key={x.key} m={x} />
         ))}
       </Block>

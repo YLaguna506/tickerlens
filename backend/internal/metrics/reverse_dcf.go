@@ -83,7 +83,7 @@ func impliedGrowth(fcf, target, r, gt float64, years int) (float64, bool) {
 	return math.Round((lo+hi)/2*10000) / 10000, true
 }
 
-func (c *calc) reverseDCF(mcap *float64, growth []Metric, ls *LimitedSupport, cfg scoring.ReverseDCFRules) *ReverseDCF {
+func (c *calc) reverseDCF(mcap *float64, growth []Metric, kind string, cfg scoring.ReverseDCFRules) *ReverseDCF {
 	if cfg.Years <= 0 || cfg.DiscountRate <= cfg.TerminalGrowth {
 		return nil
 	}
@@ -103,8 +103,8 @@ func (c *calc) reverseDCF(mcap *float64, growth []Metric, ls *LimitedSupport, cf
 	}
 
 	switch {
-	case ls != nil:
-		d.Note = fmt.Sprintf("not meaningful for %ss: free cash flow means something different for them", ls.Kind)
+	case kind != "":
+		d.Note = fmt.Sprintf("not meaningful for %ss: free cash flow means something different for them", kind)
 		return d
 	case mcap == nil || *mcap <= 0:
 		d.Note = "no market cap"

@@ -1,11 +1,12 @@
 // The report's sections, in page order.
 
 import { ReverseDCFCard } from "./ReverseDCF";
+import { SectorPanel } from "./SectorPanel";
 import type { MetricsReport, ReportBody, Verdict } from "../api";
 import { multiple, pct, price, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
 import { t, tx } from "../i18n";
 import { BandChart, EarningsDots, GeographySplit, PriceBar, RevenueIncomeChart, SegmentBreakdown } from "./charts";
-import { QUALITY_QUESTIONS, fallbackNote, incomeRows, isPending, valuedWith } from "../live";
+import { QUALITY_QUESTIONS, fallbackNote, incomeRows, isPending, valuedWith, healthMetrics, sectorOf } from "../live";
 import { EvidenceList, MetricRow, ScoreBar, Section, Skeleton, StepScale, ThreeLevel, Unavailable } from "./ui";
 
 const pending = isPending;
@@ -116,12 +117,16 @@ export function FinancialsSection({ m, body }: { m?: MetricsReport; body?: Repor
     );
   }
   const growth = m.growth.filter((g) => !g.key.endsWith("1y"));
+  // Banks, brokers and insurers: their debt is deposits, client money and
+  // claims reserves, so the debt ratios are left out (their measures follow).
+  const sector = sectorOf(m);
+  const debtRatios = !sector || sector.kind === "reit";
   return (
     <Section id="financials" title={t("Financial overview")}>
       <div className="card fade-in grid gap-8 md:grid-cols-3">
         <div className="space-y-8">
           <Group title={t("Profitability")} metrics={m.profitability} />
-          <Group title={t("Financial health")} metrics={m.health} />
+          {debtRatios && <Group title={t("Financial health")} metrics={healthMetrics(m)} />}
         </div>
         <Group title={t("Growth · annualized")} metrics={growth} />
         <div className="space-y-8">
@@ -131,9 +136,15 @@ export function FinancialsSection({ m, body }: { m?: MetricsReport; body?: Repor
       </div>
       <p className="text-xs text-muted">{t("Tap any number to see how it was calculated.")}</p>
 
+      <SectorPanel m={m} title />
+
       <div className="grid gap-4 md:grid-cols-2">
         <ScoreCard title={t("Growth score")} score={m.growthScore} labels={["Low", "Below avg", "Average", "Above avg", "High"]} />
-        <ScoreCard title={t("Financial health score")} score={m.healthScore} labels={["Weak", "Below avg", "Fair", "Good", "Strong"]} />
+        <ScoreCard
+          title={sector?.scoreName ? t("Financial strength score") : t("Financial health score")}
+          score={m.healthScore}
+          labels={["Weak", "Below avg", "Fair", "Good", "Strong"]}
+        />
       </div>
 
       {body?.earnings?.length ? (
@@ -249,6 +260,10 @@ function metricExplainer(metric: string) {
       return t("Profits are steady and returned to shareholders, so price-to-earnings is the clearest signal.");
     case "P/FCF":
       return t("Profits are still scaling up, so free cash flow is the better measure of earning power.");
+    case "P/B":
+      return t("Banks and insurers earn a return on the equity they hold, so the price is compared with book value.");
+    case "P/FFO":
+      return t("Depreciation makes a REIT's earnings look low, so the price is compared with funds from operations.");
     default:
       return t("Profits are not yet meaningful, so the price is compared with sales.");
   }

@@ -9,7 +9,7 @@ import { LangNotice, LimitedNotice, ReportControls } from "../components/Control
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, titleCase, wholePrice } from "../format";
 import { t, tx } from "../i18n";
-import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith, withPrices } from "../live";
+import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith, withPrices, healthMetrics, sectorOf } from "../live";
 import { navigate } from "../router";
 
 type Outcome = "yes" | "partly" | "no" | "pending";
@@ -165,11 +165,11 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
         outcome={hOut}
         question={t("Are its finances healthy?")}
         answer={`${word(hOut, "Yes", "Mostly", "No")}${m?.healthScore.value != null ? ` · ${m.healthScore.value.toFixed(1)}/5` : ""}`}
-        because={m ? t("Debt to equity {de}; operating profit covers interest {cov}.", { de: valueOf(metricOf(m, "debtToEquity")), cov: valueOf(metricOf(m, "interestCoverage")) }) : t("Computing…")}
+        because={m ? healthBecause(m) : t("Computing…")}
       >
         {m && (
           <>
-            <MetricList items={m.health} />
+            <MetricList items={healthMetrics(m)} />
             <Reasons items={m.healthScore.reasons} />
           </>
         )}
@@ -345,4 +345,13 @@ export function Decision({ id }: { id: string }) {
       </div>
     </div>
   );
+}
+
+/** One line on the balance sheet, in the terms that fit the company. */
+function healthBecause(m: MetricsReport): string {
+  const kind = sectorOf(m)?.kind;
+  const sec = (key: string) => valueOf(m.sector?.metrics.find((x) => x.key === key));
+  if (kind === "reit") return t("Debt is {d} of assets; FFO covers interest {cov}.", { d: sec("debtToAssets"), cov: sec("ffoInterestCoverage") });
+  if (kind) return t("Return on equity {roe}; equity is {eq} of assets.", { roe: sec("roe"), eq: sec("equityToAssets") });
+  return t("Debt to equity {de}; operating profit covers interest {cov}.", { de: valueOf(metricOf(m, "debtToEquity")), cov: valueOf(metricOf(m, "interestCoverage")) });
 }

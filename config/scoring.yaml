@@ -5,7 +5,7 @@
 #
 # Scores are 1–5. Fractions are written as decimals (0.12 = 12%).
 
-version: "2026-10-18.2"
+version: "2026-10-18.3"
 
 # --- Growth score -------------------------------------------------------------
 # Average of revenue and EPS CAGRs (3y and 5y, whichever exist).
@@ -19,6 +19,32 @@ max_debt_to_equity: 1.0     # total debt / equity ≤ 1
 min_fcf_to_debt: 0.5        # yearly free cash flow ≥ 50% of total debt
 positive_fcf_years: 3       # free cash flow > 0 in each of the last 3 years
 min_health_criteria_used: 2 # fewer evaluable criteria → no score
+
+# --- Financial strength: banks, broker-dealers, insurers and REITs -------------------
+# A bank's debt is deposits, an insurer's is claims reserves, and a REIT
+# reports no operating income to cover interest with, so the health score
+# above does not fit them. Instead, one point per criterion met:
+#   all:      return on equity ≥ min_roe; a profit in each of the last
+#             profitable_years fiscal years
+#   banks:    efficiency ratio (non-interest expense ÷ revenue) ≤ max_bank_efficiency;
+#             equity ≥ min_bank_equity_to_assets of total assets
+#   brokers:  equity ≥ min_broker_equity_to_assets of total assets; book value
+#             per share growing over 3 years
+#   insurers: book value per share growing over 3 years; premiums growing
+#   REITs:    (no return on equity) debt ≤ max_reit_debt_to_assets of assets;
+#             (FFO + interest) ÷ interest ≥ min_reit_interest_coverage;
+#             dividends ≤ max_reit_ffo_payout of FFO; positive FFO each year
+# Their valuation bands use P/B (price to book value) instead of the phase's
+# metric; REITs' use P/FFO (price to funds from operations).
+sector:
+  min_roe: 0.10
+  max_bank_efficiency: 0.60
+  min_bank_equity_to_assets: 0.07
+  min_broker_equity_to_assets: 0.06
+  profitable_years: 3
+  max_reit_debt_to_assets: 0.45
+  min_reit_interest_coverage: 3
+  max_reit_ffo_payout: 0.90
 
 # --- Valuation score ------------------------------------------------------------
 # Today's multiple compared with its own history.

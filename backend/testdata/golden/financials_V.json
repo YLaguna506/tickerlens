@@ -748,9 +748,11 @@
       "buybacks": null,
       "debtRepaid": null,
       "debtIssued": null,
+      "netIncomeCommon": 1270000000,
       "sources": {
         "cash": "CashAndCashEquivalentsAtCarryingValue",
         "netIncome": "NetIncomeLoss",
+        "netIncomeCommon": "NetIncomeLossAvailableToCommonStockholdersBasic",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
@@ -758,6 +760,7 @@
       "filed": {
         "cash": "2014-04-24",
         "netIncome": "2013-05-01",
+        "netIncomeCommon": "2014-04-24",
         "operatingIncome": "2014-04-24",
         "revenue": "2014-04-24",
         "totalEquity": "2013-05-01"
@@ -790,6 +793,7 @@
       "buybacks": 981000000,
       "debtRepaid": null,
       "debtIssued": null,
+      "netIncomeCommon": 1225000000,
       "sources": {
         "buybacks": "PaymentsForRepurchaseOfCommonStock (derived: YTD to 2013-06-30 minus YTD to 2013-03-31)",
         "capex": "PaymentsToAcquireProductiveAssets (derived: YTD to 2013-06-30 minus YTD to 2013-03-31)",
@@ -797,6 +801,7 @@
         "dividendsPaid": "PaymentsOfDividends (derived: YTD to 2013-06-30 minus YTD to 2013-03-31)",
         "freeCashFlow": "derived: operatingCashFlow − capex",
         "netIncome": "NetIncomeLoss",
+        "netIncomeCommon": "NetIncomeLossAvailableToCommonStockholdersBasic",
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2013-06-30 minus YTD to 2013-03-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
@@ -808,6 +813,7 @@
         "cash": "2014-07-24",
         "dividendsPaid": "2014-07-24",
         "netIncome": "2013-07-24",
+        "netIncomeCommon": "2014-07-24",
         "operatingCashFlow": "2014-07-24",
         "operatingIncome": "2014-07-24",
         "revenue": "2014-07-24",

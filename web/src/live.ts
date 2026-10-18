@@ -94,3 +94,31 @@ export function withPrices(points: Point[], prices: Point[]): (Point & { price: 
   const priceOn = new Map(prices.map((p) => [p.date, p.value]));
   return points.map((p) => ({ ...p, price: priceOn.get(p.date) ?? null }));
 }
+
+/** Section title for each kind of financial company. */
+export const SECTOR_TITLE: Record<"bank" | "broker" | "insurer" | "reit", string> = {
+  bank: "Bank metrics",
+  broker: "Broker-dealer metrics",
+  insurer: "Insurance metrics",
+  reit: "REIT metrics",
+};
+
+/** The analysis for a bank, broker-dealer, insurer or REIT, unless the
+ * filings lacked what it needs (then the limited-support notice shows). */
+export const sectorOf = (m?: MetricsReport) => (m && !m.limitedSupport ? m.sector : undefined);
+
+const STRENGTH_KEYS = ["roe", "efficiencyRatio", "equityToAssets", "bookValuePerShare", "loansToDeposits", "lossRatio"];
+const REIT_KEYS = ["debtToAssets", "ffoInterestCoverage", "ffoPayout"];
+
+/** The metrics behind the health score: debt ratios, or for banks, brokers
+ * and insurers their own measures (their debt is deposits, client money and
+ * claims reserves). REITs keep total debt and debt/equity and add their FFO
+ * coverage. */
+export function healthMetrics(m: MetricsReport): Metric[] {
+  const s = sectorOf(m);
+  if (!s) return m.health;
+  if (s.kind === "reit") {
+    return [...m.health.filter((x) => x.key === "totalDebt" || x.key === "debtToEquity"), ...s.metrics.filter((x) => REIT_KEYS.includes(x.key))];
+  }
+  return s.metrics.filter((x) => STRENGTH_KEYS.includes(x.key));
+}

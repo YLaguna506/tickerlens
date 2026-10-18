@@ -99,6 +99,10 @@ type ttm struct {
 	// differs from diluted EPS in at least one quarter.
 	valuationEPS *float64
 	continuing   bool
+	// equity is shareholders' equity at the window's end, for P/B.
+	equity *float64
+	// ffo is funds from operations, for REITs (see quarterFFO).
+	ffo *float64
 }
 
 // rollingTTM builds a TTM window for every run of four consecutive quarters,
@@ -147,6 +151,15 @@ func rollingTTM(quarters []financials.FinancialPeriod, annual []financials.Finan
 		if t.shares == nil {
 			t.shares = sp.shareCount(w[2], "sharesDiluted")
 		}
+		t.equity = commonEquity(last)
+		if t.equity == nil {
+			for _, fy := range annual {
+				if fy.EndDate == last.EndDate {
+					t.equity = commonEquity(fy)
+				}
+			}
+		}
+		t.ffo = sumField(w, quarterFFO)
 		out = append(out, t)
 	}
 	return out

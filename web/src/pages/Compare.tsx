@@ -7,7 +7,7 @@ import { Disclaimer } from "../components/ui";
 import { ZoneBar } from "../components/ZoneBar";
 import { metricValue, pct, price, shortDate, titleCase, usd } from "../format";
 import { t, tx } from "../i18n";
-import { EXPECTATION_LABEL, SCORE_WORDS, STAGES, scoreWord } from "../live";
+import { EXPECTATION_LABEL, SCORE_WORDS, STAGES, scoreWord, sectorOf } from "../live";
 import { navigate } from "../router";
 
 const MAX_COMPARE = 3;
@@ -27,14 +27,19 @@ const HIGHER = new Set([
   "revenueCagr1y", "revenueCagr3y", "revenueCagr5y", "epsCagr3y", "epsCagr5y", "fcfCagr5y",
   "interestCoverage", "fcfToDebt", "cashAndInvestments",
   "dividendYield", "buybackYield", "shareholderYield",
+  "roe", "roa", "equityToAssets", "bookValueCagr5y", "niiToAssets", "premiumGrowth1y", "premiumGrowth5y",
+  "ffoPerShareCagr3y", "ffoPerShareCagr5y", "ffoInterestCoverage",
 ]); // prettier-ignore
-const LOWER = new Set(["debtToEquity", "totalDebt", "pe", "ps", "pb", "pfcf"]);
+const LOWER = new Set(["debtToEquity", "totalDebt", "pe", "ps", "pb", "pfcf", "efficiencyRatio", "lossRatio", "pffo", "ffoPayout", "debtToAssets"]);
 
 /** The metric rows compared, by group, in report order. */
 const GROUPS: { title: string; pick: (m: MetricsReport) => Metric[]; keys?: string[] }[] = [
   { title: "Profitability", pick: (m) => m.profitability },
   { title: "Growth", pick: (m) => m.growth, keys: ["revenueCagr1y", "revenueCagr3y", "revenueCagr5y", "epsCagr3y", "epsCagr5y", "fcfCagr5y"] },
-  { title: "Financial health", pick: (m) => m.health },
+  // Debt ratios do not fit banks, brokers and insurers (their group follows).
+  { title: "Financial health", pick: (m) => (sectorOf(m) && sectorOf(m)!.kind !== "reit" ? [] : m.health) },
+  // Banks, insurers and REITs: their own measures (empty for other companies).
+  { title: "Banks, insurers and REITs", pick: (m) => (m.limitedSupport ? [] : (m.sector?.metrics ?? [])) },
   { title: "Valuation", pick: (m) => m.valuation },
   { title: "Shareholder returns", pick: (m) => m.returns },
 ];

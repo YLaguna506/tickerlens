@@ -69,9 +69,12 @@ type Report struct {
 	TotalReturn5y Metric   `json:"totalReturn5y"`
 
 	Earnings EarningsRecord `json:"earnings"`
-	// Industry is the SEC industry code; LimitedSupport is set for banks,
-	// broker-dealers, insurers and REITs, which these metrics do not fit.
+	// Industry is the SEC industry code. Banks, broker-dealers, insurers and
+	// REITs, which the operating-company metrics do not fit, get Sector: their
+	// own metrics, scored and valued on their own terms. LimitedSupport is set
+	// instead when the filings lack what Sector needs.
 	Industry       *edgar.Profile  `json:"industry,omitempty"`
+	Sector         *Sector         `json:"sector,omitempty"`
 	LimitedSupport *LimitedSupport `json:"limitedSupport,omitempty"`
 	// Insiders is the last year of open-market buying and selling by
 	// directors and officers (nil when Form 4s were not read).
@@ -126,8 +129,9 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	rolling := rollingTTM(f.Quarterly, f.Annual, sp)
 
 	r := Report{Ticker: b.Company.Ticker, Name: b.Company.Name, ScoringVersion: cfg.Version, Industry: b.Industry}
+	kind := ""
 	if b.Industry != nil {
-		r.LimitedSupport = limitedSupport(b.Industry.SIC)
+		kind = sectorKind(b.Industry.SIC)
 	}
 	c := newCalc(f, rolling, sp)
 	if len(b.Prices) > 0 {
@@ -154,8 +158,16 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 		}
 	}
 	r.Returns = c.returns(mcap)
+	if kind != "" {
+		r.Sector = c.sector(kind, r.Price)
+		if !r.Sector.usable() {
+			r.LimitedSupport = limitedSupport(b.Industry.SIC)
+		} else if kind == "reit" {
+			r.Valuation = append(r.Valuation, *findMetric(r.Sector.Metrics, "pffo"))
+		}
+	}
 	r.Capital = capitalAllocation(b.Financials, sp)
-	r.ReverseDCF = c.reverseDCF(mcap, r.Growth, r.LimitedSupport, cfg.ReverseDCF)
+	r.ReverseDCF = c.reverseDCF(mcap, r.Growth, kind, cfg.ReverseDCF)
 	r.PriceChange5y = priceChange(b, sp, false)
 	r.TotalReturn5y = priceChange(b, sp, true)
 	r.Earnings = earningsRecord(b.Earnings)
@@ -166,18 +178,35 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	}
 
 	r.Phase = phase.Classify(c.phaseInputs(r))
-	r.GrowthScore = cfg.GrowthScore(map[string]*float64{
+	growthIn := map[string]*float64{
 		"revenue CAGR 3y": find(r.Growth, "revenueCagr3y"),
 		"revenue CAGR 5y": find(r.Growth, "revenueCagr5y"),
 		"EPS CAGR 3y":     find(r.Growth, "epsCagr3y"),
 		"EPS CAGR 5y":     find(r.Growth, "epsCagr5y"),
-	})
+	}
+	supported := r.Sector != nil && r.LimitedSupport == nil
+	if supported && kind == "reit" {
+		// Depreciation makes a REIT's EPS a poor guide, and revenue grows
+		// with every property bought with new shares: FFO per share instead.
+		growthIn = map[string]*float64{}
+		growthIn["FFO per share CAGR 3y"] = find(r.Sector.Metrics, "ffoPerShareCagr3y")
+		growthIn["FFO per share CAGR 5y"] = find(r.Sector.Metrics, "ffoPerShareCagr5y")
+	}
+	r.GrowthScore = cfg.GrowthScore(growthIn)
 	r.HealthScore = cfg.HealthScore(c.healthInputs())
-	if ls := r.LimitedSupport; ls != nil && ls.NoHealthScore {
-		r.HealthScore = scoring.Score{Max: 5, Reasons: []string{"not scored: debt ratios do not apply to " + ls.Kind + "s"}}
+	switch {
+	case supported && r.Sector.ScoreName != "":
+		r.HealthScore = cfg.StrengthScore(c.strengthInputs(r.Sector))
+	case r.LimitedSupport != nil && r.LimitedSupport.NoHealthScore:
+		r.HealthScore = scoring.Score{Max: 5, Reasons: []string{"not scored: debt ratios do not apply to " + r.LimitedSupport.Kind + "s"}}
 	}
 
-	r.Bands, r.ValuationScore, r.Charts.ValuationTTM, r.Notes = valuationBands(b, cfg, r.Phase, rolling, sp, r.Price)
+	var sectorMetrics []string
+	if supported {
+		sectorMetrics = r.Sector.valuationCandidates()
+		r.Phase.ValuationMetric, r.Phase.Fallbacks = sectorMetrics[0], sectorMetrics[1:]
+	}
+	r.Bands, r.ValuationScore, r.Charts.ValuationTTM, r.Notes = valuationBands(b, cfg, r.Phase, sectorMetrics, rolling, sp, r.Price)
 	adjustValuation(&r.ValuationScore, r.ReverseDCF, cfg.ReverseDCF)
 
 	for _, bar := range lastYears(b.Prices, chartYears) {
@@ -727,6 +756,15 @@ func multiple(m Metric, numName string, num *float64, denName string, den *float
 		m.Note = denName + " is negative or zero, so the multiple is not meaningful"
 	}
 	return m
+}
+
+func findMetric(ms []Metric, key string) *Metric {
+	for i := range ms {
+		if ms[i].Key == key {
+			return &ms[i]
+		}
+	}
+	return nil
 }
 
 func find(ms []Metric, key string) *float64 {

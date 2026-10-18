@@ -39,8 +39,9 @@ type Bands struct {
 }
 
 // valuationBands tries the phase's metric, then its fallbacks, then P/S, and
-// scores the first one with enough history that is not distorted.
-func valuationBands(b *ingest.Bundle, cfg scoring.Config, ph phase.Result, rolling []ttm, sp splits, price *float64) (*Bands, scoring.Score, []Point, []string) {
+// scores the first one with enough history that is not distorted. A sector
+// (banks, insurers, REITs) supplies its own metrics instead of the phase's.
+func valuationBands(b *ingest.Bundle, cfg scoring.Config, ph phase.Result, sector []string, rolling []ttm, sp splits, price *float64) (*Bands, scoring.Score, []Point, []string) {
 	score := scoring.Score{Max: 5}
 	var notes []string
 	if price == nil || len(b.Prices) == 0 {
@@ -54,6 +55,9 @@ func valuationBands(b *ingest.Bundle, cfg scoring.Config, ph phase.Result, rolli
 	}
 
 	candidates := append([]string{ph.ValuationMetric}, ph.Fallbacks...)
+	if len(sector) > 0 {
+		candidates = slices.Clone(sector)
+	}
 	if !slices.Contains(candidates, phase.PS) {
 		candidates = append(candidates, phase.PS)
 	}
@@ -299,7 +303,8 @@ func multipleOn(metric string, t ttm, price float64) (float64, bool) {
 }
 
 // perShareBasis is what the multiple divides the price by: EPS for P/E,
-// revenue per share for P/S, free cash flow per share for P/FCF.
+// revenue per share for P/S, free cash flow per share for P/FCF, book value
+// per share for P/B, funds from operations per share for P/FFO.
 func perShareBasis(metric string, t ttm) (float64, string, bool) {
 	switch metric {
 	case phase.PE:
@@ -321,6 +326,16 @@ func perShareBasis(metric string, t ttm) (float64, string, bool) {
 			return 0, "free cash flow per share", false
 		}
 		return *t.fcf / *t.shares, "free cash flow per share", true
+	case phase.PB:
+		if t.equity == nil || t.shares == nil || *t.shares <= 0 {
+			return 0, "book value per share", false
+		}
+		return *t.equity / *t.shares, "book value per share", true
+	case phase.PFFO:
+		if t.ffo == nil || t.shares == nil || *t.shares <= 0 {
+			return 0, "FFO per share", false
+		}
+		return *t.ffo / *t.shares, "FFO per share", true
 	}
 	return 0, metric, false
 }

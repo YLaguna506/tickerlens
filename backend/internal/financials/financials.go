@@ -54,6 +54,22 @@ type FinancialPeriod struct {
 	// Acquisitions is cash paid for businesses, net of the cash they held.
 	Acquisitions *float64 `json:"acquisitions,omitempty"`
 
+	// Banks, insurers and REITs only (see concepts.go).
+	TotalAssets          *float64 `json:"totalAssets,omitempty"`
+	PreferredStock       *float64 `json:"preferredStock,omitempty"`
+	NetIncomeCommon      *float64 `json:"netIncomeCommon,omitempty"`
+	NetInterestIncome    *float64 `json:"netInterestIncome,omitempty"`
+	NoninterestIncome    *float64 `json:"noninterestIncome,omitempty"`
+	NoninterestExpense   *float64 `json:"noninterestExpense,omitempty"`
+	Deposits             *float64 `json:"deposits,omitempty"`
+	Loans                *float64 `json:"loans,omitempty"`
+	PremiumsEarned       *float64 `json:"premiumsEarned,omitempty"`
+	NetInvestmentIncome  *float64 `json:"netInvestmentIncome,omitempty"`
+	ClaimsIncurred       *float64 `json:"claimsIncurred,omitempty"`
+	Depreciation         *float64 `json:"depreciation,omitempty"`
+	PropertySaleGains    *float64 `json:"propertySaleGains,omitempty"`
+	RealEstateImpairment *float64 `json:"realEstateImpairment,omitempty"`
+
 	// Sources records where each value came from: an XBRL concept name, or a
 	// description of how it was derived.
 	Sources map[string]string `json:"sources"`
@@ -121,6 +137,34 @@ func (p *FinancialPeriod) field(name string) **float64 {
 		return &p.DebtIssued
 	case "acquisitions":
 		return &p.Acquisitions
+	case "totalAssets":
+		return &p.TotalAssets
+	case "preferredStock":
+		return &p.PreferredStock
+	case "netIncomeCommon":
+		return &p.NetIncomeCommon
+	case "netInterestIncome":
+		return &p.NetInterestIncome
+	case "noninterestIncome":
+		return &p.NoninterestIncome
+	case "noninterestExpense":
+		return &p.NoninterestExpense
+	case "deposits":
+		return &p.Deposits
+	case "loans":
+		return &p.Loans
+	case "premiumsEarned":
+		return &p.PremiumsEarned
+	case "netInvestmentIncome":
+		return &p.NetInvestmentIncome
+	case "claimsIncurred":
+		return &p.ClaimsIncurred
+	case "depreciation":
+		return &p.Depreciation
+	case "propertySaleGains":
+		return &p.PropertySaleGains
+	case "realEstateImpairment":
+		return &p.RealEstateImpairment
 	default:
 		panic("financials: unknown field " + name) // programming error, caught by tests
 	}
@@ -138,5 +182,7 @@ func FieldNames() []string {
 		"operatingCashFlow", "capex", "freeCashFlow",
 		"cash", "shortTermInvestments", "totalDebt", "totalEquity",
 		"interestExpense", "dividendsPaid", "buybacks", "debtRepaid", "debtIssued", "acquisitions",
+		"totalAssets", "preferredStock", "netIncomeCommon", "netInterestIncome", "noninterestIncome", "noninterestExpense", "deposits", "loans",
+		"premiumsEarned", "netInvestmentIncome", "claimsIncurred", "depreciation", "propertySaleGains", "realEstateImpairment",
 	}
 }

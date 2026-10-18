@@ -26,6 +26,17 @@ var companies = map[string]edgar.Company{
 	"V":    {Ticker: "V", CIK: "0001403161", Name: "VISA INC."},
 	"AAPL": {Ticker: "AAPL", CIK: "0000320193", Name: "Apple Inc."},
 	"SNOW": {Ticker: "SNOW", CIK: "0001640147", Name: "Snowflake Inc."},
+	"JPM":  {Ticker: "JPM", CIK: "0000019617", Name: "JPMORGAN CHASE & CO"},
+	"PGR":  {Ticker: "PGR", CIK: "0000080661", Name: "PROGRESSIVE CORP/OH/"},
+	"O":    {Ticker: "O", CIK: "0000726728", Name: "REALTY INCOME CORP"},
+}
+
+// industries are the SEC industry codes of the fixtures that need one: a
+// bank, an insurer and a REIT (see sector.go).
+var industries = map[string]edgar.Profile{
+	"JPM": {SIC: "6021", SICDescription: "NATIONAL COMMERCIAL BANKS"},
+	"PGR": {SIC: "6331", SICDescription: "FIRE, MARINE & CASUALTY INSURANCE"},
+	"O":   {SIC: "6798", SICDescription: "REAL ESTATE INVESTMENT TRUSTS"},
 }
 
 func testdata(parts ...string) string {
@@ -61,6 +72,9 @@ func loadBundle(t *testing.T, ticker string) *ingest.Bundle {
 		edgar.MergeClassFacts(&facts, class["eps"], class["shares"])
 	}
 	b := &ingest.Bundle{Company: companies[ticker]}
+	if p, ok := industries[ticker]; ok {
+		b.Industry = &p
+	}
 	var bars []prices.Bar
 	readJSON(t, testdata("tiingo", "prices_"+ticker+".json"), &bars)
 	b.Prices = bars

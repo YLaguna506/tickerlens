@@ -43,6 +43,8 @@ type Config struct {
 	Moat       MoatRules       `yaml:"moat"`
 	Insiders   InsiderRules    `yaml:"insiders"`
 	ReverseDCF ReverseDCFRules `yaml:"reverse_dcf"`
+	// Sector scores banks, brokers and insurers on their own terms.
+	Sector SectorRules `yaml:"sector"`
 	// Verdict thresholds, applied in order: Sell, Buy, Watch, Hold, else Pass.
 	Verdict VerdictRules `yaml:"verdict"`
 }
@@ -136,7 +138,7 @@ type VerdictRules struct {
 // with the same values; anything left out of the file keeps its default.
 func Default() Config {
 	return Config{
-		Version:               "2026-10-18.2",
+		Version:               "2026-10-18.3",
 		GrowthBands:           [4]float64{0, 0.05, 0.12, 0.20},
 		MinInterestCoverage:   10,
 		MaxDebtToEquity:       1,
@@ -153,6 +155,7 @@ func Default() Config {
 		Moat:                  MoatRules{DirectionStep: 0.25},
 		Insiders:              InsiderRules{BuyMinUSD: 1e6, SellMinShareOfCap: 0.002, Points: 0.25},
 		ReverseDCF:            defaultReverseDCF(),
+		Sector:                defaultSector(),
 		Verdict: VerdictRules{
 			SellBelow: 2.5, SellWeakBelow: 3.0, SellWeakMaxV: 2,
 			BuyMinB: 4.0, BuyMinV: 4, BuyCheapMinB: 3.5, BuyCheapMinV: 5,

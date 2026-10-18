@@ -9,6 +9,10 @@ const (
 	PS   = "P/S"
 	PE   = "P/E"
 	PFCF = "P/FCF"
+	// Banks, brokers and insurers are valued on book value, REITs on funds
+	// from operations (see metrics/sector.go); the phases never pick these.
+	PB   = "P/B"
+	PFFO = "P/FFO"
 )
 
 // Inputs are the computed numbers the classifier needs. Nil means unknown.

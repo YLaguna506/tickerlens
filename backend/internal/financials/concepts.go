@@ -79,7 +79,8 @@ var fields = []fieldSpec{
 		"InterestExpense",
 		"InterestExpenseNonoperating",
 		"InterestExpenseDebt",
-		"InterestAndDebtExpense", // ConocoPhillips
+		"InterestAndDebtExpense",   // ConocoPhillips
+		"InterestExpenseOperating", // REITs since 2022 (Realty Income); banks' is not used
 	}},
 	{"dividendsPaid", flow, "USD", []string{"PaymentsOfDividends", "PaymentsOfDividendsCommonStock"}},
 	{"buybacks", flow, "USD", []string{"PaymentsForRepurchaseOfCommonStock"}},
@@ -94,6 +95,50 @@ var fields = []fieldSpec{
 		"ProceedsFromIssuanceOfDebt",
 		"ProceedsFromConvertibleDebt",
 	}},
+
+	// Banks, insurers and REITs (metrics/sector.go). Other companies rarely
+	// report them, so they are optional.
+	{"totalAssets", instant, "USD", []string{"Assets"}},
+	// Book value per share and return on equity count common shareholders
+	// only: preferred stock and its dividends come out.
+	{"preferredStock", instant, "USD", []string{
+		"PreferredStockValue",
+		"PreferredStockIncludingAdditionalPaidInCapital", // Bank of America
+		"PreferredStockValueOutstanding",
+		"PreferredStockLiquidationPreferenceValue", // JPMorgan
+	}},
+	{"netIncomeCommon", flow, "USD", []string{"NetIncomeLossAvailableToCommonStockholdersBasic"}},
+	{"netInterestIncome", flow, "USD", []string{"InterestIncomeExpenseNet"}},
+	{"noninterestIncome", flow, "USD", []string{"NoninterestIncome"}},
+	{"noninterestExpense", flow, "USD", []string{"NoninterestExpense"}},
+	{"deposits", instant, "USD", []string{"Deposits"}},
+	{"loans", instant, "USD", []string{
+		"FinancingReceivableExcludingAccruedInterestBeforeAllowanceForCreditLoss",
+		"LoansAndLeasesReceivableNetOfDeferredIncome",
+		"FinancingReceivableExcludingAccruedInterestAfterAllowanceForCreditLoss",
+		"LoansAndLeasesReceivableNetReportedAmount",
+	}},
+	{"premiumsEarned", flow, "USD", []string{"PremiumsEarnedNet", "PremiumsEarnedNetPropertyAndCasualty"}},
+	{"netInvestmentIncome", flow, "USD", []string{"NetInvestmentIncome"}},
+	{"claimsIncurred", flow, "USD", []string{
+		"PolicyholderBenefitsAndClaimsIncurredNet",
+		"IncurredClaimsPropertyCasualtyAndLiability",
+	}},
+	// Funds from operations (FFO) add back the depreciation of buildings and
+	// take out gains on selling them.
+	{"depreciation", flow, "USD", []string{
+		"DepreciationDepletionAndAmortization",
+		"DepreciationAndAmortization",
+		"DepreciationAmortizationAndAccretionNet", // American Tower
+		"Depreciation",
+	}},
+	{"propertySaleGains", flow, "USD", []string{
+		"GainLossOnSaleOfProperties",
+		"GainsLossesOnSalesOfInvestmentRealEstate",
+		"GainLossOnDispositionOfAssets1",
+		"GainLossOnSaleOfPropertyPlantEquipment",
+	}},
+	{"realEstateImpairment", flow, "USD", []string{"ImpairmentOfRealEstate"}},
 }
 
 // helpers are inputs to derived fields (gross profit fallback, total debt).
@@ -130,7 +175,10 @@ var helpers = []fieldSpec{
 var nonNegative = map[string]bool{"revenue": true, "capex": true, "dividendsPaid": true, "buybacks": true}
 
 // optional fields are often absent for good reason and get no warning.
-var optional = map[string]bool{"epsContinuing": true, "acquisitions": true}
+var optional = map[string]bool{"epsContinuing": true, "acquisitions": true,
+	"totalAssets": true, "preferredStock": true, "netIncomeCommon": true, "netInterestIncome": true, "noninterestIncome": true, "noninterestExpense": true,
+	"deposits": true, "loans": true, "premiumsEarned": true, "netInvestmentIncome": true, "claimsIncurred": true,
+	"depreciation": true, "propertySaleGains": true, "realEstateImpairment": true}
 
 // missingHints explains common reasons a field has no data at all.
 var missingHints = map[string]string{
