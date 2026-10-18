@@ -76,29 +76,72 @@ func TestRuleBoundaries(t *testing.T) {
 func TestCompositeRenormalizesMissingScores(t *testing.T) {
 	cfg := scoring.Default()
 
-	// All three: 0.4×4.5 + 0.3×4 + 0.3×5 = 4.5
-	b, comps := composite(Input{BusinessQuality: f(4.5), Growth: f(4), FinancialHealth: f(5)}, cfg.Weights)
-	if b == nil || *b != 4.5 || comps[0].Weight != 0.4 {
+	// All five: 0.30×4.5 + 0.25×4 + 0.20×5 + 0.15×5 + 0.10×3 = 4.4
+	all := Input{BusinessQuality: f(4.5), Growth: f(4), FinancialHealth: f(5), MoatWidth: f(5), MoatDirection: f(3), BusinessRisk: f(3)}
+	b, comps := composite(all, cfg)
+	if b == nil || *b != 4.4 || comps[0].Weight != 0.3 || len(comps) != 5 {
 		t.Fatalf("B = %v, comps %+v", b, comps)
 	}
 
-	// No business quality: growth and health share the weight 50/50.
-	b, comps = composite(Input{Growth: f(4), FinancialHealth: f(5)}, cfg.Weights)
-	if b == nil || *b != 4.5 || comps[1].Weight != 0.5 || comps[0].Weight != 0 {
+	// No moat or risk (no AI analysis): the other three share the weight.
+	b, comps = composite(Input{BusinessQuality: f(4.5), Growth: f(4), FinancialHealth: f(5)}, cfg)
+	if b == nil || *b != 4.47 || comps[0].Weight != 0.4 || comps[3].Weight != 0 {
 		t.Fatalf("B = %v, comps %+v", b, comps)
 	}
 
 	// Nothing: no composite.
-	if b, _ := composite(Input{}, cfg.Weights); b != nil {
+	if b, _ := composite(Input{}, cfg); b != nil {
 		t.Errorf("B = %v, want nil", *b)
+	}
+}
+
+func TestMoatDirectionNudgesWidth(t *testing.T) {
+	m := scoring.Default().Moat
+	for _, tc := range []struct{ width, dir, want float64 }{
+		{4, 3, 4},    // Broad, stable
+		{4, 5, 4.5},  // Broad, widening
+		{4, 1, 3.5},  // Broad, narrowing
+		{5, 5, 5},    // capped at 5
+		{1, 1, 1},    // and at 1
+		{3, 4, 3.25}, // Narrow, slightly widening
+	} {
+		if got := moatScore(Input{MoatWidth: f(tc.width), MoatDirection: f(tc.dir)}, m); *got != tc.want {
+			t.Errorf("width %v direction %v: %v, want %v", tc.width, tc.dir, *got, tc.want)
+		}
+	}
+}
+
+func TestInsiderAdjustment(t *testing.T) {
+	cfg := scoring.Default()
+	base := Input{BusinessQuality: f(4), Growth: f(4), FinancialHealth: f(4), Valuation: f(4)}
+	cap := 180e9
+
+	// PepsiCo-like: a director bought $23.7M, insiders sold $6.2M → +0.25.
+	in := base
+	in.Insiders = &Insiders{BoughtUSD: 23.7e6, SoldUSD: 6.2e6, MarketCap: &cap}
+	r := Decide(in, cfg)
+	if *r.Business != 4.25 || len(r.Adjustments) != 1 || r.Adjustments[0].Points != 0.25 {
+		t.Errorf("buying: B %v, adjustments %+v", *r.Business, r.Adjustments)
+	}
+
+	// Heavy unplanned selling (0.5% of the company), no buying → −0.25.
+	in.Insiders = &Insiders{SoldUSD: 1e9, PlannedSoldUSD: 0.1e9, MarketCap: &cap}
+	if r := Decide(in, cfg); *r.Business != 3.75 || !strings.Contains(r.Adjustments[0].Reason, "outside pre-arranged plans") {
+		t.Errorf("selling: B %v, adjustments %+v", *r.Business, r.Adjustments)
+	}
+
+	// Routine selling, mostly planned and small for the company: no change.
+	in.Insiders = &Insiders{SoldUSD: 50e6, PlannedSoldUSD: 40e6, MarketCap: &cap}
+	if r := Decide(in, cfg); *r.Business != 4 || len(r.Adjustments) != 0 {
+		t.Errorf("routine: B %v, adjustments %+v", *r.Business, r.Adjustments)
 	}
 }
 
 func TestDecide(t *testing.T) {
 	cfg := scoring.Default()
-	// Visa-like: quality 4.5, growth 4, health 5 → B 4.5; valuation 2 → Watch.
+	// Visa-like: quality 4.5, growth 4, health 5 → B 4.47; valuation 2 → Watch.
 	r := Decide(Input{BusinessQuality: f(4.5), Growth: f(4), FinancialHealth: f(5), Valuation: f(2)}, cfg)
-	if r.Label != Watch || *r.Business != 4.5 || r.Meaning == "" || r.ScoringVersion != cfg.Version {
+	if r.Label != Watch || *r.Business != 4.47 || r.Meaning == "" || r.ScoringVersion != cfg.Version {
 		t.Errorf("result = %+v", r)
 	}
 	if r.Confidence != 100 || r.ConfidenceLevel != "high" {

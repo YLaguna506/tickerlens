@@ -227,6 +227,8 @@ export interface Verdict {
   business: number | null;
   valuation: number | null;
   components: { name: string; score: number | null; weight: number }[];
+  /** Changes to B after the weighted mean (insider buying or selling). */
+  adjustments?: { name: string; points: number; reason: string }[];
   rule: string;
   confidence: number;
   confidenceLevel: "high" | "medium" | "low";

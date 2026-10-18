@@ -329,6 +329,14 @@ func TestNewSectionsMoatRiskManagement(t *testing.T) {
 			t.Errorf("risk score = %v, want %v", r.Score, want)
 		}
 	}
+	// Moat and risk are part of the business score.
+	weights := map[string]float64{}
+	for _, c := range body.Verdict.Components {
+		weights[c.Name] = c.Weight
+	}
+	if weights["Moat"] == 0 || weights["Risk"] == 0 {
+		t.Errorf("verdict components = %+v", body.Verdict.Components)
+	}
 	m := body.Management
 	if m == nil || m.CEOName != "Ryan McInerney" || m.TenureYears == nil || *m.TenureYears != time.Now().Year()-2023 {
 		t.Fatalf("management = %+v", m)

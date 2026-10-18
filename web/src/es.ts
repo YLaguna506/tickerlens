@@ -519,4 +519,7 @@ export const ES: Record<string, string> = {
   "sold": "vendieron",
   // Insiders, singular
   "by one insider": "por un directivo",
+  // Verdict adjustments (runtime keys)
+  "Insider buying": "Compras de directivos",
+  "Insider selling": "Ventas de directivos",
 };

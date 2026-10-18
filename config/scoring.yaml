@@ -5,7 +5,7 @@
 #
 # Scores are 1–5. Fractions are written as decimals (0.12 = 12%).
 
-version: "2026-10-17.1"
+version: "2026-10-18.1"
 
 # --- Growth score -------------------------------------------------------------
 # Average of revenue and EPS CAGRs (3y and 5y, whichever exist).
@@ -38,9 +38,28 @@ max_basis_swing: 3
 # --- Business composite (B) --------------------------------------------------------
 # Weighted mean of the available scores; weights are renormalized when one is missing.
 weights:
-  business_quality: 0.40
-  growth: 0.30
-  financial_health: 0.30
+  business_quality: 0.30
+  growth: 0.25
+  financial_health: 0.20
+  # The moat agent's width (None 1 … Wide 5), nudged by its direction.
+  moat: 0.15
+  # The risk agent's three questions (revenue spread, disruption, outside
+  # exposure), 5 = lowest risk. Financial health is its own weight above.
+  risk: 0.10
+
+moat:
+  # Each step from Stable towards Widening adds this; towards Narrowing,
+  # takes it off (Widening +0.5, Narrowing -0.5).
+  direction_step: 0.25
+
+# Insider trades over the last year (Form 4, open market only) move B:
+# + points when insiders bought at least buy_min_usd and more than they sold;
+# - points when they sold at least sell_min_share_of_cap of the company
+#   outside pre-arranged 10b5-1 plans, without buying any.
+insiders:
+  buy_min_usd: 1000000
+  sell_min_share_of_cap: 0.002
+  points: 0.25
 
 # --- Verdict --------------------------------------------------------------------------
 # Rules are checked in order; the first match wins. V is the valuation score.

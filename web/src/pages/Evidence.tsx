@@ -258,6 +258,12 @@ function Pinned({ ticker, name, m, body, active, running, stage }: { ticker: str
                 {Math.round(c.weight * 100)}% {tx(c.name).toLowerCase()}
               </span>
             ))}
+            {v.adjustments?.map((a) => (
+              <span key={a.name} title={tx(a.reason)}>
+                {a.points > 0 ? " + " : " − "}
+                {Math.abs(a.points).toFixed(2)} {tx(a.name).toLowerCase()}
+              </span>
+            ))}
           </p>
           <p>
             <span className="font-grotesk text-base font-bold text-zinc-900">V {v.valuation ?? "–"}</span> = {t("valuation score")}

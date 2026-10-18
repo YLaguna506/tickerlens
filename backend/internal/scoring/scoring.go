@@ -39,7 +39,9 @@ type Config struct {
 	MaxBasisSwing float64 `yaml:"max_basis_swing"`
 
 	// Weights of the business composite B (renormalized when a score is missing).
-	Weights Weights `yaml:"weights"`
+	Weights  Weights      `yaml:"weights"`
+	Moat     MoatRules    `yaml:"moat"`
+	Insiders InsiderRules `yaml:"insiders"`
 	// Verdict thresholds, applied in order: Sell, Buy, Watch, Hold, else Pass.
 	Verdict VerdictRules `yaml:"verdict"`
 }
@@ -49,6 +51,27 @@ type Weights struct {
 	BusinessQuality float64 `yaml:"business_quality"`
 	Growth          float64 `yaml:"growth"`
 	FinancialHealth float64 `yaml:"financial_health"`
+	Moat            float64 `yaml:"moat"`
+	Risk            float64 `yaml:"risk"`
+}
+
+// MoatRules turn the moat agent's width and direction into one 1–5 score:
+// width, plus DirectionStep for each step towards widening (minus towards
+// narrowing).
+type MoatRules struct {
+	DirectionStep float64 `yaml:"direction_step"`
+}
+
+// InsiderRules adjust B for what insiders did with their own money over the
+// last year (open-market trades on Form 4s).
+type InsiderRules struct {
+	// Buying: bought at least this much, and more than was sold.
+	BuyMinUSD float64 `yaml:"buy_min_usd"`
+	// Selling: sold at least this share of the market cap outside
+	// pre-arranged plans, with no buying.
+	SellMinShareOfCap float64 `yaml:"sell_min_share_of_cap"`
+	// Points added to B for buying, taken off for selling.
+	Points float64 `yaml:"points"`
 }
 
 // VerdictRules are the thresholds of the verdict rules. B is the business
@@ -75,7 +98,7 @@ type VerdictRules struct {
 // with the same values; anything left out of the file keeps its default.
 func Default() Config {
 	return Config{
-		Version:               "2026-10-17.1",
+		Version:               "2026-10-18.1",
 		GrowthBands:           [4]float64{0, 0.05, 0.12, 0.20},
 		MinInterestCoverage:   10,
 		MaxDebtToEquity:       1,
@@ -88,7 +111,9 @@ func Default() Config {
 		MinHistoryDays:        250,
 		HistoryYears:          5,
 		MaxBasisSwing:         3,
-		Weights:               Weights{BusinessQuality: 0.40, Growth: 0.30, FinancialHealth: 0.30},
+		Weights:               Weights{BusinessQuality: 0.30, Growth: 0.25, FinancialHealth: 0.20, Moat: 0.15, Risk: 0.10},
+		Moat:                  MoatRules{DirectionStep: 0.25},
+		Insiders:              InsiderRules{BuyMinUSD: 1e6, SellMinShareOfCap: 0.002, Points: 0.25},
 		Verdict: VerdictRules{
 			SellBelow: 2.5, SellWeakBelow: 3.0, SellWeakMaxV: 2,
 			BuyMinB: 4.0, BuyMinV: 4, BuyCheapMinB: 3.5, BuyCheapMinV: 5,

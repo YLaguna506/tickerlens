@@ -149,7 +149,8 @@ A failed check gets one repair attempt, where the agent is told exactly what was
 
 ### The verdict is a rule, not a model
 
-1. **Business score (B):** business quality 40%, growth 30%, financial health 30% (reweighted if one is missing).
+1. **Business score (B):** business quality 30%, growth 25%, financial health 20%, moat 15% and risk 10%, reweighted over the scores a report has. The moat score is its width (None 1 … Wide 5) nudged by its direction (±0.25 per step towards widening or narrowing); the risk score is the three questions the risk agent judges from the 10-K (financial health already counts on its own).
+   - **Insider adjustment:** +0.25 when insiders bought at least $1M on the open market over the year, and more than they sold; −0.25 when they sold at least 0.2% of the company outside pre-arranged 10b5-1 plans and bought none.
 2. **Valuation score (V):** where today's multiple sits in its own 5-year history.
 3. **Rules,** first match wins:
 
@@ -163,7 +164,7 @@ A failed check gets one repair attempt, where the agent is told exactly what was
 
 A **Buy** also needs the business quality score. If the AI's quality judgment is missing, B rests on growth and health alone, so the verdict is capped at **Watch**.
 
-Every threshold and weight lives in [`config/scoring.yaml`](config/scoring.yaml). Edit it and restart the API (`docker compose restart api`); the file's version is stored on every report. Example: Visa scores B 4.7 (quality 5, growth 4, health 5) and V 2, so its verdict is **Watch**.
+Every threshold and weight lives in [`config/scoring.yaml`](config/scoring.yaml). Edit it and restart the API (`docker compose restart api`); the file's version is stored on every report. Example: PepsiCo scores 3.75 on the five parts (quality 5, growth 3, health 3, moat 4, risk 3), plus 0.25 for a director's $23.7M purchase: B 4.0, and with V 5 its verdict is **Buy**.
 
 A multiple's own history is only a fair yardstick if what it divides by was stable. When EPS or free cash flow collapsed during the 5 years (Salesforce's EPS fell to $0.21 in 2022, which made its "typical" P/E 68×), the report switches to the next multiple and says why.
 

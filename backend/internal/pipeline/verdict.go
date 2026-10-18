@@ -46,10 +46,17 @@ func (j *job) decide(ctx context.Context, bundle *ingest.Bundle, report *metrics
 	if ls := report.LimitedSupport; ls != nil {
 		in.LimitedSupport = ls.Kind
 	}
+	if m := j.body.Moat; m != nil {
+		in.MoatWidth, in.MoatDirection = &m.Width, &m.Direction
+	}
+	if r := j.body.Risk; r != nil {
+		in.BusinessRisk = &r.BusinessRisk
+	}
+	in.Insiders = insidersInput(report)
 	if q := j.body.BusinessQuality; q != nil {
 		in.BusinessQuality = &q.Score
 	}
-	for _, s := range []string{AgentOverview, AgentQuality} {
+	for _, s := range []string{AgentOverview, AgentQuality, AgentMoat, AgentRisk} {
 		if sec := j.body.Agents[s]; sec != nil && sec.Status != SectionStateReady {
 			in.FailedAnalysis = append(in.FailedAnalysis, s)
 		}
@@ -166,4 +173,13 @@ func deref(v *float64) any {
 		return nil
 	}
 	return *v
+}
+
+// insidersInput is the verdict's view of the year's insider trading.
+func insidersInput(r *metrics.Report) *verdict.Insiders {
+	s := r.Insiders
+	if s == nil {
+		return nil
+	}
+	return &verdict.Insiders{BoughtUSD: s.BoughtUSD, SoldUSD: s.SoldUSD, PlannedSoldUSD: s.PlannedSoldUSD, MarketCap: r.MarketCap.Value}
 }

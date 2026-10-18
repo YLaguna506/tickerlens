@@ -161,6 +161,7 @@ func runMetrics(ctx context.Context, args []string, stdout, stderr io.Writer) er
 		PhaseLowConfidence: report.Phase.LowConfidence,
 		MissingData:        bundle.Failed,
 		LimitedSupport:     limitedKind(report),
+		Insiders:           insidersInput(report),
 	}, cfg)
 	if *c.asJSON {
 		return writeJSON(stdout, map[string]any{"metrics": report, "verdict": v})
@@ -236,4 +237,12 @@ func limitedKind(r metrics.Report) string {
 		return ""
 	}
 	return r.LimitedSupport.Kind
+}
+
+func insidersInput(r metrics.Report) *verdict.Insiders {
+	if r.Insiders == nil {
+		return nil
+	}
+	return &verdict.Insiders{BoughtUSD: r.Insiders.BoughtUSD, SoldUSD: r.Insiders.SoldUSD,
+		PlannedSoldUSD: r.Insiders.PlannedSoldUSD, MarketCap: r.MarketCap.Value}
 }

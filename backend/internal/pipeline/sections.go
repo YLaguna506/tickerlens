@@ -74,9 +74,12 @@ func moatScore(output json.RawMessage) (*MoatScore, error) {
 // from the balance sheet (the health score).
 type RiskScore struct {
 	// Score is the average of the questions answered (5 = lowest risk).
-	Score   float64            `json:"score"`
-	Answers map[string]string  `json:"answers"`
-	Points  map[string]float64 `json:"points"`
+	Score float64 `json:"score"`
+	// BusinessRisk is the average of the agent's three questions alone; the
+	// verdict uses it, since financial health is its own part of B.
+	BusinessRisk float64            `json:"businessRisk"`
+	Answers      map[string]string  `json:"answers"`
+	Points       map[string]float64 `json:"points"`
 }
 
 var riskPoints = map[string]map[string]float64{
@@ -104,6 +107,7 @@ func riskScore(output json.RawMessage, health scoring.Score) (*RiskScore, error)
 		sum += pts
 	}
 	n := float64(len(riskPoints))
+	r.BusinessRisk = math.Round(sum/n*100) / 100
 	if health.Value != nil {
 		r.Points["financialHealth"] = *health.Value
 		sum += *health.Value

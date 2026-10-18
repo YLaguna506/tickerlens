@@ -176,7 +176,15 @@ function Flow({ m, body }: { m?: MetricsReport; body?: ReportBody }) {
         <p className="font-bold">
           {t("The business scores {score} / 5", { score: v?.business?.toFixed(1) ?? "…" })} · {scoreWord(SCORE_WORDS.quality, v?.business ?? null)}
         </p>
-        {v && <p className="mt-0.5">{v.components.map((c) => `${tx(c.name)} ${c.score?.toFixed(1) ?? "–"} × ${Math.round(c.weight * 100)}%`).join("  +  ")}</p>}
+        {v && (
+          <p className="mt-0.5">
+            {v.components
+              .filter((c) => c.weight > 0)
+              .map((c) => `${tx(c.name)} ${c.score?.toFixed(1) ?? "–"} × ${Math.round(c.weight * 100)}%`)
+              .join("  +  ")}
+            {v.adjustments?.map((a) => `  ${a.points > 0 ? "+" : "−"}  ${tx(a.name)} ${Math.abs(a.points).toFixed(2)}`).join("")}
+          </p>
+        )}
       </Merge>
 
       <Step

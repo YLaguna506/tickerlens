@@ -39,9 +39,32 @@ type Input struct {
 	PhaseLowConfidence bool     // the lifecycle phase is a weak fit
 	MissingData        []string // data sources that failed (prices, earnings, ...)
 	FailedAnalysis     []string // AI sections that failed (business_overview, ...)
+	// Moat width and direction (1–5 each), from the moat agent.
+	MoatWidth     *float64
+	MoatDirection *float64
+	// BusinessRisk is the risk agent's three questions (1–5, 5 = lowest risk).
+	BusinessRisk *float64
+	// Insiders is the last year's open-market insider trading (nil if not read).
+	Insiders *Insiders
+
 	// LimitedSupport is the kind of company the metrics do not fit (bank,
 	// broker, insurer, reit), or "".
 	LimitedSupport string
+}
+
+// Insiders is what the verdict needs from a year of insider trades.
+type Insiders struct {
+	BoughtUSD      float64
+	SoldUSD        float64
+	PlannedSoldUSD float64
+	MarketCap      *float64
+}
+
+// Adjustment is a change to B outside the weighted scores.
+type Adjustment struct {
+	Name   string  `json:"name"`
+	Points float64 `json:"points"`
+	Reason string  `json:"reason"`
 }
 
 // Component is one score in the business composite.
@@ -58,7 +81,9 @@ type Result struct {
 	Business   *float64    `json:"business"`  // B, the business composite
 	Valuation  *float64    `json:"valuation"` // V, the valuation score
 	Components []Component `json:"components"`
-	Rule       string      `json:"rule"` // which rule decided, with the numbers
+	// Adjustments moved B after the weighted mean (insider trading).
+	Adjustments []Adjustment `json:"adjustments,omitempty"`
+	Rule        string       `json:"rule"` // which rule decided, with the numbers
 
 	Confidence        int      `json:"confidence"` // 0–100
 	ConfidenceLevel   string   `json:"confidenceLevel"`
@@ -69,7 +94,14 @@ type Result struct {
 // Decide applies the verdict rules from cfg.
 func Decide(in Input, cfg scoring.Config) Result {
 	r := Result{ScoringVersion: cfg.Version}
-	r.Business, r.Components = composite(in, cfg.Weights)
+	r.Business, r.Components = composite(in, cfg)
+	if r.Business != nil {
+		if a, ok := insiderAdjustment(in.Insiders, cfg.Insiders); ok {
+			b := round(min(max(*r.Business+a.Points, 1), 5), 2)
+			r.Business = &b
+			r.Adjustments = append(r.Adjustments, a)
+		}
+	}
 	r.Valuation = in.Valuation
 	r.Confidence, r.ConfidenceReasons = confidence(in)
 	r.ConfidenceLevel = level(r.Confidence, cfg.Verdict)
@@ -90,11 +122,14 @@ func Decide(in Input, cfg scoring.Config) Result {
 // composite is the weighted mean of the available scores; weights are
 // renormalized over the scores that exist. Rounded to 2 decimals so rule
 // boundaries are not decided by floating-point noise.
-func composite(in Input, w scoring.Weights) (*float64, []Component) {
+func composite(in Input, cfg scoring.Config) (*float64, []Component) {
+	w := cfg.Weights
 	comps := []Component{
 		{Name: "Business quality", Score: in.BusinessQuality, Weight: w.BusinessQuality},
 		{Name: "Growth", Score: in.Growth, Weight: w.Growth},
 		{Name: "Financial health", Score: in.FinancialHealth, Weight: w.FinancialHealth},
+		{Name: "Moat", Score: moatScore(in, cfg.Moat), Weight: w.Moat},
+		{Name: "Risk", Score: in.BusinessRisk, Weight: w.Risk},
 	}
 	var total float64
 	for _, c := range comps {
@@ -119,6 +154,50 @@ func composite(in Input, w scoring.Weights) (*float64, []Component) {
 	}
 	b := round(sum, 2)
 	return &b, comps
+}
+
+// moatScore is the width nudged by the direction (Stable is 3), within 1–5.
+func moatScore(in Input, m scoring.MoatRules) *float64 {
+	if in.MoatWidth == nil {
+		return nil
+	}
+	v := *in.MoatWidth
+	if in.MoatDirection != nil {
+		v += (*in.MoatDirection - 3) * m.DirectionStep
+	}
+	v = round(min(max(v, 1), 5), 2)
+	return &v
+}
+
+// insiderAdjustment: clear open-market buying adds points to B; heavy
+// selling outside pre-arranged plans, with no buying, takes them off.
+func insiderAdjustment(in *Insiders, r scoring.InsiderRules) (Adjustment, bool) {
+	if in == nil || r.Points == 0 {
+		return Adjustment{}, false
+	}
+	if r.BuyMinUSD > 0 && in.BoughtUSD >= r.BuyMinUSD && in.BoughtUSD > in.SoldUSD {
+		return Adjustment{Name: "Insider buying", Points: r.Points,
+			Reason: fmt.Sprintf("insiders bought %s on the open market, more than they sold", money(in.BoughtUSD))}, true
+	}
+	unplanned := in.SoldUSD - in.PlannedSoldUSD
+	if in.BoughtUSD == 0 && in.MarketCap != nil && *in.MarketCap > 0 && r.SellMinShareOfCap > 0 &&
+		unplanned >= r.SellMinShareOfCap**in.MarketCap {
+		return Adjustment{Name: "Insider selling", Points: -r.Points,
+			Reason: fmt.Sprintf("insiders sold %s outside pre-arranged plans (%.2f%% of the company) and bought none",
+				money(unplanned), unplanned / *in.MarketCap * 100)}, true
+	}
+	return Adjustment{}, false
+}
+
+func money(v float64) string {
+	switch {
+	case v >= 1e9:
+		return fmt.Sprintf("$%.1fB", v/1e9)
+	case v >= 1e6:
+		return fmt.Sprintf("$%.1fM", v/1e6)
+	default:
+		return fmt.Sprintf("$%.0fK", v/1e3)
+	}
 }
 
 // apply checks the rules in order; the first match wins. Conditions on V are

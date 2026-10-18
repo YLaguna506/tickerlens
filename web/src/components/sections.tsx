@@ -403,6 +403,18 @@ export function VerdictSection({ body, m }: { body?: ReportBody; m?: MetricsRepo
             </span>
           </div>
         ))}
+        {v.adjustments?.map((a) => (
+          <div key={a.name} className="flex items-start justify-between gap-3 border-t border-line pt-2">
+            <span>
+              <span className="text-lg">{tx(a.name)}</span>
+              <span className="block text-sm text-muted">{tx(a.reason)}</span>
+            </span>
+            <span className={`font-bold ${a.points > 0 ? "text-good" : "text-bad"}`}>
+              {a.points > 0 ? "+" : ""}
+              {a.points.toFixed(2)}
+            </span>
+          </div>
+        ))}
       </div>
 
       <div className="card space-y-2">
