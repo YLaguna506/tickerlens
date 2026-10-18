@@ -48,6 +48,11 @@ func valuationBands(b *ingest.Bundle, cfg scoring.Config, ph phase.Result, rolli
 		return nil, score, nil, notes
 	}
 
+	if d := recentSpinOff(b, rolling); d != "" {
+		score.Reasons = []string{"no valuation: " + d}
+		return nil, score, nil, []string{"valuation: " + d}
+	}
+
 	candidates := append([]string{ph.ValuationMetric}, ph.Fallbacks...)
 	if !slices.Contains(candidates, phase.PS) {
 		candidates = append(candidates, phase.PS)
@@ -93,6 +98,37 @@ func valuationBands(b *ingest.Bundle, cfg scoring.Config, ph phase.Result, rolli
 	}
 	score.Reasons = append([]string{"no valuation metric had enough data"}, notes...)
 	return nil, score, nil, notes
+}
+
+// recentSpinOff explains why no multiple is meaningful after a large spin-off
+// inside the last twelve months, or returns "". The price is then that of
+// the company without the business spun off, while the filings' twelve
+// months still include it, and its one-off gain (Honeywell's $6.6B gain on
+// the aerospace spin-off in June 2026). Tiingo records a spin-off as a price
+// factor that is not a split ratio; a split on the same day (Honeywell's
+// 1-for-2) is divided out first.
+func recentSpinOff(b *ingest.Bundle, rolling []ttm) string {
+	if len(rolling) == 0 {
+		return ""
+	}
+	end := rolling[len(rolling)-1].end
+	start := shiftDate(end, -1)
+	for _, bar := range b.Prices {
+		if bar.Date <= start || bar.SplitFactor <= 0 || bar.SplitFactor == 1 || bar.IsSplit() {
+			continue
+		}
+		f := bar.SplitFactor
+		for _, s := range b.Splits {
+			if s.Date == bar.Date {
+				f /= s.Factor
+			}
+		}
+		if r := math.Max(f, 1/f); r >= 1.15 {
+			return fmt.Sprintf("a spin-off on %s took about %.0f%% off the share price, and the last twelve months of filings (to %s) still include the business spun off",
+				bar.Date, (1-1/r)*100, end)
+		}
+	}
+	return ""
 }
 
 // choice is a metric with enough history to build bands from.
@@ -267,10 +303,14 @@ func multipleOn(metric string, t ttm, price float64) (float64, bool) {
 func perShareBasis(metric string, t ttm) (float64, string, bool) {
 	switch metric {
 	case phase.PE:
-		if t.eps == nil {
+		eps := t.valuationEPS
+		if eps == nil {
+			eps = t.eps
+		}
+		if eps == nil {
 			return 0, "EPS", false
 		}
-		return *t.eps, "EPS", true
+		return *eps, "EPS", true
 	case phase.PS:
 		if t.revenue == nil || t.shares == nil || *t.shares <= 0 {
 			return 0, "revenue per share", false

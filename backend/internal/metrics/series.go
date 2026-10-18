@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"math"
 	"time"
 
 	"github.com/YLaguna506/tickerlens/backend/internal/financials"
@@ -93,6 +94,11 @@ type ttm struct {
 	fcf       *float64
 	eps       *float64 // today's share terms
 	shares    *float64 // today's share terms
+	// valuationEPS is the EPS P/E divides by: from continuing operations
+	// where a quarter reports it, otherwise diluted EPS. continuing says it
+	// differs from diluted EPS in at least one quarter.
+	valuationEPS *float64
+	continuing   bool
 }
 
 // rollingTTM builds a TTM window for every run of four consecutive quarters,
@@ -114,6 +120,19 @@ func rollingTTM(quarters []financials.FinancialPeriod, annual []financials.Finan
 			eps:       sumField(w, func(p financials.FinancialPeriod) *float64 { return sp.perShare(p, "epsDiluted") }),
 		}
 		t.eps = round4(t.eps)
+		t.valuationEPS = round4(sumField(w, func(p financials.FinancialPeriod) *float64 {
+			total, cont := sp.perShare(p, "epsDiluted"), sp.perShare(p, "epsContinuing")
+			if cont == nil {
+				return total
+			}
+			if total == nil || math.Abs(*cont-*total) > 0.005 {
+				t.continuing = true
+			}
+			return cont
+		}))
+		if !t.continuing {
+			t.valuationEPS = t.eps // the same quarters, summed the same way
+		}
 		// Diluted shares: the latest quarter's weighted average. Q4 is rarely
 		// reported alone, so fall back to the fiscal year ending the same day,
 		// then to the previous quarter.

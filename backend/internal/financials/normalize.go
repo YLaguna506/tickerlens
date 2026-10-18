@@ -776,6 +776,9 @@ func findByEnd(periods []FinancialPeriod, end string) *FinancialPeriod {
 func missingFieldWarnings(f Financials) []string {
 	var out []string
 	for _, name := range FieldNames() {
+		if optional[name] {
+			continue
+		}
 		found := false
 		for _, list := range [][]FinancialPeriod{f.Annual, f.Quarterly} {
 			for i := range list {

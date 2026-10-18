@@ -50,6 +50,7 @@ var fields = []fieldSpec{
 		"IncomeLossFromContinuingOperationsPerDilutedShare",
 		edgar.ClassEPSConcept,
 	}},
+	{"epsContinuing", flow, "USD/shares", []string{"IncomeLossFromContinuingOperationsPerDilutedShare"}},
 	{"sharesDiluted", average, "shares", []string{"WeightedAverageNumberOfDilutedSharesOutstanding", edgar.ClassSharesConcept}},
 	{"operatingCashFlow", flow, "USD", []string{
 		"NetCashProvidedByUsedInOperatingActivities",
@@ -115,6 +116,9 @@ var helpers = []fieldSpec{
 // nonNegative fields cannot be below zero. A derived quarter that is, was
 // computed from a year restated after its quarters were filed.
 var nonNegative = map[string]bool{"revenue": true, "capex": true, "dividendsPaid": true, "buybacks": true}
+
+// optional fields are often absent for good reason and get no warning.
+var optional = map[string]bool{"epsContinuing": true}
 
 // missingHints explains common reasons a field has no data at all.
 var missingHints = map[string]string{

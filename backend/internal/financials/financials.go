@@ -29,11 +29,15 @@ type FinancialPeriod struct {
 	// Accession is the filing the revenue (or net income) figure came from.
 	Accession string `json:"accession,omitempty"`
 
-	Revenue              *float64 `json:"revenue"`
-	GrossProfit          *float64 `json:"grossProfit"`
-	OperatingIncome      *float64 `json:"operatingIncome"`
-	NetIncome            *float64 `json:"netIncome"`
-	EPSDiluted           *float64 `json:"epsDiluted"`
+	Revenue         *float64 `json:"revenue"`
+	GrossProfit     *float64 `json:"grossProfit"`
+	OperatingIncome *float64 `json:"operatingIncome"`
+	NetIncome       *float64 `json:"netIncome"`
+	EPSDiluted      *float64 `json:"epsDiluted"`
+	// EPSContinuing is diluted EPS from continuing operations, when tagged:
+	// it leaves out one-off gains and losses of businesses sold or spun off
+	// (Honeywell's aerospace spin-off). Valuation uses it when present.
+	EPSContinuing        *float64 `json:"epsContinuing,omitempty"`
 	SharesDiluted        *float64 `json:"sharesDiluted"`
 	OperatingCashFlow    *float64 `json:"operatingCashFlow"`
 	Capex                *float64 `json:"capex"`
@@ -85,6 +89,8 @@ func (p *FinancialPeriod) field(name string) **float64 {
 		return &p.NetIncome
 	case "epsDiluted":
 		return &p.EPSDiluted
+	case "epsContinuing":
+		return &p.EPSContinuing
 	case "sharesDiluted":
 		return &p.SharesDiluted
 	case "operatingCashFlow":
@@ -124,7 +130,7 @@ func (p *FinancialPeriod) Get(name string) *float64 {
 // FieldNames lists the canonical value fields in display order.
 func FieldNames() []string {
 	return []string{
-		"revenue", "grossProfit", "operatingIncome", "netIncome", "epsDiluted", "sharesDiluted",
+		"revenue", "grossProfit", "operatingIncome", "netIncome", "epsDiluted", "epsContinuing", "sharesDiluted",
 		"operatingCashFlow", "capex", "freeCashFlow",
 		"cash", "shortTermInvestments", "totalDebt", "totalEquity",
 		"interestExpense", "dividendsPaid", "buybacks", "debtRepaid", "debtIssued",

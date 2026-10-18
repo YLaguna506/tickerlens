@@ -129,6 +129,11 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	r.Growth = c.growth()
 	r.Health = c.health()
 	r.Valuation = c.valuation(r.Price, mcap)
+	if d := recentSpinOff(b, rolling); d != "" {
+		for i := range r.Valuation {
+			r.Valuation[i].Note = "not comparable with history: " + d
+		}
+	}
 	r.Returns = c.returns(mcap)
 	r.PriceChange5y = priceChange(b, sp, false)
 	r.TotalReturn5y = priceChange(b, sp, true)
@@ -166,10 +171,14 @@ type calc struct {
 	ttm       *financials.FinancialPeriod
 	ttmEPS    *float64 // today's share terms
 	epsPeriod string
-	shares    *float64 // today's share terms
-	rolling   []ttm
-	sp        splits
-	period    string // "TTM to 2026-06-27"
+	// valuationEPS is the EPS of the same window that P/E divides by
+	// (continuing operations when they differ from the total).
+	valuationEPS *float64
+	continuing   bool
+	shares       *float64 // today's share terms
+	rolling      []ttm
+	sp           splits
+	period       string // "TTM to 2026-06-27"
 }
 
 func newCalc(f financials.Financials, rolling []ttm, sp splits) *calc {
@@ -183,6 +192,7 @@ func newCalc(f financials.Financials, rolling []ttm, sp splits) *calc {
 	for i := len(rolling) - 1; i >= 0; i-- {
 		if c.ttmEPS == nil && rolling[i].eps != nil {
 			c.ttmEPS, c.epsPeriod = rolling[i].eps, "TTM to "+rolling[i].end
+			c.valuationEPS, c.continuing = rolling[i].valuationEPS, rolling[i].continuing
 		}
 		if c.shares == nil && rolling[i].shares != nil {
 			c.shares = rolling[i].shares
@@ -472,6 +482,13 @@ func (c *calc) valuation(price, mcap *float64) []Metric {
 		"market cap", mcap, "revenue", rev)
 	pe := multiple(Metric{Key: "pe", Label: "P/E", Formula: "price ÷ diluted EPS", Period: c.epsPeriod},
 		"price", price, "diluted EPS", c.ttmEPS)
+	if c.continuing {
+		pe = multiple(Metric{Key: "pe", Label: "P/E", Formula: "price ÷ diluted EPS from continuing operations", Period: c.epsPeriod},
+			"price", price, "diluted EPS from continuing operations", c.valuationEPS)
+		if c.ttmEPS != nil {
+			pe.Note = fmt.Sprintf("leaves out discontinued operations; with them, diluted EPS is $%.2f", *c.ttmEPS)
+		}
+	}
 	pb := multiple(Metric{Key: "pb", Label: "P/B", Formula: "market cap ÷ shareholders' equity", Period: "balance sheet at " + c.ttmEnd()},
 		"market cap", mcap, "equity", equity)
 	pfcf := multiple(Metric{Key: "pfcf", Label: "P/FCF", Formula: "market cap ÷ free cash flow", Period: c.period},
