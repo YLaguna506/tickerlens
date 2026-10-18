@@ -166,7 +166,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "SalesRevenueNet",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -229,7 +229,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -292,7 +292,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -356,7 +356,7 @@
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -421,7 +421,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -486,7 +486,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1415,7 +1415,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "SalesRevenueNet",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1477,7 +1477,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations (derived: YTD to 2015-09-26 minus YTD to 2015-06-27)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2015-09-26 minus YTD to 2015-06-27)",
         "revenue": "SalesRevenueNet",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1539,7 +1539,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "SalesRevenueNet",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1601,7 +1601,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "SalesRevenueNet",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1663,7 +1663,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "SalesRevenueNet",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1725,7 +1725,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2016-09-24 minus YTD to 2016-06-25)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2016-09-24 minus YTD to 2016-06-25)",
         "revenue": "SalesRevenueNet",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1787,7 +1787,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1849,7 +1849,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1912,7 +1912,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -1975,7 +1975,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2017-09-30 minus YTD to 2017-07-01)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2017-09-30 minus YTD to 2017-07-01)",
         "revenue": "Revenues",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2037,7 +2037,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2099,7 +2099,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2162,7 +2162,7 @@
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2226,7 +2226,7 @@
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2018-09-29 minus YTD to 2018-06-30)",
         "revenue": "Revenues",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2291,7 +2291,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2357,7 +2357,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2423,7 +2423,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2488,7 +2488,7 @@
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2019-09-28 minus YTD to 2019-06-29)",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2553,7 +2553,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2619,7 +2619,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2685,7 +2685,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2750,7 +2750,7 @@
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2020-09-26 minus YTD to 2020-06-27)",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2815,7 +2815,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2881,7 +2881,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {
@@ -2947,7 +2947,7 @@
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent + CommercialPaper",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
       },
       "filed": {

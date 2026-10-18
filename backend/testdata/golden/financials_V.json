@@ -194,7 +194,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
-        "totalDebt": "derived: LongTermDebt + ShortTermBorrowings",
+        "totalDebt": "derived: LongTermDebt + ShortTermBorrowings (includes commercial paper and current maturities)",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -530,7 +530,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -587,7 +587,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -644,7 +644,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -701,7 +701,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -1472,7 +1472,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2016-09-30 minus YTD to 2016-06-30)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2016-09-30 minus YTD to 2016-06-30)",
         "revenue": "Revenues (derived: YTD to 2016-09-30 minus YTD to 2016-06-30)",
-        "totalDebt": "derived: LongTermDebt + ShortTermBorrowings",
+        "totalDebt": "derived: LongTermDebt + ShortTermBorrowings (includes commercial paper and current maturities)",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -1734,7 +1734,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -1788,7 +1788,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2018-03-31 minus YTD to 2017-12-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -1842,7 +1842,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2018-06-30 minus YTD to 2018-03-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "Revenues",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2170,7 +2170,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2658,7 +2658,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2022-03-31 minus YTD to 2021-12-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2712,7 +2712,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2022-06-30 minus YTD to 2022-03-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2767,7 +2767,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2022-09-30 minus YTD to 2022-06-30)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2022-09-30 minus YTD to 2022-06-30)",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2022-09-30 minus YTD to 2022-06-30)",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2822,7 +2822,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2876,7 +2876,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2023-03-31 minus YTD to 2022-12-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2931,7 +2931,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2023-06-30 minus YTD to 2023-03-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -2988,7 +2988,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2023-09-30 minus YTD to 2023-06-30)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2023-09-30 minus YTD to 2023-06-30)",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2023-09-30 minus YTD to 2023-06-30)",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3045,7 +3045,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3101,7 +3101,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2024-03-31 minus YTD to 2023-12-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3157,7 +3157,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2024-06-30 minus YTD to 2024-03-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3214,7 +3214,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2024-09-30 minus YTD to 2024-06-30)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2024-09-30 minus YTD to 2024-06-30)",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2024-09-30 minus YTD to 2024-06-30)",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3271,7 +3271,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3327,7 +3327,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2025-03-31 minus YTD to 2024-12-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3383,7 +3383,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2025-06-30 minus YTD to 2025-03-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3439,7 +3439,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2025-09-30 minus YTD to 2025-06-30)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2025-09-30 minus YTD to 2025-06-30)",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax (derived: YTD to 2025-09-30 minus YTD to 2025-06-30)",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3495,7 +3495,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3551,7 +3551,7 @@
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2026-03-31 minus YTD to 2025-12-31)",
         "operatingIncome": "OperatingIncomeLoss",
         "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+        "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
         "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
       },
       "filed": {
@@ -3607,7 +3607,7 @@
       "operatingCashFlow": "sum of last 4 quarters",
       "operatingIncome": "sum of last 4 quarters",
       "revenue": "sum of last 4 quarters",
-      "totalDebt": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+      "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
       "totalEquity": "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
     },
     "filed": {

@@ -13,9 +13,10 @@ import (
 
 const day = 24 * time.Hour
 
-// Period lengths in days. Ranges allow for 52/53-week fiscal years.
+// Period lengths in days. Ranges allow for 52/53-week fiscal years, whose
+// quarters can run 12, 12, 12 and 16 (or 17) weeks (PepsiCo).
 func isAnnual(days int) bool  { return days >= 350 && days <= 380 }
-func isQuarter(days int) bool { return days >= 80 && days <= 100 }
+func isQuarter(days int) bool { return days >= 80 && days <= 125 }
 
 // value is one resolved number plus where it came from.
 type value struct {
@@ -67,6 +68,14 @@ func Normalize(co edgar.Company, facts *edgar.CompanyFacts, splits []Split) Fina
 	}
 
 	ttm, warning := trailing(co, out.Quarterly, out.Annual, r.terms)
+	if ttm == nil && len(out.Annual) > 0 {
+		// The latest fiscal year is also a trailing twelve months: better than
+		// leaving every TTM-based metric empty.
+		fy := out.Annual[len(out.Annual)-1]
+		fy.PeriodType = TTM
+		ttm = &fy
+		warning += fmt.Sprintf("; using FY%d instead", fy.FiscalYear)
+	}
 	out.TTM = ttm
 	if warning != "" {
 		out.Warnings = append(out.Warnings, warning)
@@ -299,45 +308,75 @@ func (r *resolver) period(co edgar.Company, pt PeriodType, fy, fq int, start, en
 	return p
 }
 
-// totalDebt adds up the debt balances reported at a date. When the filing
-// tags all current debt (DebtCurrent) and non-current long-term debt, those
-// two are the whole balance sheet. Otherwise: long-term debt (total, or
-// current + non-current) plus commercial paper and short-term borrowings.
+// totalDebt adds up the debt balances reported at a date.
+//
+//  1. All current debt (DebtCurrent) + non-current long-term debt: the whole
+//     balance sheet, nothing to double count.
+//  2. Otherwise long-term debt (LongTermDebt, which includes the current
+//     portion, or non-current + current portion) plus the short-term debt.
+//     Short-term borrowings often already include commercial paper and the
+//     current portion of long-term debt (HPE, PepsiCo). When they are at
+//     least as large as those two together, they are taken to include them,
+//     so neither is counted twice.
+//
 // Convertible notes are added only when no long-term debt is tagged, because
 // filers that tag both usually include converts in long-term debt already.
-//
-// DebtCurrent goes first because LongTermDebt includes the current portion,
-// and ShortTermBorrowings often does too (HPE's FY2025 10-K): adding them
-// would count that portion twice.
 func (r *resolver) totalDebt(end string) (float64, string, bool) {
+	get := func(name string) (value, bool) { return r.get(name, FiscalYear, end) } // instants ignore the period type
+
+	non, hasNon := get("debtNoncurrent")
+	if !hasNon {
+		non, hasNon = get("debtNoncurrentLeases")
+	}
+	if cur, ok := get("debtCurrentAll"); ok && hasNon {
+		return cur.val + non.val, "derived: " + cur.source + " + " + non.source, true
+	}
+
 	var total float64
 	var parts []string
-	add := func(name string) bool {
-		v, ok := r.get(name, FiscalYear, end) // instants ignore the period type
+	use := func(v value, ok bool) {
 		if ok {
 			total += v.val
 			parts = append(parts, v.source)
 		}
-		return ok
 	}
 
-	if cur, ok := r.get("debtCurrentAll", FiscalYear, end); ok {
-		if non, ok := r.get("debtNoncurrent", FiscalYear, end); ok {
-			return cur.val + non.val, "derived: " + cur.source + " + " + non.source, true
+	ltdCur, hasCur := get("debtCurrent")
+	ltdTotal, hasTotal := get("debtTotal")
+	if hasTotal {
+		use(ltdTotal, true)
+	} else {
+		use(non, hasNon)
+		use(ltdCur, hasCur)
+	}
+	haveLongTerm := hasTotal || hasNon || hasCur
+
+	cp, hasCP := get("commercialPaper")
+	stb, hasSTB := get("shortTermBorrowings")
+	included := 0.0
+	if hasCP {
+		included += cp.val
+	}
+	if hasCur {
+		included += ltdCur.val
+	}
+	switch {
+	case hasSTB && (hasCP || hasCur) && stb.val >= included:
+		// Short-term borrowings include commercial paper and the current
+		// portion, which the long-term part may already count.
+		total += stb.val
+		parts = append(parts, stb.source+" (includes commercial paper and current maturities)")
+		if hasCur {
+			total -= ltdCur.val
 		}
+	default:
+		use(cp, hasCP)
+		use(stb, hasSTB)
 	}
 
-	haveLongTerm := add("debtTotal")
 	if !haveLongTerm {
-		cur := add("debtCurrent")
-		non := add("debtNoncurrent")
-		haveLongTerm = cur || non
-	}
-	add("commercialPaper")
-	add("shortTermBorrowings")
-	if !haveLongTerm {
-		add("convertibleNoncurrent")
-		add("convertibleCurrent")
+		use(get("convertibleNoncurrent"))
+		use(get("convertibleCurrent"))
 	}
 	if len(parts) == 0 {
 		return 0, "", false

@@ -349,7 +349,7 @@
       "value": 23976000000,
       "unit": "usd",
       "period": "balance sheet at 2026-03-31",
-      "formula": "derived: LongTermDebtCurrent + LongTermDebtNoncurrent",
+      "formula": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent",
       "inputs": [
         {
           "name": "total debt",

@@ -94,6 +94,8 @@ var helpers = []fieldSpec{
 	{"debtCurrentAll", instant, "USD", []string{"DebtCurrent"}}, // current LTD + short-term borrowings + CP
 	{"debtCurrent", instant, "USD", []string{"LongTermDebtCurrent"}},
 	{"debtNoncurrent", instant, "USD", []string{"LongTermDebtNoncurrent"}},
+	// Non-current long-term debt including finance leases (PepsiCo's 10-Qs).
+	{"debtNoncurrentLeases", instant, "USD", []string{"LongTermDebtAndCapitalLeaseObligations"}},
 	{"commercialPaper", instant, "USD", []string{"CommercialPaper"}},
 	{"shortTermBorrowings", instant, "USD", []string{"ShortTermBorrowings"}},
 	{"convertibleNoncurrent", instant, "USD", []string{"ConvertibleDebtNoncurrent"}},
