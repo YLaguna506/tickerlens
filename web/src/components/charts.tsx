@@ -16,23 +16,12 @@ import {
 } from "recharts";
 import type { Bands, EarningsQuarter, Point, SegmentShare } from "../api";
 import { t } from "../i18n";
+import { usePalette } from "../chartTheme";
 import { monthYear, pct, price, signedPct, usd, wholePrice, yearTicks } from "../format";
-
-const GREEN = "#4cb26a";
-const INK = "#e6edf3";
-const GRID = "#2a313c";
-const AXIS = { fontSize: 12, fill: "#8b949e" };
-// Dark tooltips to match the theme.
-const TIP = {
-  contentStyle: { background: "#161b22", border: "1px solid #2a313c", borderRadius: 8, color: "#e6edf3" },
-  labelStyle: { color: "#8b949e" },
-  itemStyle: { color: "#e6edf3" },
-};
-// A white halo keeps point labels readable where they cross a line.
-const POINT_LABEL = { fontSize: 12, fill: INK, stroke: "#161b22", strokeWidth: 4, paintOrder: "stroke" } as const;
 
 /** 5-year price, area under the line. */
 export function PriceChart({ points }: { points: Point[] }) {
+  const c = usePalette();
   // One point per week keeps the SVG light; the shape is unchanged.
   const data = points.filter((_, i) => i % 5 === 0 || i === points.length - 1);
   return (
@@ -41,22 +30,22 @@ export function PriceChart({ points }: { points: Point[] }) {
         <AreaChart data={data} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={GREEN} stopOpacity={0.18} />
-              <stop offset="100%" stopColor={GREEN} stopOpacity={0.02} />
+              <stop offset="0%" stopColor={c.green} stopOpacity={0.18} />
+              <stop offset="100%" stopColor={c.green} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke={GRID} />
+          <CartesianGrid vertical={false} stroke={c.grid} />
           <XAxis
             dataKey="date"
             ticks={yearTicks(data)}
             tickFormatter={(d: string) => d.slice(0, 4)}
-            tick={AXIS}
+            tick={c.axis}
             axisLine={false}
             tickLine={false}
           />
-          <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={AXIS} axisLine={false} tickLine={false} width={48} domain={["auto", "auto"]} />
-          <Tooltip {...TIP} formatter={(v) => price(Number(v))} labelFormatter={(d) => String(d)} />
-          <Area type="monotone" dataKey="value" name={t("Price")} stroke={GREEN} strokeWidth={2.5} fill="url(#priceFill)" isAnimationActive={false} />
+          <YAxis tickFormatter={(v: number) => `$${Math.round(v)}`} tick={c.axis} axisLine={false} tickLine={false} width={48} domain={["auto", "auto"]} />
+          <Tooltip {...c.tip} formatter={(v) => price(Number(v))} labelFormatter={(d) => String(d)} />
+          <Area type="monotone" dataKey="value" name={t("Price")} stroke={c.green} strokeWidth={2.5} fill="url(#priceFill)" isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -65,21 +54,22 @@ export function PriceChart({ points }: { points: Point[] }) {
 
 /** Revenue and net income by fiscal year, plus the latest twelve months. */
 export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: number | null; netIncome: number | null }[] }) {
+  const c = usePalette();
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer>
         <LineChart data={rows} margin={{ top: 28, right: 24, left: 24, bottom: 4 }}>
-          <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} tickMargin={12} />
+          <XAxis dataKey="label" tick={c.axis} axisLine={false} tickLine={false} tickMargin={12} />
           <YAxis hide domain={[(min: number) => Math.min(0, min), "auto"]} />
-          <ReferenceLine y={0} stroke="#3b4350" strokeDasharray="4 4" />
-          <Line dataKey="revenue" name={t("Revenue")} stroke={GREEN} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
-            <LabelList dataKey="revenue" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
+          <ReferenceLine y={0} stroke={c.zero} strokeDasharray="4 4" />
+          <Line dataKey="revenue" name={t("Revenue")} stroke={c.green} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
+            <LabelList dataKey="revenue" position="top" offset={12} formatter={(v) => usd(Number(v))} style={c.pointLabel} />
           </Line>
-          <Line dataKey="netIncome" name={t("Net income")} stroke="#7fb889" strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
+          <Line dataKey="netIncome" name={t("Net income")} stroke={c.secondary} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={false}>
             {/* Above the point: below it, small profits collide with the year labels. */}
-            <LabelList dataKey="netIncome" position="top" offset={12} formatter={(v) => usd(Number(v))} style={POINT_LABEL} />
+            <LabelList dataKey="netIncome" position="top" offset={12} formatter={(v) => usd(Number(v))} style={c.pointLabel} />
           </Line>
-          <Tooltip {...TIP} formatter={(v) => usd(Number(v))} />
+          <Tooltip {...c.tip} formatter={(v) => usd(Number(v))} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -89,6 +79,7 @@ export function RevenueIncomeChart({ rows }: { rows: { label: string; revenue: n
 /** One year of the valuation multiple with cheap / fair / expensive bands.
  * The tooltip also shows that day's share price. */
 export function BandChart({ points, bands, prices }: { points: Point[]; bands: Bands; prices: Point[] }) {
+  const c = usePalette();
   const priceOn = new Map(prices.map((p) => [p.date, p.value]));
   const data = points.map((p) => ({ ...p, price: priceOn.get(p.date) ?? null }));
   const values = points.map((p) => p.value);
@@ -98,14 +89,14 @@ export function BandChart({ points, bands, prices }: { points: Point[]; bands: B
     <div className="h-72 w-full">
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <ReferenceArea y1={lo} y2={bands.cheapBelow} fill="#14301d" fillOpacity={0.9} ifOverflow="hidden" />
-          <ReferenceArea y1={bands.cheapBelow} y2={bands.expensiveAbove} fill="#2f2710" fillOpacity={0.9} ifOverflow="hidden" />
-          <ReferenceArea y1={bands.expensiveAbove} y2={hi} fill="#3a1d1c" fillOpacity={0.9} ifOverflow="hidden" />
-          <ReferenceLine y={bands.median} stroke="#d4a72c" strokeDasharray="5 5" />
-          <XAxis dataKey="date" tickFormatter={monthYear} tick={AXIS} axisLine={false} tickLine={false} minTickGap={40} />
-          <YAxis domain={[lo, hi]} tickFormatter={(v: number) => `${v.toFixed(1)}×`} tick={AXIS} axisLine={false} tickLine={false} width={52} />
+          <ReferenceArea y1={lo} y2={bands.cheapBelow} fill={c.cheap} fillOpacity={0.9} ifOverflow="hidden" />
+          <ReferenceArea y1={bands.cheapBelow} y2={bands.expensiveAbove} fill={c.fair} fillOpacity={0.9} ifOverflow="hidden" />
+          <ReferenceArea y1={bands.expensiveAbove} y2={hi} fill={c.expensive} fillOpacity={0.9} ifOverflow="hidden" />
+          <ReferenceLine y={bands.median} stroke={c.median} strokeDasharray="5 5" />
+          <XAxis dataKey="date" tickFormatter={monthYear} tick={c.axis} axisLine={false} tickLine={false} minTickGap={40} />
+          <YAxis domain={[lo, hi]} tickFormatter={(v: number) => `${v.toFixed(1)}×`} tick={c.axis} axisLine={false} tickLine={false} width={52} />
           <Tooltip content={<BandTooltip metric={bands.metric} />} />
-          <Line dataKey="value" name={bands.metric} stroke={INK} strokeWidth={2} dot={false} isAnimationActive={false} />
+          <Line dataKey="value" name={bands.metric} stroke={c.ink} strokeWidth={2} dot={false} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

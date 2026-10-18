@@ -14,6 +14,28 @@ const STYLES = {
   terminal: "border border-t-line p-1 text-t-dim hover:text-white",
 };
 
+/** Opens the report laid out for paper, which starts the print dialog
+ * ("Save as PDF"), in a new tab. */
+export function ExportButton({ reportId, ready, look }: { reportId?: string; ready: boolean; look: keyof typeof STYLES }) {
+  if (!reportId) return null;
+  const label = ready ? t("Export as PDF") : t("The report is still being built");
+  return (
+    <button
+      type="button"
+      onClick={() => window.open(`/reports/${reportId}/print`, "_blank", "noopener")}
+      disabled={!ready}
+      title={label}
+      aria-label={label}
+      className={`shrink-0 disabled:cursor-not-allowed disabled:opacity-40 ${STYLES[look]}`}
+    >
+      <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+        <path d="M14 3v5h5M12 11v6M9 14l3 3 3-3" />
+      </svg>
+    </button>
+  );
+}
+
 /** Opens the comparison page with this ticker in it. */
 export function CompareButton({ ticker, look }: { ticker?: string; look: keyof typeof STYLES }) {
   if (!ticker) return null;

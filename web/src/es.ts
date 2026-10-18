@@ -559,4 +559,13 @@ export const ES: Record<string, string> = {
   "The price asks for about as much growth as companies usually keep up for 10 years.": "El precio pide más o menos el crecimiento que las empresas suelen mantener durante 10 años.",
   "The price asks for more growth than companies usually keep up for 10 years.": "El precio pide más crecimiento del que las empresas suelen mantener durante 10 años.",
   "The price asks for far more growth than companies usually keep up for 10 years.": "El precio pide mucho más crecimiento del que las empresas suelen mantener durante 10 años.",
+  // Export PDF
+  "Export as PDF": "Exportar como PDF",
+  "Back to the report": "Volver al reporte",
+  "Choose “Save as PDF” as the printer.": "Elige “Guardar como PDF” como impresora.",
+  "Save as PDF": "Guardar como PDF",
+  "Confidence": "Confianza",
+  "10-K": "10-K",
+  "Proxy statement": "Declaración para accionistas",
+  "Report {id}, built {date}.": "Reporte {id}, creado el {date}.",
 };

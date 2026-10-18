@@ -92,6 +92,49 @@ body {
   color: var(--color-ink);
 }
 
+/* The printed report (Export PDF): see pages/PrintReport.tsx. */
+@page {
+  margin: 14mm 12mm;
+}
+.print-report .section-title {
+  font-size: 1.75rem;
+  line-height: 2.1rem;
+  break-after: avoid;
+}
+.print-report section {
+  padding-top: 1.5rem;
+}
+.print-report .fade-in {
+  animation: none;
+}
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    background-image: none !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print,
+  .print-report details.evidence {
+    display: none !important;
+  }
+  .print-report .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  /* Slightly smaller type and spacing on paper (sizes are in rem), so the
+     report fits in fewer pages; the page width stays the same. */
+  html {
+    font-size: 13.5px;
+  }
+  .print-report main {
+    padding: 0;
+  }
+}
+
 @layer components {
   .card {
     @apply rounded-2xl border border-line bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.3)] sm:p-6;

@@ -127,7 +127,7 @@ export function EvidenceList({ evidence, filingUrl }: { evidence?: Evidence[]; f
   if (!evidence?.length) return null;
   const fromProxy = evidence.every((e) => e.documentId.startsWith("proxy-"));
   return (
-    <details className="text-sm">
+    <details className="evidence text-sm">
       <summary className="cursor-pointer text-xs font-semibold text-good">
         {fromProxy ? t("Evidence from the proxy statement ({n})", { n: evidence.length }) : t("Evidence from the 10-K ({n})", { n: evidence.length })}
       </summary>

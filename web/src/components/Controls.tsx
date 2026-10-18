@@ -1,6 +1,6 @@
 // The controls at the top of every page: resync, AI model, language and design.
 
-import { CompareButton, WatchButton } from "./WatchButton";
+import { CompareButton, ExportButton, WatchButton } from "./WatchButton";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { createReport, isFinished, listModels, type Report } from "../api";
@@ -70,6 +70,7 @@ export function ReportControls({ report, look }: { report?: Report; look: Look }
     <>
       <WatchButton ticker={report?.ticker} look={look} />
       <CompareButton ticker={report?.ticker} look={look} />
+      <ExportButton reportId={report?.id} ready={Boolean(report && isFinished(report.status) && report.status !== "failed")} look={look} />
       <ResyncButton report={report} look={look} />
       <ModelSwitch look={look} />
       <LangSwitch look={look} />
