@@ -51,7 +51,7 @@ func Check(b *ingest.Bundle, r *metrics.Report, prices bool, now time.Time) []Is
 	c.calendar(f, now)
 	c.yearSums(f)
 	c.signs(f)
-	c.spikes(f)
+	c.spikes(f, b.Splits)
 	c.eps(f)
 	c.margins(f)
 	if r != nil {
@@ -174,7 +174,11 @@ func (c *checker) signs(f financials.Financials) {
 // agree is a tagging or share-terms error; for debt it is usually a tagging
 // change in that one filing (PepsiCo), sometimes a repayment and refinancing
 // (Adobe in 2024). Cash and equity swing for real too often to check.
-func (c *checker) spikes(f financials.Financials) {
+//
+// A share count restated in a later filing's terms after a split (Honeywell's
+// Q2 2025, restated after its 2026 reverse split) is expected: a jump by a
+// known split ratio is skipped.
+func (c *checker) spikes(f financials.Financials, splits []financials.Split) {
 	qs := last(f.Quarterly, recentQuarters)
 	for _, name := range []string{"totalDebt", "sharesDiluted"} {
 		sev := Error
@@ -187,6 +191,9 @@ func (c *checker) spikes(f financials.Financials) {
 				continue
 			}
 			mid := (*a + *d) / 2
+			if name == "sharesDiluted" && bySplit(*b/mid, splits) {
+				continue
+			}
 			if math.Abs(*a-*d)/math.Max(*a, *d) < 0.2 && math.Abs(*b-mid)/mid > 0.4 {
 				c.add("spike", sev, "%s %s is %s between %s and %s (%s)",
 					label(qs[i]), name, money(*b), money(*a), money(*d), qs[i].Sources[name])
@@ -275,6 +282,18 @@ func (c *checker) report(f financials.Financials, r *metrics.Report, prices bool
 			c.add("valuation", Warn, "P/E is %.1f", *m.Value)
 		}
 	}
+}
+
+// bySplit reports whether ratio matches a split's factor or its inverse.
+func bySplit(ratio float64, splits []financials.Split) bool {
+	for _, s := range splits {
+		for _, f := range []float64{s.Factor, 1 / s.Factor} {
+			if math.Abs(ratio/f-1) < 0.05 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func last(ps []financials.FinancialPeriod, n int) []financials.FinancialPeriod {

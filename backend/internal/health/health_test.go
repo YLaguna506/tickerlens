@@ -106,3 +106,15 @@ func TestRestatedYearIsNotFlagged(t *testing.T) {
 		t.Errorf("restated year flagged: %v", got)
 	}
 }
+
+// Honeywell's Q2 2025 share count, restated after its 1-for-2 reverse split.
+func TestShareJumpBySplitIsNotFlagged(t *testing.T) {
+	fin := healthy()
+	fin.Quarterly[2].SharesDiluted = f(0.5e9)
+	b := &ingest.Bundle{Financials: fin, Splits: []financials.Split{{Date: "2026-06-29", Factor: 0.5}}}
+	for _, is := range Check(b, nil, false, now) {
+		if is.Check == "spike" {
+			t.Errorf("flagged: %s", is.Detail)
+		}
+	}
+}

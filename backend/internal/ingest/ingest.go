@@ -76,6 +76,8 @@ type Bundle struct {
 	// Failed names the sources behind those warnings ("prices", "earnings",
 	// "per-class-eps"), for callers that track sections.
 	Failed []string `json:"failed,omitempty"`
+	// Splits are the stock splits from prices and restated filings.
+	Splits []financials.Split `json:"splits,omitempty"`
 	// Notes explain unusual but successful data handling.
 	Notes []string `json:"notes,omitempty"`
 }
@@ -120,18 +122,6 @@ func LacksRecentEPS(cf *edgar.CompanyFacts) bool {
 	eps, err1 := time.Parse(time.DateOnly, epsEnd)
 	income, err2 := time.Parse(time.DateOnly, incomeEnd)
 	return err1 == nil && err2 == nil && income.Sub(eps) > 210*24*time.Hour
-}
-
-// Splits lists the stock splits in daily prices, oldest first (spin-offs,
-// which Tiingo also records as split factors, are left out).
-func Splits(bars []prices.Bar) []financials.Split {
-	var out []financials.Split
-	for _, b := range bars {
-		if b.IsSplit() {
-			out = append(out, financials.Split{Date: b.Date, Factor: b.SplitFactor})
-		}
-	}
-	return out
 }
 
 // Fetch resolves the ticker and fetches all sources concurrently.
@@ -216,7 +206,8 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 
 	// Prices carry the stock splits, which normalization needs to combine
 	// per-share values filed on either side of a split.
-	b.Financials = financials.Normalize(co, facts, Splits(b.Prices))
+	b.Splits = SplitsFor(b.Prices, facts)
+	b.Financials = financials.Normalize(co, facts, b.Splits)
 
 	switch {
 	case f.Prices == nil:

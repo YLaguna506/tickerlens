@@ -30,6 +30,15 @@ func splitsFrom(bars []prices.Bar) splits {
 	return out
 }
 
+// splitsOf converts the bundle's splits (prices and restated filings).
+func splitsOf(list []financials.Split) splits {
+	out := make(splits, 0, len(list))
+	for _, s := range list {
+		out = append(out, split{date: s.Date, factor: s.Factor})
+	}
+	return out
+}
+
 // after multiplies the factors of every split dated after date.
 func (s splits) after(date string) float64 {
 	f := 1.0

@@ -104,6 +104,9 @@ type Charts struct {
 func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	f := b.Financials
 	sp := splitsFrom(b.Prices)
+	if b.Splits != nil {
+		sp = splitsOf(b.Splits)
+	}
 	rolling := rollingTTM(f.Quarterly, f.Annual, sp)
 
 	r := Report{Ticker: b.Company.Ticker, Name: b.Company.Name, ScoringVersion: cfg.Version}
