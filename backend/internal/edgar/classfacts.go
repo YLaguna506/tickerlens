@@ -257,12 +257,20 @@ func SelectClass(filing Filing, facts []DimFact) (eps, shares []Fact, note strin
 			used["all classes (same EPS)"] = true
 			continue
 		}
-		if v, ok := byClass["CommonClassAMember"]; ok {
-			eps = append(eps, mk(p, v))
-			if s, ok := sharesBy[p]["CommonClassAMember"]; ok {
-				shares = append(shares, mk(p, s))
+		// Class A, or the plain common stock beside a Class B (Hershey):
+		// the publicly traded class.
+		for _, class := range []struct{ member, name string }{
+			{"CommonClassAMember", "Class A"},
+			{"CommonStockMember", "common stock"},
+		} {
+			if v, ok := byClass[class.member]; ok {
+				eps = append(eps, mk(p, v))
+				if s, ok := sharesBy[p][class.member]; ok {
+					shares = append(shares, mk(p, s))
+				}
+				used[class.name] = true
+				break
 			}
-			used["Class A"] = true
 		}
 	}
 	var names []string

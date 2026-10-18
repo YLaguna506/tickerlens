@@ -257,7 +257,7 @@
       "fiscalYear": 2017,
       "startDate": "2016-09-25",
       "endDate": "2017-09-30",
-      "accession": "0000320193-18-000145",
+      "accession": "0000320193-19-000119",
       "revenue": 229234000000,
       "grossProfit": 88186000000,
       "operatingIncome": 61344000000,
@@ -290,7 +290,7 @@
         "netIncome": "NetIncomeLoss",
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
-        "revenue": "Revenues",
+        "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
@@ -308,7 +308,7 @@
         "netIncome": "2019-10-31",
         "operatingCashFlow": "2019-10-31",
         "operatingIncome": "2019-10-31",
-        "revenue": "2018-11-05",
+        "revenue": "2019-10-31",
         "sharesDiluted": "2019-10-31",
         "totalEquity": "2020-10-30"
       }
@@ -320,7 +320,7 @@
       "fiscalYear": 2018,
       "startDate": "2017-10-01",
       "endDate": "2018-09-29",
-      "accession": "0000320193-18-000145",
+      "accession": "0000320193-20-000096",
       "revenue": 265595000000,
       "grossProfit": 101839000000,
       "operatingIncome": 70898000000,
@@ -353,7 +353,7 @@
         "netIncome": "NetIncomeLoss",
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
-        "revenue": "Revenues",
+        "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
@@ -372,7 +372,7 @@
         "netIncome": "2020-10-30",
         "operatingCashFlow": "2020-10-30",
         "operatingIncome": "2020-10-30",
-        "revenue": "2018-11-05",
+        "revenue": "2020-10-30",
         "sharesDiluted": "2020-10-30",
         "shortTermInvestments": "2019-10-31",
         "totalEquity": "2021-10-29"
@@ -2003,7 +2003,7 @@
       "fiscalQuarter": 1,
       "startDate": "2017-10-01",
       "endDate": "2017-12-30",
-      "accession": "0000320193-18-000145",
+      "accession": "0000320193-19-000119",
       "revenue": 88293000000,
       "grossProfit": 33912000000,
       "operatingIncome": 26274000000,
@@ -2035,7 +2035,7 @@
         "netIncome": "NetIncomeLoss",
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
         "operatingIncome": "OperatingIncomeLoss",
-        "revenue": "Revenues",
+        "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
@@ -2052,7 +2052,7 @@
         "netIncome": "2019-10-31",
         "operatingCashFlow": "2019-01-30",
         "operatingIncome": "2019-01-30",
-        "revenue": "2018-11-05",
+        "revenue": "2019-10-31",
         "sharesDiluted": "2019-01-30",
         "totalEquity": "2019-05-01"
       }
@@ -2065,7 +2065,7 @@
       "fiscalQuarter": 2,
       "startDate": "2017-12-31",
       "endDate": "2018-03-31",
-      "accession": "0000320193-18-000145",
+      "accession": "0000320193-19-000119",
       "revenue": 61137000000,
       "grossProfit": 23422000000,
       "operatingIncome": 15894000000,
@@ -2097,7 +2097,7 @@
         "netIncome": "NetIncomeLoss",
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2018-03-31 minus YTD to 2017-12-30)",
         "operatingIncome": "OperatingIncomeLoss",
-        "revenue": "Revenues",
+        "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
@@ -2114,7 +2114,7 @@
         "netIncome": "2019-10-31",
         "operatingCashFlow": "2019-05-01",
         "operatingIncome": "2019-05-01",
-        "revenue": "2018-11-05",
+        "revenue": "2019-10-31",
         "sharesDiluted": "2019-05-01",
         "totalEquity": "2019-07-31"
       }
@@ -2127,7 +2127,7 @@
       "fiscalQuarter": 3,
       "startDate": "2018-04-01",
       "endDate": "2018-06-30",
-      "accession": "0000320193-18-000145",
+      "accession": "0000320193-19-000119",
       "revenue": 53265000000,
       "grossProfit": 20421000000,
       "operatingIncome": 12612000000,
@@ -2160,7 +2160,7 @@
         "netIncome": "NetIncomeLoss",
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2018-06-30 minus YTD to 2018-03-31)",
         "operatingIncome": "OperatingIncomeLoss",
-        "revenue": "Revenues",
+        "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "sharesDiluted": "WeightedAverageNumberOfDilutedSharesOutstanding",
         "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
@@ -2178,7 +2178,7 @@
         "netIncome": "2019-10-31",
         "operatingCashFlow": "2019-07-31",
         "operatingIncome": "2019-07-31",
-        "revenue": "2018-11-05",
+        "revenue": "2019-10-31",
         "sharesDiluted": "2019-07-31",
         "totalEquity": "2019-07-31"
       }
@@ -2191,7 +2191,7 @@
       "fiscalQuarter": 4,
       "startDate": "2018-07-01",
       "endDate": "2018-09-29",
-      "accession": "0000320193-18-000145",
+      "accession": "0000320193-19-000119",
       "revenue": 62900000000,
       "grossProfit": 24084000000,
       "operatingIncome": 16118000000,
@@ -2224,7 +2224,7 @@
         "netIncome": "NetIncomeLoss",
         "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities (derived: YTD to 2018-09-29 minus YTD to 2018-06-30)",
         "operatingIncome": "OperatingIncomeLoss (derived: YTD to 2018-09-29 minus YTD to 2018-06-30)",
-        "revenue": "Revenues",
+        "revenue": "RevenueFromContractWithCustomerExcludingAssessedTax",
         "shortTermInvestments": "MarketableSecuritiesCurrent",
         "totalDebt": "derived: LongTermDebtNoncurrent + LongTermDebtCurrent + CommercialPaper",
         "totalEquity": "StockholdersEquity"
@@ -2242,7 +2242,7 @@
         "netIncome": "2019-10-31",
         "operatingCashFlow": "2020-10-30",
         "operatingIncome": "2020-10-30",
-        "revenue": "2018-11-05",
+        "revenue": "2019-10-31",
         "shortTermInvestments": "2019-10-31",
         "totalEquity": "2021-10-29"
       }

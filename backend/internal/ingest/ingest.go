@@ -108,7 +108,8 @@ func LacksRecentEPS(cf *edgar.CompanyFacts) bool {
 		}
 		return max
 	}
-	epsEnd := latest("EarningsPerShareDiluted", "USD/shares")
+	epsEnd := max(latest("EarningsPerShareDiluted", "USD/shares"),
+		latest("IncomeLossFromContinuingOperationsPerDilutedShare", "USD/shares"))
 	if epsEnd == "" {
 		return true
 	}

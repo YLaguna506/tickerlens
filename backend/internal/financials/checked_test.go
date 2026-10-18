@@ -39,7 +39,10 @@ func TestHandCheckedValues(t *testing.T) {
 
 		// Snowflake FY2025 10-K (fiscal year ended 2025-01-31): loss-making.
 		{"SNOW", FiscalYear, "2025-01-31", 2025, 0, "revenue", 3_626_396e3, false},
-		{"SNOW", FiscalYear, "2025-01-31", 2025, 0, "netIncome", -1_289_212e3, false},
+		// Net loss attributable to Snowflake; the total including
+		// non-controlling interests is −1,289,212 (ProfitLoss, and what the
+		// 2026 proxy statement tags as NetIncomeLoss).
+		{"SNOW", FiscalYear, "2025-01-31", 2025, 0, "netIncome", -1_285_640e3, false},
 		{"SNOW", FiscalYear, "2025-01-31", 2025, 0, "epsDiluted", -3.86, false},
 		// Q4 FY2026 = FY2026 − 9M YTD = 4,683,946 − 3,399,952 (thousands).
 		{"SNOW", FiscalQuarter, "2026-01-31", 2026, 4, "revenue", 1_283_994e3, true},

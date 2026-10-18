@@ -44,7 +44,12 @@ var fields = []fieldSpec{
 	}},
 	// The per-class concepts are filled in by ingest from filing documents when
 	// companyfacts has no EPS (companies with several share classes).
-	{"epsDiluted", flow, "USD/shares", []string{"EarningsPerShareDiluted", edgar.ClassEPSConcept}},
+	// Airbnb tags only the continuing-operations EPS.
+	{"epsDiluted", flow, "USD/shares", []string{
+		"EarningsPerShareDiluted",
+		"IncomeLossFromContinuingOperationsPerDilutedShare",
+		edgar.ClassEPSConcept,
+	}},
 	{"sharesDiluted", average, "shares", []string{"WeightedAverageNumberOfDilutedSharesOutstanding", edgar.ClassSharesConcept}},
 	{"operatingCashFlow", flow, "USD", []string{
 		"NetCashProvidedByUsedInOperatingActivities",
@@ -53,6 +58,7 @@ var fields = []fieldSpec{
 	{"capex", flow, "USD", []string{
 		"PaymentsToAcquirePropertyPlantAndEquipment",
 		"PaymentsToAcquireProductiveAssets",
+		"PaymentsToAcquireOtherPropertyPlantAndEquipment", // Eli Lilly
 	}},
 	{"cash", instant, "USD", []string{
 		"CashAndCashEquivalentsAtCarryingValue",
@@ -71,6 +77,7 @@ var fields = []fieldSpec{
 		"InterestExpense",
 		"InterestExpenseNonoperating",
 		"InterestExpenseDebt",
+		"InterestAndDebtExpense", // ConocoPhillips
 	}},
 	{"dividendsPaid", flow, "USD", []string{"PaymentsOfDividends", "PaymentsOfDividendsCommonStock"}},
 	{"buybacks", flow, "USD", []string{"PaymentsForRepurchaseOfCommonStock"}},
@@ -90,7 +97,10 @@ var fields = []fieldSpec{
 // They are not exposed on FinancialPeriod.
 var helpers = []fieldSpec{
 	{"costOfRevenue", flow, "USD", []string{"CostOfRevenue", "CostOfGoodsAndServicesSold"}},
-	{"debtTotal", instant, "USD", []string{"LongTermDebt"}},
+	{"debtTotal", instant, "USD", []string{
+		"LongTermDebt",
+		"LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities", // Chevron
+	}},
 	{"debtCurrentAll", instant, "USD", []string{"DebtCurrent"}}, // current LTD + short-term borrowings + CP
 	{"debtCurrent", instant, "USD", []string{"LongTermDebtCurrent"}},
 	{"debtNoncurrent", instant, "USD", []string{"LongTermDebtNoncurrent"}},
@@ -101,6 +111,10 @@ var helpers = []fieldSpec{
 	{"convertibleNoncurrent", instant, "USD", []string{"ConvertibleDebtNoncurrent"}},
 	{"convertibleCurrent", instant, "USD", []string{"ConvertibleNotesPayableCurrent"}},
 }
+
+// nonNegative fields cannot be below zero. A derived quarter that is, was
+// computed from a year restated after its quarters were filed.
+var nonNegative = map[string]bool{"revenue": true, "capex": true, "dividendsPaid": true, "buybacks": true}
 
 // missingHints explains common reasons a field has no data at all.
 var missingHints = map[string]string{

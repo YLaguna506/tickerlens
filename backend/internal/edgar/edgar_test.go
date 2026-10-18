@@ -1,6 +1,7 @@
 package edgar
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -92,5 +93,15 @@ func TestCompanyFacts(t *testing.T) {
 	}
 	if _, ok := facts.Facts["us-gaap"]["NetIncomeLoss"]; !ok {
 		t.Error("expected us-gaap NetIncomeLoss in fixture")
+	}
+}
+
+// Some new registrants' feeds have the CIK as a string (ExxonMobil Holdings).
+func TestCompanyFactsCIKAsString(t *testing.T) {
+	for _, raw := range []string{`{"cik": 2115436}`, `{"cik": "2115436"}`} {
+		var cf CompanyFacts
+		if err := json.Unmarshal([]byte(raw), &cf); err != nil || cf.CIK.String() != "2115436" {
+			t.Errorf("%s: cik %q, err %v", raw, cf.CIK, err)
+		}
 	}
 }

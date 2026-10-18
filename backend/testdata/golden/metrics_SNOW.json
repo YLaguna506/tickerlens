@@ -66,14 +66,14 @@
     {
       "key": "netMargin",
       "label": "Net margin",
-      "value": -0.20023692431173543,
+      "value": -0.20071184016183571,
       "unit": "percent",
       "period": "TTM to 2026-07-31",
       "formula": "net income ÷ revenue",
       "inputs": [
         {
           "name": "net income",
-          "value": -1088217000
+          "value": -1090798000
         },
         {
           "name": "revenue",
@@ -629,7 +629,7 @@
     "valuationMetric": "P/S",
     "fallbacks": [],
     "lowConfidence": false,
-    "reason": "revenue up 32% in a year while net margin is -20.0%",
+    "reason": "revenue up 32% in a year while net margin is -20.1%",
     "checks": [
       {
         "question": "Is revenue growing?",
@@ -639,7 +639,7 @@
       {
         "question": "Is it profitable?",
         "answer": false,
-        "detail": "TTM net income -$1.1B (net margin -20.0%)"
+        "detail": "TTM net income -$1.1B (net margin -20.1%)"
       },
       {
         "question": "Is it returning capital to shareholders?",
@@ -752,19 +752,19 @@
       },
       {
         "date": "2023-01-31",
-        "value": -797526000
+        "value": -796705000
       },
       {
         "date": "2024-01-31",
-        "value": -837990000
+        "value": -836097000
       },
       {
         "date": "2025-01-31",
-        "value": -1289212000
+        "value": -1285640000
       },
       {
         "date": "2026-01-31",
-        "value": -1329035000
+        "value": -1331616000
       }
     ],
     "valuation1y": [

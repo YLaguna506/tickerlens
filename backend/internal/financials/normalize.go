@@ -67,6 +67,17 @@ func Normalize(co edgar.Company, facts *edgar.CompanyFacts, splits []Split) Fina
 		out.Warnings = append(out.Warnings, fmt.Sprintf("%d quarters skipped: could not place them in a fiscal year", skipped))
 	}
 
+	if f := shareScale(out); f != 1 {
+		for _, list := range [][]FinancialPeriod{out.Annual, out.Quarterly} {
+			for i := range list {
+				if v := list[i].SharesDiluted; v != nil && *v < 1e6 {
+					list[i].SharesDiluted = ptr(*v * f)
+					list[i].Sources["sharesDiluted"] += fmt.Sprintf(" (filed in %s; scaled)", map[float64]string{1e3: "thousands", 1e6: "millions"}[f])
+				}
+			}
+		}
+	}
+
 	ttm, warning := trailing(co, out.Quarterly, out.Annual, r.terms)
 	if ttm == nil && len(out.Annual) > 0 {
 		// The latest fiscal year is also a trailing twelve months: better than
@@ -84,6 +95,34 @@ func Normalize(co edgar.Company, facts *edgar.CompanyFacts, splits []Split) Fina
 	return out
 }
 
+// shareScale detects share counts filed without their scale (McDonald's tags
+// 718 for 718 million): net income ÷ EPS gives the real count. It returns the
+// factor to multiply such counts by, or 1.
+func shareScale(f Financials) float64 {
+	votes := map[float64]int{}
+	for _, list := range [][]FinancialPeriod{f.Annual, f.Quarterly} {
+		for _, p := range list {
+			ni, eps, sh := p.NetIncome, p.EPSDiluted, p.SharesDiluted
+			if ni == nil || eps == nil || sh == nil || *sh <= 0 || *sh >= 1e6 || math.Abs(*eps) < 0.05 {
+				continue
+			}
+			ratio := *ni / *eps / *sh
+			for _, factor := range []float64{1e3, 1e6} {
+				if ratio > factor*0.8 && ratio < factor*1.25 {
+					votes[factor]++
+				}
+			}
+		}
+	}
+	best, n := 1.0, 0
+	for factor, v := range votes {
+		if v > n {
+			best, n = factor, v
+		}
+	}
+	return best
+}
+
 // --- Reading concepts ---------------------------------------------------------
 
 // resolver holds every concept series, grouped by canonical field.
@@ -91,6 +130,9 @@ type resolver struct {
 	specs  map[string]fieldSpec
 	series map[string][]series // field name → one series per concept, in priority order
 	terms  shareTerms
+	// noDebtAfter: periods ending after this date have no debt, so their
+	// total debt is zero rather than unknown ("" when not debt-free).
+	noDebtAfter string
 }
 
 func newResolver(gaap map[string]edgar.Concept, splits []Split) *resolver {
@@ -107,10 +149,11 @@ func newResolver(gaap map[string]edgar.Concept, splits []Split) *resolver {
 				if !ok {
 					continue
 				}
-				r.series[spec.name] = append(r.series[spec.name], buildSeries(concept, c.Units[spec.unit], spec.kind, terms))
+				r.series[spec.name] = append(r.series[spec.name], buildSeries(concept, c.Units[spec.unit], spec.kind, terms, nonNegative[spec.name]))
 			}
 		}
 	}
+	r.noDebtAfter = noDebtAfter(gaap)
 	return r
 }
 
@@ -118,7 +161,12 @@ func newResolver(gaap map[string]edgar.Concept, splits []Split) *resolver {
 // that filings only report as year-to-date totals. terms is set for per-share
 // concepts, so YTD values filed on either side of a stock split are put in the
 // same share terms before one is subtracted from the other.
-func buildSeries(concept string, facts []edgar.Fact, kind fieldKind, terms shareTerms) series {
+//
+// nonNeg marks fields that cannot be negative. When such a quarter comes out
+// negative, the year was restated after its quarters were filed (Dollar
+// Tree's FY2023 without Family Dollar); it is derived from the year as
+// originally reported instead.
+func buildSeries(concept string, facts []edgar.Fact, kind fieldKind, terms shareTerms, nonNeg bool) series {
 	s := series{annual: map[string]value{}, quarterly: map[string]value{}, instant: map[string]value{}}
 
 	// The same period is reported by several filings (original + later
@@ -126,13 +174,20 @@ func buildSeries(concept string, facts []edgar.Fact, kind fieldKind, terms share
 	// restatement.
 	type dates struct{ start, end string }
 	latest := map[dates]edgar.Fact{}
+	original := map[dates]edgar.Fact{}
 	for _, f := range facts {
 		if (kind == instant) != (f.Start == "") {
 			continue // wrong shape for this field
 		}
+		if isProxy(f.Form) {
+			continue
+		}
 		k := dates{f.Start, f.End}
 		if cur, ok := latest[k]; !ok || newer(f, cur) {
 			latest[k] = f
+		}
+		if cur, ok := original[k]; !ok || newer(cur, f) {
+			original[k] = f
 		}
 	}
 
@@ -187,8 +242,16 @@ func buildSeries(concept string, facts []edgar.Fact, kind fieldKind, terms share
 				prevVal /= f
 				source += ", restated for a " + splitRatio(f) + " split"
 			}
+			val := cur.val - prevVal
+			if nonNeg && val < 0 {
+				orig := original[dates{formatDate(cur.start), key}]
+				if alt := orig.Val - prevVal; orig.Val != cur.val && alt >= 0 {
+					val = alt
+					source += ", using the year as filed on " + orig.Filed + ", before it was restated"
+				}
+			}
 			s.quarterly[key] = value{
-				val:    round4(cur.val - prevVal),
+				val:    round4(val),
 				start:  qStart,
 				end:    cur.end,
 				accn:   cur.accn,
@@ -200,9 +263,15 @@ func buildSeries(concept string, facts []edgar.Fact, kind fieldKind, terms share
 	return s
 }
 
-// get returns the first concept's value for a field and period.
+// get returns the first concept's value for a field and period. For revenue,
+// whose concepts are synonyms, a later concept's value wins when it was filed
+// over a year after the first one's: the company moved to that concept and
+// kept re-reporting the period under it (General Mills' "Revenues" holds one
+// stray FY2024 figure).
 func (r *resolver) get(field string, pt PeriodType, end string) (value, bool) {
 	kind := r.specs[field].kind
+	var best value
+	found := false
 	for _, s := range r.series[field] {
 		var m map[string]value
 		switch {
@@ -213,11 +282,75 @@ func (r *resolver) get(field string, pt PeriodType, end string) (value, bool) {
 		default:
 			m = s.quarterly
 		}
-		if v, ok := m[end]; ok {
-			return v, true
+		v, ok := m[end]
+		switch {
+		case !ok:
+		case !found:
+			best, found = v, true
+			if field != "revenue" {
+				return best, true
+			}
+		case filedApart(best.filed, v.filed) > 300:
+			best = v
 		}
 	}
-	return value{}, false
+	return best, found
+}
+
+// isProxy reports proxy statements (DEF 14A and the like). Their pay-versus-
+// performance tables tag net income, often in millions without the scale
+// (Medtronic's 4,662 for $4,662 million), and are filed after the 10-K, so
+// they would otherwise win as the latest value.
+func isProxy(form string) bool {
+	return strings.Contains(form, "14A") || strings.Contains(form, "14C")
+}
+
+// filedApart is the number of days from filing date a to b.
+func filedApart(a, b string) int {
+	ta, ok1 := parseDate(a)
+	tb, ok2 := parseDate(b)
+	if !ok1 || !ok2 {
+		return 0
+	}
+	return int(tb.Sub(ta) / day)
+}
+
+// noDebtAfter returns the date after which the company has had no debt: the
+// last time any debt balance, debt cash flow or interest expense was above
+// zero, when that is over a year before its latest filing (Palantir repaid
+// its loans in 2021, Zoom its notes in 2019). "" means the debt is recent or
+// ongoing; then a period without tagged debt has unknown debt, not zero,
+// because the company may tag it under its own concepts (Caterpillar, Deere).
+func noDebtAfter(gaap map[string]edgar.Concept) string {
+	var lastDebt, lastFiled string
+	for name, c := range gaap {
+		lower := strings.ToLower(name)
+		debtLike := strings.Contains(lower, "debt") || strings.Contains(lower, "borrowing") ||
+			strings.Contains(lower, "notespayable") || strings.HasPrefix(lower, "interestexpense")
+		owned := strings.Contains(lower, "securities") || strings.Contains(lower, "investment") ||
+			strings.Contains(lower, "receivable") || strings.Contains(lower, "availableforsale") ||
+			strings.Contains(lower, "heldtomaturity") || strings.Contains(lower, "capacity")
+		for _, facts := range c.Units {
+			for _, f := range facts {
+				lastFiled = max(lastFiled, f.End)
+				if debtLike && !owned && f.Val != 0 {
+					lastDebt = max(lastDebt, f.End)
+				}
+			}
+		}
+	}
+	last, ok1 := parseDate(lastFiled)
+	debt, ok2 := parseDate(lastDebt)
+	switch {
+	case !ok1:
+		return ""
+	case !ok2:
+		return "0000-00-00" // never had any
+	case last.Sub(debt) > 365*day:
+		return lastDebt
+	default:
+		return ""
+	}
 }
 
 type span struct{ start, end time.Time }
@@ -304,6 +437,12 @@ func (r *resolver) period(co edgar.Company, pt PeriodType, fy, fq int, start, en
 	if v, src, ok := r.totalDebt(endKey); ok {
 		p.TotalDebt = ptr(v)
 		p.Sources["totalDebt"] = src
+	} else if r.noDebtAfter != "" && endKey > r.noDebtAfter {
+		p.TotalDebt = ptr(0.0)
+		p.Sources["totalDebt"] = "no debt: no debt, borrowings or interest expense reported"
+		if r.noDebtAfter != "0000-00-00" {
+			p.Sources["totalDebt"] += " since " + r.noDebtAfter
+		}
 	}
 	return p
 }
@@ -553,6 +692,18 @@ func trailing(co edgar.Company, quarters, annual []FinancialPeriod, terms shareT
 				filed = max(filed, q[i].Filed[spec.name])
 			}
 			if !ok {
+				// Interest expense not reported every quarter (Eli Lilly
+				// in 2026): the latest fiscal year, if it is recent, is the
+				// closest twelve months for interest coverage. Other fields
+				// stay empty; metrics falls back to fiscal years itself.
+				if spec.name != "interestExpense" {
+					continue
+				}
+				if fy := latestYear(annual); fy != nil && fy.EndDate >= q[0].StartDate && fy.Get(spec.name) != nil {
+					*t.field(spec.name) = ptr(*fy.Get(spec.name))
+					t.Sources[spec.name] = fmt.Sprintf("FY%d (not reported for every quarter)", fy.FiscalYear)
+					t.Filed[spec.name] = fy.Filed[spec.name]
+				}
 				continue
 			}
 			sum, restated := 0.0, false
@@ -603,6 +754,13 @@ func trailing(co edgar.Company, quarters, annual []FinancialPeriod, terms shareT
 		t.Sources["freeCashFlow"] = "derived: operatingCashFlow − capex"
 	}
 	return &t, ""
+}
+
+func latestYear(annual []FinancialPeriod) *FinancialPeriod {
+	if len(annual) == 0 {
+		return nil
+	}
+	return &annual[len(annual)-1]
 }
 
 func findByEnd(periods []FinancialPeriod, end string) *FinancialPeriod {

@@ -70,6 +70,16 @@ func TestSelectClass(t *testing.T) {
 			wantEPS: 8.04, wantShares: 12.3e9, wantNote: "all classes (same EPS)",
 		},
 		{
+			name: "EPS differs: use the common stock beside a Class B (Hershey)",
+			facts: []DimFact{
+				dim("EarningsPerShareDiluted", "CommonStockMember", 2.26),
+				dim("EarningsPerShareDiluted", "CommonClassBMember", 2.11),
+				dim("WeightedAverageNumberOfDilutedSharesOutstanding", "CommonStockMember", 203e6),
+				dim("WeightedAverageNumberOfDilutedSharesOutstanding", "CommonClassBMember", 60e6),
+			},
+			wantEPS: 2.26, wantShares: 203e6, wantNote: "common stock",
+		},
+		{
 			name: "EPS differs and there is no Class A: skip",
 			facts: []DimFact{
 				dim("EarningsPerShareDiluted", "CommonClassBMember", 1.0),

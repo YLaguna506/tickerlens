@@ -25,8 +25,10 @@ type Company struct {
 
 // CompanyFacts is the raw companyfacts document.
 type CompanyFacts struct {
-	CIK        int    `json:"cik"`
-	EntityName string `json:"entityName"`
+	// CIK is a number, except for some new registrants, whose feed has it
+	// as a string (ExxonMobil Holdings in 2026); json.Number accepts both.
+	CIK        json.Number `json:"cik"`
+	EntityName string      `json:"entityName"`
 	// Facts maps taxonomy ("us-gaap", "dei") → concept name → data.
 	Facts map[string]map[string]Concept `json:"facts"`
 }
