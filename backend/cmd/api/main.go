@@ -16,10 +16,12 @@ import (
 	"time"
 
 	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
+	"github.com/YLaguna506/tickerlens/backend/internal/fetch"
 	"github.com/YLaguna506/tickerlens/backend/internal/httpapi"
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
 	"github.com/YLaguna506/tickerlens/backend/internal/scoring"
+	"github.com/YLaguna506/tickerlens/backend/internal/screener"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
 )
 
@@ -107,6 +109,34 @@ func run(logger *slog.Logger) error {
 		logger.Warn("AGENTS_URL not set: reports will not include AI analysis")
 	}
 
+	// Request contexts derive from baseCtx, so cancelling it on shutdown also
+	// ends long-lived requests such as event streams, and running screens.
+	baseCtx, cancelRequests := context.WithCancel(context.Background())
+	defer cancelRequests()
+
+	// The screener scans without the AI: SEC data for every company, then
+	// prices for the strongest. Neither stage needs earnings estimates or
+	// insider trades (Alpha Vantage allows 25 requests a day).
+	fundamentals, priced := *fetcher, *fetcher
+	fundamentals.Prices = nil
+	for _, f := range []*ingest.Fetcher{&fundamentals, &priced} {
+		f.Earnings, f.Insiders, f.Calendar = nil, nil, nil
+	}
+	screens := store.NewScreens(pool)
+	scr := &screener.Screener{
+		Fundamentals: &fundamentals,
+		Priced:       &priced,
+		Store:        screens,
+		Config:       scoringCfg,
+		Logger:       logger,
+		Base:         baseCtx,
+		Workers:      4,
+	}
+	if err := scr.Resume(ctx); err != nil {
+		logger.Warn("could not resume screens", "err", err)
+	}
+	datasets := fetch.New(fetch.Options{Name: "datasets", Cache: cache, Logger: logger})
+
 	router := httpapi.NewRouter(httpapi.Deps{
 		Logger:    logger,
 		Reports:   reports,
@@ -115,14 +145,13 @@ func run(logger *slog.Logger) error {
 		Tickers:   fetcher.SEC,
 		Models:    models,
 		Watchlist: store.NewWatchlist(pool),
+		Screener:  scr,
+		Screens:   screens,
+		Universe:  func(ctx context.Context) []store.ScreenMember { return screener.SP500(ctx, datasets) },
 		Calendar:  fetcher.Calendar,
 		Ready:     pool.Ping,
 	})
 
-	// Request contexts derive from baseCtx, so cancelling it on shutdown also
-	// ends long-lived requests such as event streams.
-	baseCtx, cancelRequests := context.WithCancel(context.Background())
-	defer cancelRequests()
 	addr := envOr("HTTP_ADDR", ":8080")
 	srv := &http.Server{
 		Addr:              addr,
@@ -159,6 +188,7 @@ func run(logger *slog.Logger) error {
 		logger.Warn("reports still running at shutdown", "err", err)
 	}
 	cancelRequests()
+	scr.Wait() // a cancelled screen stays "scanning"/"pricing" and resumes next start
 	if err := srv.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("shutdown: %w", err)
 	}

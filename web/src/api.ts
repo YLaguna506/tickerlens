@@ -486,3 +486,61 @@ export interface InsiderSummary {
   signal: "buying" | "selling" | "none";
   trades: InsiderTrade[];
 }
+
+// --- Screener ----------------------------------------------------------------------
+
+/** One company in a screen. Stage: scanned, queued (waiting for its price),
+ * priced, below (business under the bar), capped (over the price cap), failed. */
+export interface ScreenResult {
+  ticker: string;
+  name: string;
+  sector?: string;
+  stage: "scanned" | "queued" | "priced" | "below" | "capped" | "failed";
+  error?: string;
+  kind?: "bank" | "broker" | "insurer" | "reit";
+  limited: boolean;
+  phase?: string;
+  business: number | null; // growth and health, weighted (no AI)
+  growth: number | null;
+  health: number | null;
+  valuation: number | null;
+  metric?: string;
+  zone?: "cheap" | "fair" | "expensive";
+  percentile: number | null;
+  current: number | null;
+  price: number | null;
+  priceDate?: string;
+  cheapPrice: number | null;
+  medianPrice: number | null;
+  expensivePrice: number | null;
+  marketCap: number | null;
+  expectations?: "low" | "in line" | "high" | "very high";
+}
+
+export interface ScreenState {
+  screen: {
+    id: string;
+    universe: "sp500" | "watchlist" | "custom";
+    status: "scanning" | "pricing" | "done" | "cancelled" | "failed";
+    params: { minBusiness: number; maxPriced: number };
+    total: number;
+    error?: string;
+    createdAt: string;
+    finishedAt?: string;
+  };
+  running: boolean;
+  progress: { total: number; scanned: number; failed: number; queued: number; priced: number; below: number; capped: number };
+  results: ScreenResult[];
+}
+
+/** The latest screen, or null before the first one. */
+export const getLatestScreen = () =>
+  request<ScreenState>("/api/screens/latest").catch((e) => {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  });
+
+export const startScreen = (body: { universe: string; tickers?: string; minBusiness: number; maxPriced: number }) =>
+  request<ScreenState>("/api/screens", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+export const cancelScreen = (id: string) => request<{ cancelled: boolean }>(`/api/screens/${id}/cancel`, { method: "POST" });

@@ -11,6 +11,7 @@ import (
 	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
 	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
+	"github.com/YLaguna506/tickerlens/backend/internal/screener"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
 )
 
@@ -63,6 +64,12 @@ type Deps struct {
 	// Calendar updates the watchlist's earnings dates between reports (nil
 	// without an Alpha Vantage key).
 	Calendar Calendar
+	// Screener and Screens are nil without the database (the screener's
+	// routes are left out). Universe lists the S&P 500 (default: the
+	// bundled snapshot).
+	Screener Screener
+	Screens  ScreenStore
+	Universe func(ctx context.Context) []store.ScreenMember
 	// Ready reports whether dependencies (Postgres) are reachable.
 	Ready func(ctx context.Context) error
 	// FreshFor is how long a finished report is returned instead of
@@ -74,6 +81,9 @@ type Deps struct {
 func NewRouter(d Deps) http.Handler {
 	if d.FreshFor == 0 {
 		d.FreshFor = 12 * time.Hour
+	}
+	if d.Universe == nil {
+		d.Universe = func(ctx context.Context) []store.ScreenMember { return screener.SP500(ctx, nil) }
 	}
 	a := &api{Deps: d}
 	mux := http.NewServeMux()
@@ -96,6 +106,12 @@ func NewRouter(d Deps) http.Handler {
 		mux.HandleFunc("POST /api/watchlist/refresh", a.refreshWatchlist)
 		mux.HandleFunc("GET /api/watchlist/{ticker}", a.watchStatus)
 		mux.HandleFunc("DELETE /api/watchlist/{ticker}", a.removeFromWatchlist)
+	}
+	if d.Screener != nil && d.Screens != nil {
+		mux.HandleFunc("POST /api/screens", a.startScreen)
+		mux.HandleFunc("GET /api/screens/latest", a.getScreen)
+		mux.HandleFunc("GET /api/screens/{id}", a.getScreen)
+		mux.HandleFunc("POST /api/screens/{id}/cancel", a.cancelScreen)
 	}
 
 	return logRequests(d.Logger, mux)
