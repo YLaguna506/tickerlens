@@ -122,11 +122,12 @@ func LacksRecentEPS(cf *edgar.CompanyFacts) bool {
 	return err1 == nil && err2 == nil && income.Sub(eps) > 210*24*time.Hour
 }
 
-// Splits lists the stock splits in daily prices, oldest first.
+// Splits lists the stock splits in daily prices, oldest first (spin-offs,
+// which Tiingo also records as split factors, are left out).
 func Splits(bars []prices.Bar) []financials.Split {
 	var out []financials.Split
 	for _, b := range bars {
-		if b.SplitFactor != 0 && b.SplitFactor != 1 {
+		if b.IsSplit() {
 			out = append(out, financials.Split{Date: b.Date, Factor: b.SplitFactor})
 		}
 	}

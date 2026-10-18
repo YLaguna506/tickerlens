@@ -52,3 +52,14 @@ func TestDailyPrices(t *testing.T) {
 		t.Errorf("unknown ticker err = %v, want ErrUnknownTicker", err)
 	}
 }
+
+func TestIsSplit(t *testing.T) {
+	for f, want := range map[float64]bool{
+		2: true, 10: true, 1.5: true, 0.5: true, 0.1: true, 1.25: true, 20: true,
+		1: false, 0: false, 1.061: false, 0.9535: false, 1.032: false,
+	} {
+		if got := (Bar{SplitFactor: f}).IsSplit(); got != want {
+			t.Errorf("IsSplit(%v) = %v, want %v", f, got, want)
+		}
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"time"
@@ -23,6 +24,25 @@ type Bar struct {
 	AdjClose    float64 `json:"adjClose"` // adjusted for splits and dividends
 	DivCash     float64 `json:"divCash"`
 	SplitFactor float64 `json:"splitFactor"`
+}
+
+// IsSplit reports whether the bar's split factor is a stock split: a ratio of
+// small whole numbers (2-for-1, 3-for-2, 1-for-10). Tiingo also records
+// spin-offs as split factors (Honeywell's 1.061 in 2025), which change no
+// share counts.
+func (b Bar) IsSplit() bool {
+	f := b.SplitFactor
+	if f <= 0 || f == 1 {
+		return false
+	}
+	for q := 1.0; q <= 10; q++ {
+		for _, x := range []float64{f, 1 / f} {
+			if p := math.Round(x * q); p >= 1 && p != q && math.Abs(p/q-x) < 0.002*x {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // Tiingo is a client for Tiingo's end-of-day API. The fetch.Client must send

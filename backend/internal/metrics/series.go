@@ -23,7 +23,7 @@ type splits []split
 func splitsFrom(bars []prices.Bar) splits {
 	var out splits
 	for _, b := range bars {
-		if b.SplitFactor != 0 && b.SplitFactor != 1 {
+		if b.IsSplit() {
 			out = append(out, split{date: b.Date, factor: b.SplitFactor})
 		}
 	}
