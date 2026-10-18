@@ -12,6 +12,7 @@ import type {
 import { pct, shortDate, signedPct, titleCase, usd } from "../format";
 import { t, tx } from "../i18n";
 import { isPending } from "../live";
+import { ReverseDCFCard } from "./ReverseDCF";
 import { EvidenceList, Skeleton, StepScale, Unavailable } from "./ui";
 
 const MOAT_WIDTHS = ["None", "Thin", "Narrow", "Broad", "Wide"];
@@ -627,6 +628,11 @@ export function MoreSections({
   titleClass: string;
 }) {
   const sections = [
+    // Classic shows this inside its Valuation section; the other designs
+    // get it here.
+    ...(m?.reverseDcf
+      ? [{ id: "expectations", title: t("What the price expects"), panel: <ReverseDCFCard m={m} /> }]
+      : []),
     {
       id: "moat",
       title: t("Moat"),

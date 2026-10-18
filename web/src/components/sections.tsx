@@ -1,5 +1,6 @@
 // The report's sections, in page order.
 
+import { ReverseDCFCard } from "./ReverseDCF";
 import type { MetricsReport, ReportBody, Verdict } from "../api";
 import { multiple, pct, price, signedPct, titleCase, toneFor, usd, wholePrice } from "../format";
 import { t, tx } from "../i18n";
@@ -330,6 +331,7 @@ export function ValuationSection({ m }: { m?: MetricsReport }) {
           </div>
         ))}
       </div>
+      <ReverseDCFCard m={m} />
     </Section>
   );
 }

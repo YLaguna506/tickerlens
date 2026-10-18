@@ -79,3 +79,11 @@ export const SCORE_WORDS = {
 
 export const scoreWord = (words: string[], v: number | null) =>
   v == null ? t("n/a") : t(words[Math.min(Math.max(Math.round(v), 1), 5) - 1]!);
+
+/** Reverse DCF: how the growth the price implies compares with the record. */
+export const EXPECTATION_LABEL: Record<string, string> = {
+  low: "Expectations: low",
+  "in line": "Expectations: in line",
+  high: "Expectations: high",
+  "very high": "Expectations: very high",
+};

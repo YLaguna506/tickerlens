@@ -616,6 +616,36 @@
     "avgSurprisePercent": 3.3473375,
     "latestQuarter": "2026-06-30"
   },
+  "reverseDcf": {
+    "impliedGrowth": 0.1308,
+    "years": 10,
+    "discountRate": 0.09,
+    "terminalGrowth": 0.025,
+    "marketCap": 742934140000,
+    "baseFcf": 21185000000,
+    "basePeriod": "TTM to 2026-03-31",
+    "history": [
+      {
+        "name": "revenue growth, 5 years",
+        "value": 0.1504092515401647
+      },
+      {
+        "name": "free cash flow growth, 5 years",
+        "value": 0.13408035645606176
+      },
+      {
+        "name": "EPS growth, 5 years",
+        "value": 0.1887390610830213
+      },
+      {
+        "name": "revenue growth, 3 years",
+        "value": 0.11567884905704995
+      }
+    ],
+    "reference": 0.1504092515401647,
+    "referenceName": "revenue growth, 5 years",
+    "expectations": "in line"
+  },
   "capitalAllocation": {
     "from": "FY2021",
     "to": "FY2025",

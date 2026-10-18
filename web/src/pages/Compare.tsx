@@ -4,9 +4,9 @@ import { createReport, getReport, isFinished, listReports, searchTickers, type M
 import { LangSwitch, ModelSwitch } from "../components/Controls";
 import { Disclaimer } from "../components/ui";
 import { ZoneBar } from "../components/ZoneBar";
-import { metricValue, price, shortDate, titleCase, usd } from "../format";
+import { metricValue, pct, price, shortDate, titleCase, usd } from "../format";
 import { t, tx } from "../i18n";
-import { SCORE_WORDS, STAGES, scoreWord } from "../live";
+import { EXPECTATION_LABEL, SCORE_WORDS, STAGES, scoreWord } from "../live";
 import { navigate } from "../router";
 
 const MAX_COMPARE = 3;
@@ -166,6 +166,23 @@ export function Compare() {
                 {ms.map((m, i) => (
                   <Cell key={i}>{usd(m?.marketCap.value)}</Cell>
                 ))}
+              </Row>
+              <Row label={t("Growth the price implies")}>
+                {ms.map((m, i) => {
+                  const d = m?.reverseDcf;
+                  return (
+                    <Cell key={i}>
+                      {d?.impliedGrowth != null ? (
+                        <>
+                          {pct(d.impliedGrowth, 1)} {t("a year")}
+                          {d.expectations && <span className="block text-xs text-muted">{t(EXPECTATION_LABEL[d.expectations]!)}</span>}
+                        </>
+                      ) : (
+                        "–"
+                      )}
+                    </Cell>
+                  );
+                })}
               </Row>
               <Row label={t("Phase")}>
                 {ms.map((m, i) => (

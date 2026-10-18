@@ -39,9 +39,10 @@ type Config struct {
 	MaxBasisSwing float64 `yaml:"max_basis_swing"`
 
 	// Weights of the business composite B (renormalized when a score is missing).
-	Weights  Weights      `yaml:"weights"`
-	Moat     MoatRules    `yaml:"moat"`
-	Insiders InsiderRules `yaml:"insiders"`
+	Weights    Weights         `yaml:"weights"`
+	Moat       MoatRules       `yaml:"moat"`
+	Insiders   InsiderRules    `yaml:"insiders"`
+	ReverseDCF ReverseDCFRules `yaml:"reverse_dcf"`
 	// Verdict thresholds, applied in order: Sell, Buy, Watch, Hold, else Pass.
 	Verdict VerdictRules `yaml:"verdict"`
 }
@@ -60,6 +61,18 @@ type Weights struct {
 // narrowing).
 type MoatRules struct {
 	DirectionStep float64 `yaml:"direction_step"`
+}
+
+// ReverseDCFRules set the reverse discounted cash flow model: the yearly
+// growth the price implies over Years, discounted at DiscountRate, with
+// TerminalGrowth forever after; and how far it may sit from the company's
+// own growth before expectations count as low or high.
+type ReverseDCFRules struct {
+	Years          int     `yaml:"years"`
+	DiscountRate   float64 `yaml:"discount_rate"`
+	TerminalGrowth float64 `yaml:"terminal_growth"`
+	InLineGap      float64 `yaml:"in_line_gap"` // within ± this of actual growth: "in line"
+	HighGap        float64 `yaml:"high_gap"`    // above actual by more than this: "very high"
 }
 
 // InsiderRules adjust B for what insiders did with their own money over the
@@ -114,6 +127,7 @@ func Default() Config {
 		Weights:               Weights{BusinessQuality: 0.30, Growth: 0.25, FinancialHealth: 0.20, Moat: 0.15, Risk: 0.10},
 		Moat:                  MoatRules{DirectionStep: 0.25},
 		Insiders:              InsiderRules{BuyMinUSD: 1e6, SellMinShareOfCap: 0.002, Points: 0.25},
+		ReverseDCF:            ReverseDCFRules{Years: 10, DiscountRate: 0.09, TerminalGrowth: 0.025, InLineGap: 0.03, HighGap: 0.08},
 		Verdict: VerdictRules{
 			SellBelow: 2.5, SellWeakBelow: 3.0, SellWeakMaxV: 2,
 			BuyMinB: 4.0, BuyMinV: 4, BuyCheapMinB: 3.5, BuyCheapMinV: 5,

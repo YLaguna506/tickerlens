@@ -76,6 +76,8 @@ type Report struct {
 	// Insiders is the last year of open-market buying and selling by
 	// directors and officers (nil when Form 4s were not read).
 	Insiders *insiders.Summary `json:"insiders,omitempty"`
+	// ReverseDCF is the growth the price implies, against actual growth.
+	ReverseDCF *ReverseDCF `json:"reverseDcf,omitempty"`
 	// Capital is how the cash from operations was spent over five years
 	// (nil without enough cash flow history).
 	Capital *CapitalAllocation `json:"capitalAllocation,omitempty"`
@@ -151,6 +153,7 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	}
 	r.Returns = c.returns(mcap)
 	r.Capital = capitalAllocation(b.Financials, sp)
+	r.ReverseDCF = c.reverseDCF(mcap, r.Growth, r.LimitedSupport, cfg.ReverseDCF)
 	r.PriceChange5y = priceChange(b, sp, false)
 	r.TotalReturn5y = priceChange(b, sp, true)
 	r.Earnings = earningsRecord(b.Earnings)

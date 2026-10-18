@@ -44,7 +44,7 @@ Every report has the same data, shown in five designs you can switch between at 
 - **Management:** the CEO's tenure and shareholding from the latest proxy statement, valued at today's price; a year of insider buying and selling from Form 4 filings (open-market trades only, with how much was under pre-arranged 10b5-1 plans); the record of beating analyst estimates; and how five years of operating cash flow were spent (capex, acquisitions, dividends, buybacks, debt) with the change in share count.
 - **Financials:** margins, 3/5/10-year growth, debt and coverage, valuation multiples, shareholder yield, EPS against analyst estimates. Tap any number to see its formula and inputs.
 - **Phase:** where the company is in its life cycle (startup → hypergrowth → operating leverage → capital return → decline), which picks the right valuation multiple.
-- **Valuation:** today's multiple against its own 5-year history, translated into cheap / typical / expensive share prices.
+- **Valuation:** today's multiple against its own 5-year history, translated into cheap / typical / expensive share prices. A reverse DCF shows the yearly free cash flow growth over 10 years that the market cap implies (discounted at 9%, 2.5% after year 10) next to the company's actual 5-year growth, and calls the expectations low, in line, high or very high.
 - **Verdict:** the rule that matched, the scores behind it, a confidence level, and a short AI-written summary.
 
 ## Architecture

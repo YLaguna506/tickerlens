@@ -91,6 +91,20 @@ export interface MetricsReport {
   industry?: { sic: string; sicDescription: string };
   limitedSupport?: { kind: "bank" | "broker" | "insurer" | "reit"; reason: string; noHealthScore: boolean };
   insiders?: InsiderSummary;
+  reverseDcf?: {
+    impliedGrowth: number | null;
+    years: number;
+    discountRate: number;
+    terminalGrowth: number;
+    marketCap: number | null;
+    baseFcf: number | null;
+    basePeriod?: string;
+    history: { name: string; value: number | null }[];
+    reference: number | null;
+    referenceName?: string;
+    expectations?: "low" | "in line" | "high" | "very high";
+    note?: string;
+  };
   phase: Phase;
   growthScore: Score;
   healthScore: Score;

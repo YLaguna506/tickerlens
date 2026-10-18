@@ -52,6 +52,18 @@ moat:
   # takes it off (Widening +0.5, Narrowing -0.5).
   direction_step: 0.25
 
+# Reverse DCF: the yearly free cash flow growth over `years` that the market
+# cap implies, discounting at `discount_rate` (a typical return investors ask
+# of a stock) with `terminal_growth` forever after. Compared with the
+# company's 5-year growth: within ± in_line_gap is "in line", more than
+# high_gap above is "very high". Shown on the report; it does not change V.
+reverse_dcf:
+  years: 10
+  discount_rate: 0.09
+  terminal_growth: 0.025
+  in_line_gap: 0.03
+  high_gap: 0.08
+
 # Insider trades over the last year (Form 4, open market only) move B:
 # + points when insiders bought at least buy_min_usd and more than they sold;
 # - points when they sold at least sell_min_share_of_cap of the company
