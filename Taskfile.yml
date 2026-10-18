@@ -33,6 +33,18 @@ tasks:
     cmds:
       - docker compose up -d --build --wait
 
+  watch:
+    desc: Start every service and rebuild or restart them as code changes (Ctrl+C stops watching)
+    deps: [env]
+    cmds:
+      - docker compose up --build --watch
+
+  web:
+    desc: Run the web app with instant reload at http://localhost:5173 (needs the API up)
+    dir: web
+    cmds:
+      - npm run dev
+
   down:
     desc: Stop every service (data volumes are kept)
     cmds:

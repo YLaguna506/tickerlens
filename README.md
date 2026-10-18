@@ -247,6 +247,24 @@ task test    # Go, Python and web checks
 task lint    # golangci-lint, ruff + mypy, eslint
 ```
 
+While editing code, run the stack in watch mode instead of `task up`:
+
+```bash
+task watch   # docker compose up --build --watch
+```
+
+Each service picks up changes on its own:
+
+| Change | What happens | Takes |
+|---|---|---|
+| Go code (`backend/`) | the API image is rebuilt and restarted; the build cache recompiles only changed packages | ~6 s |
+| Python code or prompts (`agents/`) | the files are copied into the running container, which restarts | ~2 s |
+| Python dependencies (`pyproject.toml`, `uv.lock`) | the agents image is rebuilt | longer: dependencies are reinstalled |
+| `config/scoring.yaml` | the API restarts | ~2 s |
+| Web code (`web/`) | the production build on port 3000 is rebuilt | ~10 s |
+
+Tests, fixtures and the CLI do not trigger a rebuild. For the web app, `task web` runs the Vite dev server at http://localhost:5173, which updates the page in place as you type and sends `/api` to the running API. Postgres data is kept either way.
+
 Tests use recorded filings for Visa, Apple and Snowflake (`task fixtures` re-records them) and compare full reports against golden files, checked by hand against the companies' own filings.
 
 ## How AI coding tools were used

@@ -40,6 +40,20 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       agents: { condition: service_healthy }
+    # `docker compose watch` (task watch): Go compiles to a binary, so a code
+    # change rebuilds the image; the build cache keeps that to seconds.
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend
+          ignore:
+            - "**/*_test.go"
+            - testdata/
+            - cmd/cli/
+            - tools/
+        # The scoring config is mounted: a restart picks it up.
+        - action: restart
+          path: ./config
 
   # Python agents: stateless HTTP service the API calls for LLM analysis.
   agents:
@@ -52,6 +66,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    # Python needs no build: changed code and prompts are copied into the
+    # running container, which restarts. New dependencies rebuild the image.
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./agents/tickerlens_agents
+          target: /app/tickerlens_agents
+          ignore:
+            - "**/__pycache__/"
+        - action: sync+restart
+          path: ./agents/prompts
+          target: /app/prompts
+        - action: rebuild
+          path: ./agents/pyproject.toml
+        - action: rebuild
+          path: ./agents/uv.lock
 
   web:
     build: ./web
@@ -59,6 +89,18 @@ services:
       - "${WEB_PORT:-3000}:80"
     depends_on:
       - api
+    # The container serves a production build, so a change rebuilds it
+    # (about ten seconds). For instant updates use the Vite dev server
+    # (`task web`, http://localhost:5173), which reloads in place.
+    develop:
+      watch:
+        - action: rebuild
+          path: ./web
+          ignore:
+            - node_modules/
+            - dist/
+            - "**/*.test.ts"
+            - "**/*.test.tsx"
 
 volumes:
   pgdata:
