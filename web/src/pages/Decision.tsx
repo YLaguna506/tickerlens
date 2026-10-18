@@ -9,7 +9,7 @@ import { LangNotice, LimitedNotice, ReportControls } from "../components/Control
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, titleCase, wholePrice } from "../format";
 import { t, tx } from "../i18n";
-import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
+import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, metricOf, scoreWord, useLiveReport, valuedWith, withPrices } from "../live";
 import { navigate } from "../router";
 
 type Outcome = "yes" | "partly" | "no" | "pending";
@@ -94,14 +94,17 @@ function BandsChart({ m }: { m: MetricsReport }) {
   return (
     <div className="h-44">
       <ResponsiveContainer>
-        <LineChart data={m.charts.valuation1y} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+        <LineChart data={withPrices(m.charts.valuation1y, m.charts.price)} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <ReferenceArea y1={lo} y2={b.cheapBelow} fill="#10b981" fillOpacity={0.12} ifOverflow="hidden" />
           <ReferenceArea y1={b.cheapBelow} y2={b.expensiveAbove} fill="#facc15" fillOpacity={0.14} ifOverflow="hidden" />
           <ReferenceArea y1={b.expensiveAbove} y2={hi} fill="#f43f5e" fillOpacity={0.12} ifOverflow="hidden" />
           <ReferenceLine y={b.median} stroke="#ca8a04" strokeDasharray="4 4" />
           <XAxis dataKey="date" tickFormatter={monthYear} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} minTickGap={50} />
           <YAxis domain={[lo, hi]} tickFormatter={multipleTick} tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={40} />
-          <Tooltip formatter={(v) => multiple(Number(v))} />
+          {/* The share price, invisible on its own axis: shown in the tooltip only. */}
+          <YAxis yAxisId="price" hide domain={["auto", "auto"]} />
+          <Line yAxisId="price" dataKey="price" name={t("Price")} stroke="transparent" dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
+          <Tooltip formatter={(v, name) => (name === t("Price") ? price(Number(v)) : multiple(Number(v)))} />
           <Line dataKey="value" name={b.metric} stroke="#4f46e5" strokeWidth={2} dot={false} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>

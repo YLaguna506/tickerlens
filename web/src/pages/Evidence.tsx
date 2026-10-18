@@ -9,7 +9,7 @@ import { LangNotice, LimitedNotice, ReportControls } from "../components/Control
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
 import { t, tx } from "../i18n";
-import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith } from "../live";
+import { QUALITY_QUESTIONS, SCORE_WORDS, STAGES, fallbackNote, incomeRows, isPending, metricOf, scoreWord, useLiveReport, valuedWith, withPrices } from "../live";
 import { navigate } from "../router";
 
 // Each score has its own color, used on the left and in its section.
@@ -599,14 +599,17 @@ function ValuationSection({ m }: { m: MetricsReport }) {
           <Block title={t("{metric} over the last year", { metric: b.metric })}>
             <div className="h-56">
               <ResponsiveContainer>
-                <LineChart data={m.charts.valuation1y} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                <LineChart data={withPrices(m.charts.valuation1y, m.charts.price)} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                   <ReferenceArea y1={lo} y2={b.cheapBelow} fill="#10b981" fillOpacity={0.1} ifOverflow="hidden" />
                   <ReferenceArea y1={b.cheapBelow} y2={b.expensiveAbove} fill="#facc15" fillOpacity={0.12} ifOverflow="hidden" />
                   <ReferenceArea y1={b.expensiveAbove} y2={hi} fill="#f43f5e" fillOpacity={0.1} ifOverflow="hidden" />
                   <ReferenceLine y={b.median} stroke="#ca8a04" strokeDasharray="4 4" />
                   <XAxis dataKey="date" tickFormatter={monthYear} tick={AXIS} axisLine={false} tickLine={false} minTickGap={50} />
                   <YAxis domain={[lo, hi]} tickFormatter={multipleTick} tick={AXIS} axisLine={false} tickLine={false} width={40} />
-                  <Tooltip formatter={(x) => multiple(Number(x))} />
+                  {/* The share price, invisible on its own axis: shown in the tooltip only. */}
+                  <YAxis yAxisId="price" hide domain={["auto", "auto"]} />
+                  <Line yAxisId="price" dataKey="price" name={t("Price")} stroke="transparent" dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
+                  <Tooltip formatter={(x, name) => (name === t("Price") ? price(Number(x)) : multiple(Number(x)))} />
                   <Line dataKey="value" name={b.metric} stroke="#18181b" strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>

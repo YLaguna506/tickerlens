@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { getReport, isFinished, type Metric, type MetricsReport, type Quality, type ReportBody } from "./api";
+import { getReport, isFinished, type Metric, type MetricsReport, type Quality, type Point, type ReportBody } from "./api";
 import { t, tx } from "./i18n";
 
 export const STAGES = [
@@ -87,3 +87,10 @@ export const EXPECTATION_LABEL: Record<string, string> = {
   high: "Expectations: high",
   "very high": "Expectations: very high",
 };
+
+/** A valuation series with each day's share price, so a chart's tooltip can
+ * show both. */
+export function withPrices(points: Point[], prices: Point[]): (Point & { price: number | null })[] {
+  const priceOn = new Map(prices.map((p) => [p.date, p.value]));
+  return points.map((p) => ({ ...p, price: priceOn.get(p.date) ?? null }));
+}
