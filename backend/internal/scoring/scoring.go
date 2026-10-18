@@ -73,6 +73,31 @@ type ReverseDCFRules struct {
 	TerminalGrowth float64 `yaml:"terminal_growth"`
 	InLineGap      float64 `yaml:"in_line_gap"` // within ± this of actual growth: "in line"
 	HighGap        float64 `yaml:"high_gap"`    // above actual by more than this: "very high"
+	// ReferenceCap: the company's growth counts as at most this, since few
+	// companies keep growing faster for 10 years.
+	ReferenceCap float64 `yaml:"reference_cap"`
+	// VAdjust moves the valuation score V by expectations level.
+	VAdjust struct {
+		Low      float64 `yaml:"low"`
+		InLine   float64 `yaml:"in_line"`
+		High     float64 `yaml:"high"`
+		VeryHigh float64 `yaml:"very_high"`
+	} `yaml:"v_adjust"`
+}
+
+// VPoints is the change to V for an expectations level.
+func (r ReverseDCFRules) VPoints(level string) float64 {
+	switch level {
+	case "low":
+		return r.VAdjust.Low
+	case "in line":
+		return r.VAdjust.InLine
+	case "high":
+		return r.VAdjust.High
+	case "very high":
+		return r.VAdjust.VeryHigh
+	}
+	return 0
 }
 
 // InsiderRules adjust B for what insiders did with their own money over the
@@ -111,7 +136,7 @@ type VerdictRules struct {
 // with the same values; anything left out of the file keeps its default.
 func Default() Config {
 	return Config{
-		Version:               "2026-10-18.1",
+		Version:               "2026-10-18.2",
 		GrowthBands:           [4]float64{0, 0.05, 0.12, 0.20},
 		MinInterestCoverage:   10,
 		MaxDebtToEquity:       1,
@@ -127,7 +152,7 @@ func Default() Config {
 		Weights:               Weights{BusinessQuality: 0.30, Growth: 0.25, FinancialHealth: 0.20, Moat: 0.15, Risk: 0.10},
 		Moat:                  MoatRules{DirectionStep: 0.25},
 		Insiders:              InsiderRules{BuyMinUSD: 1e6, SellMinShareOfCap: 0.002, Points: 0.25},
-		ReverseDCF:            ReverseDCFRules{Years: 10, DiscountRate: 0.09, TerminalGrowth: 0.025, InLineGap: 0.03, HighGap: 0.08},
+		ReverseDCF:            defaultReverseDCF(),
 		Verdict: VerdictRules{
 			SellBelow: 2.5, SellWeakBelow: 3.0, SellWeakMaxV: 2,
 			BuyMinB: 4.0, BuyMinV: 4, BuyCheapMinB: 3.5, BuyCheapMinV: 5,
@@ -316,4 +341,10 @@ func Rank(sorted []float64, v float64) float64 {
 	}
 	n := sort.Search(len(sorted), func(i int) bool { return sorted[i] > v })
 	return float64(n) / float64(len(sorted))
+}
+
+func defaultReverseDCF() ReverseDCFRules {
+	r := ReverseDCFRules{Years: 10, DiscountRate: 0.09, TerminalGrowth: 0.025, InLineGap: 0.03, HighGap: 0.08, ReferenceCap: 0.15}
+	r.VAdjust.Low, r.VAdjust.VeryHigh = 1, -1
+	return r
 }

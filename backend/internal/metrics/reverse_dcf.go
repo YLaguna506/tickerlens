@@ -28,9 +28,18 @@ type ReverseDCF struct {
 	// revenue growth (steadier than FCF), else FCF, else EPS growth.
 	Reference     *float64 `json:"reference"`
 	ReferenceName string   `json:"referenceName,omitempty"`
-	// Expectations: "low", "in line", "high" or "very high" against Reference.
+	// JudgedAgainst is Reference, capped at the configured ceiling (few
+	// companies keep growing faster for 10 years).
+	JudgedAgainst *float64 `json:"judgedAgainst"`
+	Capped        bool     `json:"capped,omitempty"`
+	// Expectations: "low", "in line", "high" or "very high" against
+	// JudgedAgainst.
 	Expectations string `json:"expectations,omitempty"`
-	Note         string `json:"note,omitempty"`
+	// VAdjustment is the change it made to the valuation score V.
+	VAdjustment float64 `json:"vAdjustment"`
+	// solved: the implied growth is inside the search range.
+	solved bool
+	Note   string `json:"note,omitempty"`
 }
 
 // Bisection limits for the implied growth.
@@ -114,7 +123,7 @@ func (c *calc) reverseDCF(mcap *float64, growth []Metric, ls *LimitedSupport, cf
 	d.BaseFCF, d.BasePeriod = fcf, period
 
 	g, ok := impliedGrowth(*fcf, *mcap, cfg.DiscountRate, cfg.TerminalGrowth, cfg.Years)
-	d.ImpliedGrowth = &g
+	d.ImpliedGrowth, d.solved = &g, ok
 	if !ok {
 		if g <= minImplied {
 			d.Note = fmt.Sprintf("the price is below what today's cash flow is worth even if it shrank %.0f%% a year", -minImplied*100)
@@ -123,7 +132,12 @@ func (c *calc) reverseDCF(mcap *float64, growth []Metric, ls *LimitedSupport, cf
 		}
 	}
 	if d.Reference != nil {
-		gap := g - *d.Reference
+		ref := *d.Reference
+		if cfg.ReferenceCap > 0 && ref > cfg.ReferenceCap {
+			ref, d.Capped = cfg.ReferenceCap, true
+		}
+		d.JudgedAgainst = &ref
+		gap := g - ref
 		switch {
 		case gap <= -cfg.InLineGap:
 			d.Expectations = "low"
@@ -157,4 +171,26 @@ func averageFCF(annual []financials.FinancialPeriod, n int) (float64, string, bo
 		return 0, "", false
 	}
 	return avg, fmt.Sprintf("average of FY%d–FY%d", last[0].FiscalYear, last[n-1].FiscalYear), true
+}
+
+// adjustValuation moves V by the reverse DCF's expectations level, within
+// 1–5, and says so in V's reasons. Nothing changes without a V or when the
+// implied growth was out of range.
+func adjustValuation(v *scoring.Score, d *ReverseDCF, cfg scoring.ReverseDCFRules) {
+	if v.Value == nil || d == nil || !d.solved || d.Expectations == "" || d.ImpliedGrowth == nil || d.JudgedAgainst == nil {
+		return
+	}
+	pts := cfg.VPoints(d.Expectations)
+	if pts == 0 {
+		return
+	}
+	before := *v.Value
+	after := math.Min(math.Max(before+pts, 1), 5)
+	if after == before {
+		return
+	}
+	d.VAdjustment = after - before
+	v.Value = &after
+	v.Reasons = append(v.Reasons, fmt.Sprintf("reverse DCF: the price implies %.1f%% yearly growth against %.1f%%, expectations %s → %+g (%g → %g)",
+		*d.ImpliedGrowth*100, *d.JudgedAgainst*100, d.Expectations, d.VAdjustment, before, after))
 }

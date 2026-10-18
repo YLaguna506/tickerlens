@@ -175,6 +175,7 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	}
 
 	r.Bands, r.ValuationScore, r.Charts.ValuationTTM, r.Notes = valuationBands(b, cfg, r.Phase, rolling, sp, r.Price)
+	adjustValuation(&r.ValuationScore, r.ReverseDCF, cfg.ReverseDCF)
 
 	for _, bar := range lastYears(b.Prices, chartYears) {
 		r.Charts.Price = append(r.Charts.Price, Point{Date: bar.Date, Value: round(sp.price(bar), 4)})

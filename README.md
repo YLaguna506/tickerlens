@@ -44,7 +44,7 @@ Every report has the same data, shown in five designs you can switch between at 
 - **Management:** the CEO's tenure and shareholding from the latest proxy statement, valued at today's price; a year of insider buying and selling from Form 4 filings (open-market trades only, with how much was under pre-arranged 10b5-1 plans); the record of beating analyst estimates; and how five years of operating cash flow were spent (capex, acquisitions, dividends, buybacks, debt) with the change in share count.
 - **Financials:** margins, 3/5/10-year growth, debt and coverage, valuation multiples, shareholder yield, EPS against analyst estimates. Tap any number to see its formula and inputs.
 - **Phase:** where the company is in its life cycle (startup → hypergrowth → operating leverage → capital return → decline), which picks the right valuation multiple.
-- **Valuation:** today's multiple against its own 5-year history, translated into cheap / typical / expensive share prices. A reverse DCF shows the yearly free cash flow growth over 10 years that the market cap implies (discounted at 9%, 2.5% after year 10) next to the company's actual 5-year growth, and calls the expectations low, in line, high or very high.
+- **Valuation:** today's multiple against its own 5-year history, translated into cheap / typical / expensive share prices. A reverse DCF shows the yearly free cash flow growth over 10 years that the market cap implies (discounted at 9%, 2.5% after year 10) next to the company's actual 5-year growth (counted as at most 15% a year), and calls the expectations low, in line, high or very high.
 - **Verdict:** the rule that matched, the scores behind it, a confidence level, and a short AI-written summary.
 
 ## Architecture
@@ -151,7 +151,7 @@ A failed check gets one repair attempt, where the agent is told exactly what was
 
 1. **Business score (B):** business quality 30%, growth 25%, financial health 20%, moat 15% and risk 10%, reweighted over the scores a report has. The moat score is its width (None 1 … Wide 5) nudged by its direction (±0.25 per step towards widening or narrowing); the risk score is the three questions the risk agent judges from the 10-K (financial health already counts on its own).
    - **Insider adjustment:** +0.25 when insiders bought at least $1M on the open market over the year, and more than they sold; −0.25 when they sold at least 0.2% of the company outside pre-arranged 10b5-1 plans and bought none.
-2. **Valuation score (V):** where today's multiple sits in its own 5-year history.
+2. **Valuation score (V):** where today's multiple sits in its own 5-year history, then +1 when the reverse DCF finds the price expects at least 3 points less growth than the company's 5-year revenue growth (capped at 15%), or −1 when it expects more than 8 points more (kept within 1–5).
 3. **Rules,** first match wins:
 
 | Verdict | Rule | Meaning |

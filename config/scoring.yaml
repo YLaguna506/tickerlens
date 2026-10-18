@@ -5,7 +5,7 @@
 #
 # Scores are 1–5. Fractions are written as decimals (0.12 = 12%).
 
-version: "2026-10-18.1"
+version: "2026-10-18.2"
 
 # --- Growth score -------------------------------------------------------------
 # Average of revenue and EPS CAGRs (3y and 5y, whichever exist).
@@ -56,13 +56,22 @@ moat:
 # cap implies, discounting at `discount_rate` (a typical return investors ask
 # of a stock) with `terminal_growth` forever after. Compared with the
 # company's 5-year growth: within ± in_line_gap is "in line", more than
-# high_gap above is "very high". Shown on the report; it does not change V.
+# high_gap above is "very high". The company's growth counts as at most
+# reference_cap: few companies keep growing faster for 10 years.
 reverse_dcf:
   years: 10
   discount_rate: 0.09
   terminal_growth: 0.025
   in_line_gap: 0.03
   high_gap: 0.08
+  reference_cap: 0.15
+  # Change to the valuation score V (kept within 1-5). V already compares the
+  # price with its own history, so "high" is left alone.
+  v_adjust:
+    low: 1
+    in_line: 0
+    high: 0
+    very_high: -1
 
 # Insider trades over the last year (Form 4, open market only) move B:
 # + points when insiders bought at least buy_min_usd and more than they sold;

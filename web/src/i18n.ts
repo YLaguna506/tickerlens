@@ -257,6 +257,8 @@ const PATTERNS: Rule[] = [
   [/^the price is below what today's cash flow is worth even if it shrank (\d+)% a year$/,
     (m) => `el precio está por debajo de lo que vale el flujo de caja de hoy aunque se redujera un ${m[1]}% al año`],
   [/^the price needs over (\d+)% yearly growth$/, (m) => `el precio necesita más de ${m[1]}% de crecimiento anual`],
+  [/^reverse DCF: the price implies ([\d.-]+)% yearly growth against ([\d.-]+)%, expectations (low|in line|high|very high) → ([+-]\d+) \((\S+) → (\S+)\)$/,
+    (m) => `DCF inverso: el precio implica ${m[1]}% de crecimiento anual frente a ${m[2]}%, expectativas ${ES[m[3]!] ?? m[3]} → ${m[4]} (${m[5]} → ${m[6]})`],
   [/^average of FY(\d+)–FY(\d+)$/, (m) => `promedio del FY${m[1]} al FY${m[2]}`],
   [/^insiders bought (\S+) on the open market, more than they sold$/, (m) => `los directivos compraron ${m[1]} en el mercado abierto, más de lo que vendieron`],
   [/^insiders sold (\S+) outside pre-arranged plans \(([\d.]+)% of the company\) and bought none$/,

@@ -1,7 +1,7 @@
 {
   "ticker": "AAPL",
   "name": "Apple Inc.",
-  "scoringVersion": "2026-10-18.1",
+  "scoringVersion": "2026-10-18.2",
   "priceDate": "2026-10-14",
   "price": 342.96,
   "financialsThrough": "2026-06-27",
@@ -642,7 +642,9 @@
     ],
     "reference": 0.06102535960032651,
     "referenceName": "revenue growth, 5 years",
-    "expectations": "high"
+    "judgedAgainst": 0.06102535960032651,
+    "expectations": "high",
+    "vAdjustment": 0
   },
   "capitalAllocation": {
     "from": "FY2021",

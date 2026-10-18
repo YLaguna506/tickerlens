@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/YLaguna506/tickerlens/backend/internal/financials"
@@ -52,5 +53,48 @@ func TestReverseDCFComparesWithActualGrowth(t *testing.T) {
 	c.ttm.FreeCashFlow = &neg
 	if d := c.reverseDCF(&mcap, growth, nil, cfg); d.ImpliedGrowth != nil || d.Note == "" {
 		t.Errorf("negative FCF: %+v", d)
+	}
+}
+
+// Snowflake-like: 45% past growth counts as 15%, so a price implying 27% is
+// "very high" and V drops a step; a low reading lifts V, within 1–5.
+func TestReverseDCFAdjustsV(t *testing.T) {
+	cfg := scoring.Default().ReverseDCF
+	fcf, past := 1e9, 0.45
+	c := &calc{ttm: &financials.FinancialPeriod{FreeCashFlow: &fcf}, period: "TTM"}
+	growth := []Metric{{Key: "revenueCagr5y", Value: &past}}
+	mcap := dcfValue(fcf, 0.27, cfg.DiscountRate, cfg.TerminalGrowth, cfg.Years)
+	d := c.reverseDCF(&mcap, growth, nil, cfg)
+	if !d.Capped || *d.JudgedAgainst != 0.15 || d.Expectations != "very high" {
+		t.Fatalf("judged %+v", d)
+	}
+	three := 3.0
+	v := scoring.Score{Value: &three}
+	adjustValuation(&v, d, cfg)
+	if *v.Value != 2 || d.VAdjustment != -1 || !strings.Contains(v.Reasons[0], "very high → -1 (3 → 2)") {
+		t.Errorf("V %v, adjustment %v, reasons %v", *v.Value, d.VAdjustment, v.Reasons)
+	}
+
+	// Low expectations at V 5 cannot go higher: no change, no reason.
+	slow := 0.10
+	mcap = dcfValue(fcf, 0.02, cfg.DiscountRate, cfg.TerminalGrowth, cfg.Years)
+	d = c.reverseDCF(&mcap, []Metric{{Key: "revenueCagr5y", Value: &slow}}, nil, cfg)
+	five := 5.0
+	v = scoring.Score{Value: &five}
+	adjustValuation(&v, d, cfg)
+	if d.Expectations != "low" || *v.Value != 5 || d.VAdjustment != 0 || len(v.Reasons) != 0 {
+		t.Errorf("capped at 5: V %v, %+v", *v.Value, d)
+	}
+	// ...but lifts V 3 to 4.
+	v = scoring.Score{Value: &three}
+	adjustValuation(&v, d, cfg)
+	if *v.Value != 4 {
+		t.Errorf("low at V 3: %v", *v.Value)
+	}
+	// No V (e.g. right after a spin-off): nothing to adjust.
+	v = scoring.Score{}
+	adjustValuation(&v, d, cfg)
+	if v.Value != nil {
+		t.Errorf("V appeared: %v", *v.Value)
 	}
 }

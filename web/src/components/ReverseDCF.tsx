@@ -20,6 +20,12 @@ const EXPECTATION_TEXT: Record<string, string> = {
   "very high": "The price asks for far more growth than the company has delivered.",
 };
 
+const CAPPED_TEXT: Record<string, string> = {
+  "in line": "The price asks for about as much growth as companies usually keep up for 10 years.",
+  high: "The price asks for more growth than companies usually keep up for 10 years.",
+  "very high": "The price asks for far more growth than companies usually keep up for 10 years.",
+};
+
 export function ReverseDCFCard({ m }: { m?: MetricsReport }) {
   const d = m?.reverseDcf;
   if (!d) return null;
@@ -73,7 +79,33 @@ export function ReverseDCFCard({ m }: { m?: MetricsReport }) {
               ),
             )}
           </ul>
-          {d.expectations && <p className="text-sm">{t(EXPECTATION_TEXT[d.expectations]!)}</p>}
+          {d.expectations && (
+            <div className="space-y-1 text-sm">
+              <p>
+                {t(
+                  // Against a capped record, the comparison is with what
+                  // companies usually sustain, not with the company itself.
+                  d.capped && CAPPED_TEXT[d.expectations] ? CAPPED_TEXT[d.expectations]! : EXPECTATION_TEXT[d.expectations]!,
+                )}
+              </p>
+              {d.judgedAgainst != null && (
+                <p className="text-muted">
+                  {d.capped
+                    ? t("Judged against {x} a year: its {what} was {actual}, counted as at most {x} because few companies keep growing faster for 10 years.", {
+                        x: pct(d.judgedAgainst, 0),
+                        what: tx(d.referenceName ?? ""),
+                        actual: pct(d.reference, 1),
+                      })
+                    : t("Judged against its {what} of {x}.", { what: tx(d.referenceName ?? ""), x: pct(d.judgedAgainst, 1) })}{" "}
+                  {d.vAdjustment > 0
+                    ? t("This raised the valuation score V by {n}.", { n: d.vAdjustment })
+                    : d.vAdjustment < 0
+                      ? t("This lowered the valuation score V by {n}.", { n: -d.vAdjustment })
+                      : t("The valuation score V is unchanged.")}
+                </p>
+              )}
+            </div>
+          )}
           <p className="text-xs text-muted">
             {t(
               "Reverse DCF: starting from {fcf} of free cash flow ({period}), discounted at {r} a year, with {gt} growth after year {n}. It finds the growth that makes those cash flows worth today's price; a higher discount rate or a lower starting point would raise it.",

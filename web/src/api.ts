@@ -102,7 +102,10 @@ export interface MetricsReport {
     history: { name: string; value: number | null }[];
     reference: number | null;
     referenceName?: string;
+    judgedAgainst: number | null;
+    capped?: boolean;
     expectations?: "low" | "in line" | "high" | "very high";
+    vAdjustment: number;
     note?: string;
   };
   phase: Phase;

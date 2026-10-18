@@ -549,4 +549,14 @@ export const ES: Record<string, string> = {
   "Expectations: in line": "Expectativas: acordes",
   "Expectations: high": "Expectativas: altas",
   "Expectations: very high": "Expectativas: muy altas",
+  // Reverse DCF effect on V
+  "Judged against {x} a year: its {what} was {actual}, counted as at most {x} because few companies keep growing faster for 10 years.": "Comparado con {x} anual: su {what} fue {actual}, contado como máximo {x} porque pocas empresas siguen creciendo más rápido durante 10 años.",
+  "Judged against its {what} of {x}.": "Comparado con su {what} de {x}.",
+  "This raised the valuation score V by {n}.": "Esto subió el puntaje de valuación V en {n}.",
+  "This lowered the valuation score V by {n}.": "Esto bajó el puntaje de valuación V en {n}.",
+  "The valuation score V is unchanged.": "El puntaje de valuación V no cambia.",
+  // Reverse DCF, capped record (runtime keys)
+  "The price asks for about as much growth as companies usually keep up for 10 years.": "El precio pide más o menos el crecimiento que las empresas suelen mantener durante 10 años.",
+  "The price asks for more growth than companies usually keep up for 10 years.": "El precio pide más crecimiento del que las empresas suelen mantener durante 10 años.",
+  "The price asks for far more growth than companies usually keep up for 10 years.": "El precio pide mucho más crecimiento del que las empresas suelen mantener durante 10 años.",
 };
