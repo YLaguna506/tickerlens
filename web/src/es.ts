@@ -47,8 +47,6 @@ export const ES: Record<string, string> = {
   "Could not clear the cache. Is the API running? Click to try again.": "No se pudo borrar la caché. ¿Está corriendo la API? Haz clic para intentar de nuevo.",
   "Customers:": "Clientes:",
   "Debt to equity {de}; operating profit covers interest {cov}.": "Deuda/patrimonio {de}; la utilidad operativa cubre los intereses {cov}.",
-  "Delete every saved {ticker} report and its cached data (filings, prices, AI answers), then rebuild it from scratch?":
-    "¿Borrar todos los reportes guardados de {ticker} y sus datos en caché (filings, precios, respuestas de IA) y rehacerlo desde cero?",
   "Did you mean": "Quisiste decir",
   "EDUCATIONAL ONLY. NOT FINANCIAL ADVICE. DATA: SEC EDGAR, TIINGO, ALPHA VANTAGE.": "SOLO EDUCATIVO. NO ES CONSEJO FINANCIERO. DATOS: SEC EDGAR, TIINGO, ALPHA VANTAGE.",
   "EPS vs estimate · beat {beats} of {quarters}": "EPS vs estimado · superó {beats} de {quarters}",
@@ -579,9 +577,14 @@ export const ES: Record<string, string> = {
   "Not announced yet: estimated from the date of the same quarter's report last year.": "Aún no anunciada: estimada a partir de la fecha del mismo trimestre del año pasado.",
   "Next earnings": "Próximos resultados",
   "estimated": "estimada",
-  "The next report was due {when}; this report was built before it.": "Los próximos resultados se esperaban el {when}; este informe se generó antes.",
+  "The next report was due {when}; this report was built before it.": "Los próximos resultados se esperaban el {when}; este reporte se generó antes.",
   "Next report: {when} ({days}).": "Próximos resultados: {when} ({days}).",
   "Analysts expect earnings per share of {eps}.": "Los analistas esperan un beneficio por acción de {eps}.",
   "Earnings {date}": "Resultados {date}",
   "Earnings soonest": "Resultados más próximos",
+  // Confirmation dialog
+  "Cancel": "Cancelar",
+  "Rebuild {ticker} from scratch?": "¿Reconstruir {ticker} desde cero?",
+  "Delete and rebuild": "Borrar y reconstruir",
+  "Deletes every saved {ticker} report and its cached data (filings, prices, AI answers), then builds a new report.": "Borra todos los reportes guardados de {ticker} y sus datos en caché (filings, precios, respuestas de IA) y genera un reporte nuevo.",
 };

@@ -92,6 +92,21 @@ body {
   color: var(--color-ink);
 }
 
+/* The in-app confirmation dialog (components/ConfirmDialog.tsx). */
+.confirm-dialog::backdrop {
+  background: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(3px);
+}
+.confirm-dialog[open] {
+  animation: confirm-in 140ms ease-out;
+}
+@keyframes confirm-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
 /* The printed report (Export PDF): see pages/PrintReport.tsx. */
 @page {
   margin: 14mm 12mm;
