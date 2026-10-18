@@ -108,13 +108,14 @@ func run(logger *slog.Logger) error {
 	}
 
 	router := httpapi.NewRouter(httpapi.Deps{
-		Logger:  logger,
-		Reports: reports,
-		Jobs:    runner,
-		Events:  broker,
-		Tickers: fetcher.SEC,
-		Models:  models,
-		Ready:   pool.Ping,
+		Logger:    logger,
+		Reports:   reports,
+		Jobs:      runner,
+		Events:    broker,
+		Tickers:   fetcher.SEC,
+		Models:    models,
+		Watchlist: store.NewWatchlist(pool),
+		Ready:     pool.Ping,
 	})
 
 	// Request contexts derive from baseCtx, so cancelling it on shutdown also

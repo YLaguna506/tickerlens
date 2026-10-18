@@ -13,6 +13,7 @@ Type a US ticker and TickerLens builds a research report from the company's SEC 
 Every report has the same data, shown in five designs you can switch between at the top of the page. Next to the design switch:
 
 - **English / Español.** The whole page switches language, including every computed explanation (score reasons, rules, formulas). Reports themselves are built in a language: in Spanish, the AI agents write their prose in Spanish while quotes stay word for word from the filing. Switching on an open report offers to build it in the other language.
+- **Watchlist (☆).** Adds the ticker to the watchlist: one page with every followed company's verdict, its B and V scores, moat and risk, and where today's price sits against the prices that would make it cheap, typical or expensive by its own history. **Update stale reports** rebuilds reports older than 12 hours, five at a time to stay within the AI and price quotas.
 - **AI model.** Pick the model for new reports from the ones your keys allow (the default, its fallback, each provider's configured model and anything in `LLM_MODEL_CHOICES`). An open report keeps the model it was built with.
 - **↻** deletes the ticker's saved reports and cached data and builds a fresh one.
 
@@ -202,6 +203,10 @@ This returns `{"id": "...", "status": "queued"}` and runs the report in the back
 | `GET /api/reports/{id}` | Report status and JSON |
 | `GET /api/reports/{id}/events` | Live progress (SSE) |
 | `GET /api/reports?ticker=V` | Report history for a ticker |
+| `GET /api/watchlist` | The watchlist, each ticker with its latest report's verdict, scores, price and valuation zone, and any report being built |
+| `POST /api/watchlist` | Add a ticker (`{"ticker": "PEP"}`) |
+| `DELETE /api/watchlist/{ticker}` | Remove a ticker (`GET` tells whether it is watched) |
+| `POST /api/watchlist/refresh` | Start new reports for tickers whose latest report is over 12 hours old, at most five per call (`{"lang": "es"}` optional) |
 | `DELETE /api/tickers/{ticker}/cache` | Delete a ticker's saved reports and cached data (filings, prices, AI answers) so the next report starts from scratch; also the ↻ button at the top of every report |
 
 ## Command line

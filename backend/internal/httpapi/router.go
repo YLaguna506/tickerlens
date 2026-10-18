@@ -58,6 +58,8 @@ type Deps struct {
 	Tickers Tickers
 	// Models is nil when the AI agents are not configured.
 	Models Models
+	// Watchlist is nil when there is no database (its routes are left out).
+	Watchlist Watchlist
 	// Ready reports whether dependencies (Postgres) are reachable.
 	Ready func(ctx context.Context) error
 	// FreshFor is how long a finished report is returned instead of
@@ -85,6 +87,13 @@ func NewRouter(d Deps) http.Handler {
 	mux.HandleFunc("GET /api/reports/{id}", a.getReport)
 	mux.HandleFunc("GET /api/reports/{id}/events", a.streamEvents)
 	mux.HandleFunc("DELETE /api/tickers/{ticker}/cache", a.clearTicker)
+	if d.Watchlist != nil {
+		mux.HandleFunc("GET /api/watchlist", a.listWatchlist)
+		mux.HandleFunc("POST /api/watchlist", a.addToWatchlist)
+		mux.HandleFunc("POST /api/watchlist/refresh", a.refreshWatchlist)
+		mux.HandleFunc("GET /api/watchlist/{ticker}", a.watchStatus)
+		mux.HandleFunc("DELETE /api/watchlist/{ticker}", a.removeFromWatchlist)
+	}
 
 	return logRequests(d.Logger, mux)
 }

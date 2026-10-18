@@ -349,3 +349,61 @@ export const clearTickerCache = (ticker: string) =>
   request<{ reports: number; cacheEntries: number }>(`/api/tickers/${encodeURIComponent(ticker)}/cache`, { method: "DELETE" });
 
 export const isFinished = (s: Status) => s === "done" || s === "partial" || s === "failed";
+
+// --- Watchlist ---------------------------------------------------------------------
+
+export interface WatchSummary {
+  reportId: string;
+  status: "done" | "partial";
+  lang: string;
+  createdAt: string;
+  finishedAt?: string;
+  verdict?: Verdict["label"];
+  business: number | null;
+  valuation: number | null;
+  price: number | null;
+  priceDate?: string;
+  phase?: string;
+  moat?: string;
+  riskScore: number | null;
+  bands: {
+    metric: string;
+    zone: "cheap" | "fair" | "expensive";
+    percentile: number;
+    current: number;
+    cheapPrice: number;
+    medianPrice: number;
+    expensivePrice: number;
+  } | null;
+  noBandsWhy?: string;
+}
+
+export interface WatchItem {
+  ticker: string;
+  companyName: string;
+  addedAt: string;
+  latest: WatchSummary | null;
+  running?: { id: string; stage: string };
+}
+
+export const getWatchlist = () => request<WatchItem[]>("/api/watchlist");
+
+export const watchStatus = (ticker: string) => request<{ ticker: string; watching: boolean }>(`/api/watchlist/${encodeURIComponent(ticker)}`);
+
+export const addToWatchlist = (ticker: string) =>
+  request<{ ticker: string; watching: boolean }>("/api/watchlist", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticker }),
+  });
+
+export const removeFromWatchlist = (ticker: string) =>
+  request<{ ticker: string; watching: boolean }>(`/api/watchlist/${encodeURIComponent(ticker)}`, { method: "DELETE" });
+
+/** Starts new reports for stale tickers (at most five at a time). */
+export const refreshWatchlist = () =>
+  request<{ started: string[]; waiting: string[] }>("/api/watchlist/refresh", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lang: getLang(), model: getModel() || undefined }),
+  });
