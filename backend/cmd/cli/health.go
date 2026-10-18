@@ -68,7 +68,7 @@ func runHealth(ctx context.Context, args []string, stdout, stderr io.Writer) (fa
 	}
 	// Earnings are not checked, and Alpha Vantage allows 25 requests a day.
 	// Insider trades are not checked either (a request per Form 4).
-	f.Earnings, f.Insiders = nil, nil
+	f.Earnings, f.Insiders, f.Calendar = nil, nil, nil
 	if !*withPrices {
 		f.Prices = nil
 	}

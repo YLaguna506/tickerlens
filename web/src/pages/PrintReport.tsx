@@ -8,6 +8,7 @@ import { ChartTheme } from "../chartTheme";
 import { PriceChart } from "../components/charts";
 import { ManagementPanel, MoatPanel, RiskPanel } from "../components/deepSections";
 import { BusinessSection, FinancialsSection, PhaseSection, ValuationSection, VerdictSection } from "../components/sections";
+import { EarningsPill } from "../components/NextEarnings";
 import { Section } from "../components/ui";
 import { price, shortDate, signedPct, titleCase, usd } from "../format";
 import { t, tx } from "../i18n";
@@ -107,6 +108,7 @@ export function PrintReport({ id }: { id: string }) {
               <Stat label={t("5 years")} value={signedPct(m?.priceChange5y.value, 0)} />
               <Stat label={t("Phase")} value={m ? tx(m.phase.name) : "–"} />
             </dl>
+            {m?.nextEarnings && <EarningsPill n={m.nextEarnings} className="!text-xs" />}
             {v?.rationale && <p className="text-sm leading-relaxed">{v.rationale}</p>}
           </header>
 

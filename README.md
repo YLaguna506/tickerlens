@@ -13,8 +13,9 @@ Type a US ticker and TickerLens builds a research report from the company's SEC 
 Every report has the same data, shown in five designs you can switch between at the top of the page. Next to the design switch:
 
 - **English / Español.** The whole page switches language, including every computed explanation (score reasons, rules, formulas). Reports themselves are built in a language: in Spanish, the AI agents write their prose in Spanish while quotes stay word for word from the filing. Switching on an open report offers to build it in the other language.
-- **Watchlist (☆).** Adds the ticker to the watchlist: one page with every followed company's verdict, its B and V scores, moat and risk, and where today's price sits against the prices that would make it cheap, typical or expensive by its own history. **Update stale reports** rebuilds reports older than 12 hours, five at a time to stay within the AI and price quotas.
+- **Watchlist (☆).** Adds the ticker to the watchlist: one page with every followed company's verdict, its B and V scores, moat and risk, where today's price sits against the prices that would make it cheap, typical or expensive by its own history, and the next earnings date (highlighted within a week; sort by **Earnings soonest**). **Update stale reports** rebuilds reports older than 12 hours, five at a time to stay within the AI and price quotas.
 - **Export as PDF.** Opens the report laid out for paper (light theme, page breaks between cards, sources and disclaimer at the end) and starts the browser's print dialog: choose "Save as PDF". Text stays selectable and charts stay sharp; it works on phones too.
+- **Next earnings.** Each report shows the next quarterly earnings date under the verdict, with the time (before the open or after the close) and the analysts' EPS estimate in the management section. Dates come from Alpha Vantage's earnings calendar (one request for the whole market, cached 12 hours); companies reporting more than three months out get an estimate, a year after the same quarter's report, marked as estimated.
 - **Compare (⇄).** Puts up to three companies side by side, each from its latest report: verdicts and scores, where each price sits against its own history, margins, growth, debt, multiples, shareholder yield, moat, risk and management, with the best value in each row highlighted. Open it from a report, from the home page, or by ticking companies on the watchlist; the page address (`/compare?t=PEP,KO,KDP`) can be shared.
 - **AI model.** Pick the model for new reports from the ones your keys allow (the default, its fallback, each provider's configured model and anything in `LLM_MODEL_CHOICES`). An open report keeps the model it was built with.
 - **↻** deletes the ticker's saved reports and cached data and builds a fresh one.
@@ -62,7 +63,7 @@ flowchart LR
 
   Ingest --> SEC[("SEC EDGAR<br/>XBRL facts, 10-K/10-Q")]
   Ingest --> Tiingo[("Tiingo<br/>daily prices")]
-  Ingest --> AV[("Alpha Vantage<br/>EPS estimates")]
+  Ingest --> AV[("Alpha Vantage<br/>EPS estimates,<br/>earnings calendar")]
   Runner -->|"HTTP, X-Job-ID"| Agents["AI agents<br/>Python + FastAPI"]
   Agents --> LLM[("LLM<br/>Gemini, OpenRouter or OpenAI")]
   Runner <--> PG[("PostgreSQL<br/>reports, HTTP cache,<br/>agent answers")]
@@ -206,7 +207,7 @@ This returns `{"id": "...", "status": "queued"}` and runs the report in the back
 | `GET /api/reports/{id}` | Report status and JSON |
 | `GET /api/reports/{id}/events` | Live progress (SSE) |
 | `GET /api/reports?ticker=V` | Report history for a ticker |
-| `GET /api/watchlist` | The watchlist, each ticker with its latest report's verdict, scores, price and valuation zone, and any report being built |
+| `GET /api/watchlist` | The watchlist, each ticker with its latest report's verdict, scores, price and valuation zone, its next earnings date, and any report being built |
 | `POST /api/watchlist` | Add a ticker (`{"ticker": "PEP"}`) |
 | `DELETE /api/watchlist/{ticker}` | Remove a ticker (`GET` tells whether it is watched) |
 | `POST /api/watchlist/refresh` | Start new reports for tickers whose latest report is over 12 hours old, at most five per call (`{"lang": "es"}` optional) |

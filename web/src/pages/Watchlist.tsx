@@ -1,7 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ApiError, addToWatchlist, getWatchlist, refreshWatchlist, removeFromWatchlist, searchTickers, type WatchItem, type WatchSummary } from "../api";
+import { ApiError, addToWatchlist, getWatchlist, refreshWatchlist, removeFromWatchlist, searchTickers, type NextEarnings, type WatchItem, type WatchSummary } from "../api";
 import { LangSwitch, ModelSwitch } from "../components/Controls";
+import { daysUntil, earningsDay, earningsShort, earningsTime, isSoon } from "../earnings";
 import { Disclaimer } from "../components/ui";
 import { ZoneBar } from "../components/ZoneBar";
 import { price, shortDate, titleCase } from "../format";
@@ -19,7 +20,7 @@ const VERDICT_STYLE: Record<string, string> = {
 const VERDICT_ORDER = ["Buy", "Watch", "Hold", "Pass", "Sell"];
 const ZONE_STYLE = { cheap: "text-good", fair: "text-mid", expensive: "text-bad" };
 
-type Sort = "added" | "verdict" | "cheapest";
+type Sort = "added" | "verdict" | "cheapest" | "earnings";
 
 const DAY = 24 * 60 * 60 * 1000;
 const ageDays = (iso: string) => Math.floor((Date.now() - new Date(iso).getTime()) / DAY);
@@ -101,9 +102,9 @@ export function Watchlist() {
       {items.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex gap-1 rounded-full border border-line bg-card p-1 text-sm" role="group" aria-label={t("Sort by")}>
-            {(["added", "verdict", "cheapest"] as const).map((s) => (
+            {(["added", "verdict", "cheapest", "earnings"] as const).map((s) => (
               <button key={s} onClick={() => setSort(s)} aria-pressed={sort === s} className={`rounded-full px-3 py-1 font-semibold ${sort === s ? "bg-good text-white" : "text-muted hover:text-ink"}`}>
-                {t({ added: "Added", verdict: "Verdict", cheapest: "Cheapest" }[s])}
+                {t({ added: "Added", verdict: "Verdict", cheapest: "Cheapest", earnings: "Earnings soonest" }[s])}
               </button>
             ))}
           </div>
@@ -156,6 +157,10 @@ function sorted(items: WatchItem[], sort: Sort): WatchItem[] {
   } else if (sort === "cheapest") {
     const pct = (it: WatchItem) => it.latest?.bands?.percentile ?? 2;
     list.sort((a, b) => pct(a) - pct(b));
+  } else if (sort === "earnings") {
+    // Upcoming dates first, soonest on top; passed or unknown ones last.
+    const key = (it: WatchItem) => (it.nextEarnings && daysUntil(it.nextEarnings.date) >= 0 ? it.nextEarnings.date : "9999");
+    list.sort((a, b) => key(a).localeCompare(key(b)));
   }
   return list;
 }
@@ -208,6 +213,7 @@ function Row({ it, onChange, picked, onPick, canPick }: { it: WatchItem; onChang
             {ageDays(s.createdAt) === 0 ? t("Report from today") : t("Report {n} days old", { n: ageDays(s.createdAt) })}
           </span>
         ) : null}
+        {it.nextEarnings && <WatchEarnings n={it.nextEarnings} />}
         <span className="flex gap-2">
           {(s || it.running) && (
             <button onClick={open} className="rounded-full bg-good px-3 py-1 text-xs font-semibold text-white">
@@ -220,6 +226,18 @@ function Row({ it, onChange, picked, onPick, canPick }: { it: WatchItem; onChang
         </span>
       </div>
     </article>
+  );
+}
+
+/** "Earnings Oct 27 · in 9 days", highlighted within a week. */
+function WatchEarnings({ n }: { n: NextEarnings }) {
+  const d = daysUntil(n.date);
+  const style = d < 0 ? "text-muted" : isSoon(n) ? "rounded-full bg-mid-soft px-2 py-0.5 font-semibold text-ink" : "text-ink";
+  const when = [earningsDay(n.date, true), earningsTime(n)].filter(Boolean).join(", ");
+  return (
+    <span className={`text-xs ${style}`} title={`${when}${n.source === "estimated" ? ` · ${t("estimated")}` : ""}`}>
+      {t("Earnings {date}", { date: earningsShort(n) })}
+    </span>
   );
 }
 

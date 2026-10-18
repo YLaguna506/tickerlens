@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
+	"github.com/YLaguna506/tickerlens/backend/internal/estimates"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
 )
 
@@ -20,6 +21,11 @@ type Watchlist interface {
 	Remove(ctx context.Context, ticker string) (bool, error)
 	Contains(ctx context.Context, ticker string) (bool, error)
 	List(ctx context.Context) ([]store.WatchItem, error)
+}
+
+// Calendar is the market's upcoming earnings dates (estimates.Client).
+type Calendar interface {
+	Calendar(ctx context.Context) (map[string]estimates.CalendarEntry, error)
 }
 
 // maxRefresh is how many reports one "update" starts: each report calls the
@@ -34,7 +40,31 @@ func (a *api) listWatchlist(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not load the watchlist")
 		return
 	}
+	a.withCalendar(r.Context(), items)
 	writeJSON(w, http.StatusOK, items)
+}
+
+// withCalendar replaces each ticker's next earnings date with the calendar's
+// when it has one: a date can be announced (or moved) after the report was
+// built. The calendar is cached for 12 hours; if it is slow or fails, the
+// reports' dates stay.
+func (a *api) withCalendar(ctx context.Context, items []store.WatchItem) {
+	if a.Calendar == nil || len(items) == 0 {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, 4*time.Second)
+	defer cancel()
+	cal, err := a.Calendar.Calendar(ctx)
+	if err != nil {
+		a.Logger.Warn("earnings calendar", "err", err)
+		return
+	}
+	today := time.Now().Format(time.DateOnly)
+	for i := range items {
+		if e, ok := cal[items[i].Ticker]; ok && e.ReportDate >= today {
+			items[i].NextEarnings = &store.NextEarnings{Date: e.ReportDate, Time: e.Time, Source: "calendar", EstimateEPS: e.EstimateEPS}
+		}
+	}
 }
 
 // POST /api/watchlist {"ticker": "PEP"} → adds a ticker.

@@ -67,7 +67,8 @@ func NewFetcher(cfg Config, cache fetch.Cache, budget estimates.Budget, logger *
 		if budget != nil {
 			opts.BeforeNetwork = estimates.BudgetHook(budget, estimates.DailyLimit, time.Now)
 		}
-		f.Earnings = estimates.NewClient(fetch.New(opts), cfg.AlphaVantageKey, "")
+		av := estimates.NewClient(fetch.New(opts), cfg.AlphaVantageKey, "")
+		f.Earnings, f.Calendar = av, av
 	}
 	return f
 }

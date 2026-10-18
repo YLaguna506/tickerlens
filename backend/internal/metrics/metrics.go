@@ -76,6 +76,8 @@ type Report struct {
 	// Insiders is the last year of open-market buying and selling by
 	// directors and officers (nil when Form 4s were not read).
 	Insiders *insiders.Summary `json:"insiders,omitempty"`
+	// NextEarnings is the next quarterly report's date (nil if unknown).
+	NextEarnings *NextEarnings `json:"nextEarnings,omitempty"`
 	// ReverseDCF is the growth the price implies, against actual growth.
 	ReverseDCF *ReverseDCF `json:"reverseDcf,omitempty"`
 	// Capital is how the cash from operations was spent over five years
@@ -157,6 +159,7 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	r.PriceChange5y = priceChange(b, sp, false)
 	r.TotalReturn5y = priceChange(b, sp, true)
 	r.Earnings = earningsRecord(b.Earnings)
+	r.NextEarnings = nextEarnings(b.NextEarnings, b.Earnings, r.PriceDate)
 	if b.InsidersSince != "" {
 		s := insiders.Summarize(b.InsiderTrades, b.InsiderFilings, b.InsidersSince, r.PriceDate)
 		r.Insiders = &s

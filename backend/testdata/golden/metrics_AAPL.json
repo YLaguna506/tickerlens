@@ -614,6 +614,13 @@
     "avgSurprisePercent": 4.7816625,
     "latestQuarter": "2026-06-30"
   },
+  "nextEarnings": {
+    "date": "2026-10-30",
+    "fiscalDateEnding": "2026-09-30",
+    "estimateEps": null,
+    "time": "post-market",
+    "source": "estimated"
+  },
   "reverseDcf": {
     "impliedGrowth": 0.1376,
     "years": 10,

@@ -24,7 +24,7 @@ import (
 
 // BodyVersion changes whenever the report body's shape or computation
 // changes, so old reports are not reused for new requests.
-const BodyVersion = "m6.4"
+const BodyVersion = "m6.5"
 
 // Stages, in order.
 const (

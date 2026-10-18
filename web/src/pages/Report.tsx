@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createReport, isFinished, type Report as ReportT } from "../api";
 import { PriceChart } from "../components/charts";
 import { LangNotice, LimitedNotice, ReportControls } from "../components/Controls";
+import { EarningsPill } from "../components/NextEarnings";
 import { RunDetails } from "../components/RunDetails";
 import { BusinessSection, FinancialsSection, PhaseSection, ValuationSection, VerdictSection } from "../components/sections";
 import { ManagementPanel, MoatPanel, RiskPanel } from "../components/deepSections";
@@ -131,6 +132,11 @@ export function Report({ id }: { id: string }) {
           <a href="#verdict" className="mt-4 inline-block rounded-full bg-good px-5 py-2 font-display font-semibold text-white">
             {t("Verdict: {label}", { label: t(verdict) })}
           </a>
+        )}
+        {m?.nextEarnings && (
+          <div className="mt-3">
+            <EarningsPill n={m.nextEarnings} />
+          </div>
         )}
       </header>
 

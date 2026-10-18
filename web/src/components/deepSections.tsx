@@ -12,6 +12,7 @@ import type {
 import { pct, shortDate, signedPct, titleCase, usd } from "../format";
 import { t, tx } from "../i18n";
 import { isPending } from "../live";
+import { NextEarningsLine } from "./NextEarnings";
 import { ReverseDCFCard } from "./ReverseDCF";
 import { EvidenceList, Skeleton, StepScale, Unavailable } from "./ui";
 
@@ -455,6 +456,7 @@ export function ManagementPanel({
         ) : (
           <p className="text-sm text-muted">{t("No estimates available.")}</p>
         )}
+        <NextEarningsLine n={m?.nextEarnings} />
       </div>
 
       {m?.insiders && <InsiderCard s={m.insiders} />}

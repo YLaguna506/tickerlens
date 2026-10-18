@@ -60,6 +60,9 @@ type Deps struct {
 	Models Models
 	// Watchlist is nil when there is no database (its routes are left out).
 	Watchlist Watchlist
+	// Calendar updates the watchlist's earnings dates between reports (nil
+	// without an Alpha Vantage key).
+	Calendar Calendar
 	// Ready reports whether dependencies (Postgres) are reachable.
 	Ready func(ctx context.Context) error
 	// FreshFor is how long a finished report is returned instead of

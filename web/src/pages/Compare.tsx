@@ -2,6 +2,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { createReport, getReport, isFinished, listReports, searchTickers, type Metric, type MetricsReport, type Report } from "../api";
 import { LangSwitch, ModelSwitch } from "../components/Controls";
+import { earningsShort, isSoon } from "../earnings";
 import { Disclaimer } from "../components/ui";
 import { ZoneBar } from "../components/ZoneBar";
 import { metricValue, pct, price, shortDate, titleCase, usd } from "../format";
@@ -232,6 +233,13 @@ export function Compare() {
               <Row label={t("Beat estimates")}>
                 {ms.map((m, i) => (
                   <Cell key={i}>{m && m.earnings.quarters > 0 ? t("{beats} of {n} quarters", { beats: m.earnings.beats, n: m.earnings.quarters }) : "–"}</Cell>
+                ))}
+              </Row>
+              <Row label={t("Next earnings")}>
+                {ms.map((m, i) => (
+                  <Cell key={i}>
+                    <span className={m?.nextEarnings && isSoon(m.nextEarnings) ? "font-semibold" : ""}>{earningsShort(m?.nextEarnings)}</span>
+                  </Cell>
                 ))}
               </Row>
               <Row label={t("Insiders, last 12 months")}>

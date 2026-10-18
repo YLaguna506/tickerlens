@@ -115,6 +115,7 @@ func run(logger *slog.Logger) error {
 		Tickers:   fetcher.SEC,
 		Models:    models,
 		Watchlist: store.NewWatchlist(pool),
+		Calendar:  fetcher.Calendar,
 		Ready:     pool.Ping,
 	})
 

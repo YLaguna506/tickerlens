@@ -61,6 +61,12 @@ const (
 	maxForm4s   = 150
 )
 
+// CalendarSource provides the whole market's upcoming earnings dates
+// (estimates.Client).
+type CalendarSource interface {
+	Calendar(ctx context.Context) (map[string]estimates.CalendarEntry, error)
+}
+
 // ProfileSource provides a company's industry code (edgar.Client).
 type ProfileSource interface {
 	Profile(ctx context.Context, cik string) (edgar.Profile, error)
@@ -77,6 +83,7 @@ type Fetcher struct {
 	Fresh        FreshSource      // optional
 	Profiles     ProfileSource    // optional: the industry code
 	Insiders     InsiderSource    // optional: Form 4 insider trades
+	Calendar     CalendarSource   // optional: upcoming earnings dates
 	Prices       PriceSource
 	Earnings     EarningsSource
 	PriceYears   int              // history to fetch; default 11
@@ -101,6 +108,9 @@ type Bundle struct {
 	InsiderTrades  []edgar.InsiderTrade `json:"insiderTrades,omitempty"`
 	InsiderFilings int                  `json:"insiderFilings,omitempty"`
 	InsidersSince  string               `json:"insidersSince,omitempty"`
+	// NextEarnings is the company's entry in the earnings calendar (nil when
+	// it reports more than three months out, or the calendar failed).
+	NextEarnings *estimates.CalendarEntry `json:"nextEarnings,omitempty"`
 	// Industry is the company's SEC industry code (nil if unknown).
 	Industry *edgar.Profile `json:"industry,omitempty"`
 	// Splits are the stock splits from prices and restated filings.
@@ -196,6 +206,17 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 	if f.Earnings != nil {
 		g.Go(func() error {
 			b.Earnings, earningsErr = f.Earnings.Earnings(gctx, co.Ticker)
+			return nil
+		})
+	}
+	if f.Calendar != nil {
+		g.Go(func() error {
+			// Best effort: the date is estimated from history without it.
+			if cal, err := f.Calendar.Calendar(gctx); err == nil {
+				if e, ok := cal[co.Ticker]; ok {
+					b.NextEarnings = &e
+				}
+			}
 			return nil
 		})
 	}

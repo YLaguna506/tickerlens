@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/YLaguna506/tickerlens/backend/internal/estimates"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
 )
@@ -114,5 +115,29 @@ func TestWatchlistRefreshStartsStaleReports(t *testing.T) {
 	}
 	if !slices.Equal(got.Waiting, []string{"E"}) {
 		t.Errorf("waiting = %v", got.Waiting)
+	}
+}
+
+type fakeCalendar map[string]estimates.CalendarEntry
+
+func (f fakeCalendar) Calendar(context.Context) (map[string]estimates.CalendarEntry, error) {
+	return f, nil
+}
+
+func TestWatchlistTakesCalendarDates(t *testing.T) {
+	future := time.Now().AddDate(0, 0, 9).Format(time.DateOnly)
+	past := time.Now().AddDate(0, 0, -2).Format(time.DateOnly)
+	a := &api{Deps: Deps{Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Calendar: fakeCalendar{
+		"KO":  {ReportDate: future, Time: "pre-market"},
+		"PEP": {ReportDate: past}, // already reported: keep the report's date
+	}}}
+	reportDate := &store.NextEarnings{Date: "2027-02-10", Source: "estimated"}
+	items := []store.WatchItem{{Ticker: "KO"}, {Ticker: "PEP", NextEarnings: reportDate}, {Ticker: "V"}}
+	a.withCalendar(context.Background(), items)
+	if n := items[0].NextEarnings; n == nil || n.Date != future || n.Source != "calendar" || n.Time != "pre-market" {
+		t.Errorf("KO = %+v", n)
+	}
+	if items[1].NextEarnings != reportDate || items[2].NextEarnings != nil {
+		t.Errorf("PEP = %+v, V = %+v", items[1].NextEarnings, items[2].NextEarnings)
 	}
 }

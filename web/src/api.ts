@@ -91,6 +91,7 @@ export interface MetricsReport {
   industry?: { sic: string; sicDescription: string };
   limitedSupport?: { kind: "bank" | "broker" | "insurer" | "reit"; reason: string; noHealthScore: boolean };
   insiders?: InsiderSummary;
+  nextEarnings?: NextEarnings;
   reverseDcf?: {
     impliedGrowth: number | null;
     years: number;
@@ -374,6 +375,16 @@ export const isFinished = (s: Status) => s === "done" || s === "partial" || s ==
 
 // --- Watchlist ---------------------------------------------------------------------
 
+/** The next quarterly report: announced ("calendar") or a year after the same
+ * quarter's report ("estimated"). */
+export interface NextEarnings {
+  date: string;
+  fiscalDateEnding?: string;
+  estimateEps: number | null;
+  time?: string; // pre-market / post-market
+  source: "calendar" | "estimated";
+}
+
 export interface WatchSummary {
   reportId: string;
   status: "done" | "partial";
@@ -405,6 +416,7 @@ export interface WatchItem {
   companyName: string;
   addedAt: string;
   latest: WatchSummary | null;
+  nextEarnings: NextEarnings | null;
   running?: { id: string; stage: string };
 }
 

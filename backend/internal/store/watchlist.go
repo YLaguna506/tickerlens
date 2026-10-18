@@ -58,8 +58,19 @@ type WatchItem struct {
 	CompanyName string        `json:"companyName"`
 	AddedAt     time.Time     `json:"addedAt"`
 	Latest      *WatchSummary `json:"latest"` // nil before the first finished report
+	// NextEarnings is the next quarterly report: from the latest report, or
+	// the earnings calendar when the API has it (nil if unknown).
+	NextEarnings *NextEarnings `json:"nextEarnings"`
 	// Running is a report being built right now, if any.
 	Running *RunningReport `json:"running,omitempty"`
+}
+
+// NextEarnings is a company's next earnings date.
+type NextEarnings struct {
+	Date        string   `json:"date"`
+	Time        string   `json:"time,omitempty"` // pre-market / post-market
+	Source      string   `json:"source"`         // calendar | estimated
+	EstimateEPS *float64 `json:"estimateEps"`
 }
 
 // RunningReport is a queued or running report.
@@ -113,6 +124,7 @@ func (w *Watchlist) List(ctx context.Context) ([]WatchItem, error) {
 		       (f.body->'risk'->>'score')::float8,
 		       f.body->'metrics'->'valuationBands',
 		       f.body->'metrics'->'valuationScore'->'reasons'->>0,
+		       f.body->'metrics'->'nextEarnings',
 		       r.id::text, r.stage
 		FROM watchlist w
 		LEFT JOIN LATERAL (
@@ -139,13 +151,13 @@ func (w *Watchlist) List(ctx context.Context) ([]WatchItem, error) {
 			created                                *time.Time
 			s                                      WatchSummary
 			verdict, priceDate, phase, moat, noWhy *string
-			bands                                  []byte
+			bands, next                            []byte
 			runID, runStage                        *string
 		)
 		if err := rows.Scan(&it.Ticker, &it.CompanyName, &it.AddedAt,
 			&id, &status, &lang, &created, &s.FinishedAt,
 			&verdict, &s.Business, &s.Valuation, &s.Price, &priceDate, &phase, &moat, &s.RiskScore,
-			&bands, &noWhy, &runID, &runStage); err != nil {
+			&bands, &noWhy, &next, &runID, &runStage); err != nil {
 			return nil, fmt.Errorf("list watchlist: %w", err)
 		}
 		if id != nil {
@@ -161,6 +173,12 @@ func (w *Watchlist) List(ctx context.Context) ([]WatchItem, error) {
 				s.NoBandsWhy = deref(noWhy)
 			}
 			it.Latest = &s
+			if len(next) > 0 && string(next) != "null" {
+				var n NextEarnings
+				if json.Unmarshal(next, &n) == nil && n.Date != "" {
+					it.NextEarnings = &n
+				}
+			}
 		}
 		if runID != nil {
 			it.Running = &RunningReport{ID: *runID, Stage: deref(runStage)}
