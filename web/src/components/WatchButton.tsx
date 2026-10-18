@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { addToWatchlist, removeFromWatchlist, watchStatus } from "../api";
 import { t } from "../i18n";
+import { navigate } from "../router";
 
 const STYLES = {
   classic: "rounded-full border border-line bg-card p-2 text-muted hover:text-ink",
@@ -12,6 +13,19 @@ const STYLES = {
   decision: "rounded-md border border-slate-300 bg-white p-1.5 text-slate-600 hover:border-slate-400",
   terminal: "border border-t-line p-1 text-t-dim hover:text-white",
 };
+
+/** Opens the comparison page with this ticker in it. */
+export function CompareButton({ ticker, look }: { ticker?: string; look: keyof typeof STYLES }) {
+  if (!ticker) return null;
+  const label = t("Compare {ticker} with other companies", { ticker });
+  return (
+    <button type="button" onClick={() => navigate(`/compare?t=${encodeURIComponent(ticker)}`)} title={label} aria-label={label} className={`shrink-0 ${STYLES[look]}`}>
+      <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" />
+      </svg>
+    </button>
+  );
+}
 
 export function WatchButton({ ticker, look }: { ticker?: string; look: keyof typeof STYLES }) {
   const [watching, setWatching] = useState<boolean | null>(null);

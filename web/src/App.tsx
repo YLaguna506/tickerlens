@@ -1,6 +1,7 @@
 import { useDesign } from "./design";
 import { useLang } from "./i18n";
 import { Bento } from "./pages/Bento";
+import { Compare } from "./pages/Compare";
 import { Decision } from "./pages/Decision";
 import { Evidence } from "./pages/Evidence";
 import { Home } from "./pages/Home";
@@ -17,6 +18,7 @@ export function App() {
   // Re-render everything when the language changes; t() reads it directly.
   const lang = useLang();
   if (path === "/watchlist") return <Watchlist key={lang} />;
+  if (path === "/compare") return <Compare key={`${lang}:${window.location.search}`} />;
   const match = path.match(/^\/reports\/([0-9a-f-]{36})$/i);
   if (!match) return <Home key={lang} />;
   const Page = DESIGNS[design];

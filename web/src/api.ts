@@ -407,3 +407,6 @@ export const refreshWatchlist = () =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ lang: getLang(), model: getModel() || undefined }),
   });
+
+/** A ticker's recent reports, newest first (without their bodies). */
+export const listReports = (ticker: string) => request<Report[]>(`/api/reports?ticker=${encodeURIComponent(ticker)}`);

@@ -69,9 +69,14 @@ export function Home() {
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4">
       <header className="flex flex-wrap items-center justify-end gap-2 pt-4">
-        <button onClick={() => navigate("/watchlist")} className="mr-auto rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good">
-          <span className="text-amber-400">★</span> {t("Watchlist")}
-        </button>
+        <span className="mr-auto flex gap-2">
+          <button onClick={() => navigate("/watchlist")} className="rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good">
+            <span className="text-amber-400">★</span> {t("Watchlist")}
+          </button>
+          <button onClick={() => navigate("/compare")} className="rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good">
+            ⇄ {t("Compare")}
+          </button>
+        </span>
         <ModelSwitch look="classic" />
         <LangSwitch look="classic" />
       </header>

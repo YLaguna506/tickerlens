@@ -14,6 +14,7 @@ Every report has the same data, shown in five designs you can switch between at 
 
 - **English / Español.** The whole page switches language, including every computed explanation (score reasons, rules, formulas). Reports themselves are built in a language: in Spanish, the AI agents write their prose in Spanish while quotes stay word for word from the filing. Switching on an open report offers to build it in the other language.
 - **Watchlist (☆).** Adds the ticker to the watchlist: one page with every followed company's verdict, its B and V scores, moat and risk, and where today's price sits against the prices that would make it cheap, typical or expensive by its own history. **Update stale reports** rebuilds reports older than 12 hours, five at a time to stay within the AI and price quotas.
+- **Compare (⇄).** Puts up to three companies side by side, each from its latest report: verdicts and scores, where each price sits against its own history, margins, growth, debt, multiples, shareholder yield, moat, risk and management, with the best value in each row highlighted. Open it from a report, from the home page, or by ticking companies on the watchlist; the page address (`/compare?t=PEP,KO,KDP`) can be shared.
 - **AI model.** Pick the model for new reports from the ones your keys allow (the default, its fallback, each provider's configured model and anything in `LLM_MODEL_CHOICES`). An open report keeps the model it was built with.
 - **↻** deletes the ticker's saved reports and cached data and builds a fresh one.
 

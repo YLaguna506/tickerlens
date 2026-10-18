@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ApiError, addToWatchlist, getWatchlist, refreshWatchlist, removeFromWatchlist, searchTickers, type WatchItem, type WatchSummary } from "../api";
 import { LangSwitch, ModelSwitch } from "../components/Controls";
 import { Disclaimer } from "../components/ui";
+import { ZoneBar } from "../components/ZoneBar";
 import { price, shortDate, titleCase } from "../format";
 import { t, tx } from "../i18n";
 import { STAGES } from "../live";
@@ -41,6 +42,8 @@ export function Watchlist() {
     refetchInterval: (q) => (q.state.data?.some((it) => it.running) ? 5000 : false),
   });
   const [sort, setSort] = useState<Sort>("added");
+  const [picked, setPicked] = useState<string[]>([]);
+  const togglePick = (tk: string) => setPicked((l) => (l.includes(tk) ? l.filter((x) => x !== tk) : l.length >= 3 ? l : [...l, tk]));
   const [notice, setNotice] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const items = sorted(list.data ?? [], sort);
@@ -104,9 +107,19 @@ export function Watchlist() {
               </button>
             ))}
           </div>
-          <button onClick={() => void update()} disabled={updating} className="rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good disabled:opacity-50">
-            ↻ {updating ? t("Starting…") : t("Update stale reports")}
-          </button>
+          <span className="flex flex-wrap gap-2">
+            <button
+              onClick={() => navigate(`/compare?t=${picked.join(",")}`)}
+              disabled={picked.length < 2}
+              title={picked.length < 2 ? t("Tick two or three companies to compare them") : undefined}
+              className="rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good disabled:opacity-50"
+            >
+              ⇄ {t("Compare ({n})", { n: picked.length })}
+            </button>
+            <button onClick={() => void update()} disabled={updating} className="rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good disabled:opacity-50">
+              ↻ {updating ? t("Starting…") : t("Update stale reports")}
+            </button>
+          </span>
         </div>
       )}
       {notice && (
@@ -126,7 +139,7 @@ export function Watchlist() {
             <p className="mt-1 text-sm">{t("Add a ticker above, or press ☆ at the top of any report.")}</p>
           </div>
         ) : (
-          items.map((it) => <Row key={it.ticker} it={it} onChange={reload} />)
+          items.map((it) => <Row key={it.ticker} it={it} onChange={reload} picked={picked.includes(it.ticker)} onPick={() => togglePick(it.ticker)} canPick={picked.length < 3} />)
         )}
       </main>
       <p className="mt-6 text-xs text-muted">{t("Prices are from each report's date. Reports older than 12 hours are rebuilt by Update stale reports.")}</p>
@@ -147,7 +160,7 @@ function sorted(items: WatchItem[], sort: Sort): WatchItem[] {
   return list;
 }
 
-function Row({ it, onChange }: { it: WatchItem; onChange: () => void }) {
+function Row({ it, onChange, picked, onPick, canPick }: { it: WatchItem; onChange: () => void; picked: boolean; onPick: () => void; canPick: boolean }) {
   const s = it.latest;
   const [busy, setBusy] = useState(false);
   const remove = async () => {
@@ -166,7 +179,15 @@ function Row({ it, onChange }: { it: WatchItem; onChange: () => void }) {
   const stage = it.running ? STAGES.findIndex((x) => x.id === it.running!.stage) : -1;
 
   return (
-    <article className="card fade-in grid gap-4 !p-4 sm:!p-5 md:grid-cols-[13rem_1fr_auto] md:items-center">
+    <article className={`card fade-in relative grid gap-4 !p-4 sm:!p-5 md:grid-cols-[auto_13rem_1fr_auto] md:items-center ${picked ? "ring-2 ring-good" : ""}`}>
+      <input
+        type="checkbox"
+        checked={picked}
+        onChange={onPick}
+        disabled={!picked && !canPick}
+        aria-label={t("Select {ticker} to compare", { ticker: it.ticker })}
+        className="absolute top-5 right-5 size-5 accent-[var(--color-good)] md:static md:size-4"
+      />
       <button onClick={open} disabled={!s && !it.running} className="flex items-center gap-3 text-left disabled:cursor-default">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-navy font-display text-xs font-extrabold text-white">{it.ticker.slice(0, 5)}</span>
         <span className="min-w-0">
@@ -229,34 +250,6 @@ function Summary({ s }: { s: WatchSummary }) {
           <p className="mt-1 text-xs text-muted">{s.noBandsWhy ? tx(s.noBandsWhy) : t("No valuation bands for this report.")}</p>
         )}
       </div>
-    </div>
-  );
-}
-
-/** The share price against the prices at which the company would look cheap,
- * typical or expensive by its own 5-year history. */
-function ZoneBar({ price: p, b }: { price: number; b: NonNullable<WatchSummary["bands"]> }) {
-  const lo = Math.min(b.cheapPrice, p) * 0.85;
-  const hi = Math.max(b.expensivePrice, p) * 1.1;
-  const at = (v: number) => `${((v - lo) / (hi - lo)) * 100}%`;
-  return (
-    <div className="mt-2">
-      <div className="relative h-2.5 rounded-full bg-bad/70" role="img" aria-label={t("Price {price}: cheap below {cheap}, expensive above {expensive}", { price: price(p), cheap: price(b.cheapPrice), expensive: price(b.expensivePrice) })}>
-        <span className="absolute inset-y-0 left-0 rounded-l-full bg-good" style={{ width: at(b.cheapPrice) }} />
-        <span className="absolute inset-y-0 bg-mid" style={{ left: at(b.cheapPrice), width: `calc(${at(b.expensivePrice)} - ${at(b.cheapPrice)})` }} />
-        <span className="absolute -top-1 size-4.5 -translate-x-1/2 rounded-full border-2 border-card bg-ink shadow" style={{ left: at(p) }} />
-      </div>
-      <p className="mt-1 flex justify-between text-[11px] text-muted tabular-nums">
-        <span>
-          {t("cheap")} &lt; {price(b.cheapPrice)}
-        </span>
-        <span>
-          {t("typical")} {price(b.medianPrice)}
-        </span>
-        <span>
-          {t("expensive")} &gt; {price(b.expensivePrice)}
-        </span>
-      </p>
     </div>
   );
 }
