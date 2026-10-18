@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"math"
 	"sort"
 	"strings"
 	"sync"
@@ -239,7 +240,7 @@ func (s *Screener) run(ctx context.Context, sc store.Screen) {
 		finish("failed", err.Error())
 		return
 	}
-	sortByBusiness(results)
+	Rank(results)
 	for _, r := range results {
 		if r.Stage != StageQueued {
 			continue
@@ -264,7 +265,7 @@ func (s *Screener) queuePrices(ctx context.Context, sc store.Screen) error {
 	if err != nil {
 		return err
 	}
-	sortByBusiness(results)
+	Rank(results)
 	queued := 0 // including any queued before a restart
 	for _, r := range results {
 		if r.Stage == StageQueued || r.Stage == StagePriced {
@@ -347,6 +348,11 @@ func (s *Screener) fill(r *store.ScreenResult, rep metrics.Report) {
 	r.Phase = rep.Phase.Name
 	r.Growth, r.Health = rep.GrowthScore.Value, rep.HealthScore.Value
 	r.Business = Business(s.Config.Weights, r.Growth, r.Health)
+	for _, m := range rep.Profitability {
+		if m.Key == "fcfMargin" {
+			r.FCFMargin = m.Value
+		}
+	}
 }
 
 // Business is the business score without the AI: the growth and financial
@@ -370,16 +376,21 @@ func Business(w scoring.Weights, growth, health *float64) *float64 {
 	return &b
 }
 
-func sortByBusiness(rs []store.ScreenResult) {
-	score := func(r store.ScreenResult) float64 {
-		if r.Business == nil {
-			return -1
+// Rank orders results strongest business first. Many companies score 5,
+// so ties go to the one turning more of its sales into free cash.
+func Rank(rs []store.ScreenResult) {
+	value := func(v *float64) float64 {
+		if v == nil {
+			return math.Inf(-1)
 		}
-		return *r.Business
+		return *v
 	}
 	sort.SliceStable(rs, func(i, j int) bool {
-		if score(rs[i]) != score(rs[j]) {
-			return score(rs[i]) > score(rs[j])
+		if a, b := value(rs[i].Business), value(rs[j].Business); a != b {
+			return a > b
+		}
+		if a, b := value(rs[i].FCFMargin), value(rs[j].FCFMargin); a != b {
+			return a > b
 		}
 		return rs[i].Ticker < rs[j].Ticker
 	})

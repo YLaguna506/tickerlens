@@ -317,3 +317,23 @@ func TestUniverse(t *testing.T) {
 		t.Errorf("ParseTickers = %+v", got)
 	}
 }
+
+// Equal business scores: the one with more free cash per dollar of sales
+// goes first; no score goes last.
+func TestRank(t *testing.T) {
+	five, four, thin, fat := 5.0, 4.0, 0.05, 0.30
+	rs := []store.ScreenResult{
+		{Ticker: "AAA", Business: &five, FCFMargin: &thin},
+		{Ticker: "NONE"},
+		{Ticker: "ZZZ", Business: &five, FCFMargin: &fat},
+		{Ticker: "MID", Business: &four, FCFMargin: &fat},
+	}
+	Rank(rs)
+	var got []string
+	for _, r := range rs {
+		got = append(got, r.Ticker)
+	}
+	if !slices.Equal(got, []string{"ZZZ", "AAA", "MID", "NONE"}) {
+		t.Errorf("rank = %v", got)
+	}
+}

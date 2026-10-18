@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"sort"
 
 	"github.com/YLaguna506/tickerlens/backend/internal/screener"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
@@ -138,7 +137,7 @@ func (a *api) getScreen(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not load the screen")
 		return
 	}
-	writeJSON(w, http.StatusOK, screenResponse{Screen: sc, Running: a.Screener.Running(sc.ID), Progress: progressOf(sc, results), Results: sorted(results)})
+	writeJSON(w, http.StatusOK, screenResponse{Screen: sc, Running: a.Screener.Running(sc.ID), Progress: progressOf(sc, results), Results: ranked(results)})
 }
 
 // POST /api/screens/{id}/cancel → stops a running screen.
@@ -169,18 +168,7 @@ func progressOf(sc store.Screen, results []store.ScreenResult) screenProgress {
 	return p
 }
 
-func sorted(results []store.ScreenResult) []store.ScreenResult {
-	b := func(r store.ScreenResult) float64 {
-		if r.Business == nil {
-			return -1
-		}
-		return *r.Business
-	}
-	sort.SliceStable(results, func(i, j int) bool {
-		if b(results[i]) != b(results[j]) {
-			return b(results[i]) > b(results[j])
-		}
-		return results[i].Ticker < results[j].Ticker
-	})
+func ranked(results []store.ScreenResult) []store.ScreenResult {
+	screener.Rank(results)
 	return results
 }

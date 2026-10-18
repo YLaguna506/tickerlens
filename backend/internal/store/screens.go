@@ -68,6 +68,8 @@ type ScreenResult struct {
 	Business *float64 `json:"business"`        // growth and health, weighted (no AI)
 	Growth   *float64 `json:"growth"`
 	Health   *float64 `json:"health"`
+	// FCFMargin breaks ties between equal business scores (many reach 5).
+	FCFMargin *float64 `json:"fcfMargin"`
 
 	Valuation      *float64 `json:"valuation"` // V, 1–5
 	Metric         string   `json:"metric,omitempty"`
