@@ -3,6 +3,7 @@
 //	tickerlens fetch V            print normalized financials, prices and earnings
 //	tickerlens metrics V          print the Financial overview, phase and scores
 //	tickerlens fetch -json AAPL   print the full data as JSON
+//	tickerlens health             check the data of many tickers for errors
 //
 // Settings come from the environment (`task cli -- fetch V` loads .env).
 package main
@@ -32,6 +33,7 @@ const usage = `usage: tickerlens <command> [flags] TICKER
 commands:
   fetch     fetch and print normalized financials, prices and earnings
   metrics   compute and print the Financial overview, phase and scores
+  health    check many tickers' data for signs it was read wrongly
 
 run "tickerlens <command> -h" for flags`
 
@@ -52,6 +54,12 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		err = runFetch(ctx, args[1:], stdout, stderr)
 	case "metrics":
 		err = runMetrics(ctx, args[1:], stdout, stderr)
+	case "health":
+		var failed bool
+		failed, err = runHealth(ctx, args[1:], stdout, stderr)
+		if err == nil && failed {
+			return 1
+		}
 	case "-h", "--help", "help":
 		fmt.Fprintln(stdout, usage)
 		return 0
@@ -135,11 +143,9 @@ func runMetrics(ctx context.Context, args []string, stdout, stderr io.Writer) er
 	if err != nil {
 		return err
 	}
-	cfg := scoring.Default()
-	if path := os.Getenv("SCORING_CONFIG"); path != "" {
-		if cfg, err = scoring.Load(path); err != nil {
-			return err
-		}
+	cfg, err := scoringConfig()
+	if err != nil {
+		return err
 	}
 	report := metrics.Compute(bundle, cfg)
 	// The CLI runs no AI agents, so the verdict has no business quality score.
@@ -161,6 +167,15 @@ func runMetrics(ctx context.Context, args []string, stdout, stderr io.Writer) er
 
 // loadBundle wires the providers from the environment and fetches a ticker.
 func loadBundle(ctx context.Context, ticker string, c common, stderr io.Writer) (*ingest.Bundle, error) {
+	f, err := newFetcher(ctx, c, stderr)
+	if err != nil {
+		return nil, err
+	}
+	return f.Fetch(ctx, ticker)
+}
+
+// newFetcher wires the providers from the environment.
+func newFetcher(ctx context.Context, c common, stderr io.Writer) (*ingest.Fetcher, error) {
 	level := slog.LevelWarn
 	if *c.verbose {
 		level = slog.LevelInfo
@@ -194,7 +209,15 @@ func loadBundle(ctx context.Context, ticker string, c common, stderr io.Writer) 
 		cache, budget = store.NewPGCache(pool), store.NewUsage(pool)
 	}
 
-	return ingest.NewFetcher(cfg, cache, budget, logger).Fetch(ctx, ticker)
+	return ingest.NewFetcher(cfg, cache, budget, logger), nil
+}
+
+// scoringConfig reads SCORING_CONFIG, or the built-in defaults.
+func scoringConfig() (scoring.Config, error) {
+	if path := os.Getenv("SCORING_CONFIG"); path != "" {
+		return scoring.Load(path)
+	}
+	return scoring.Default(), nil
 }
 
 func writeJSON(w io.Writer, v any) error {

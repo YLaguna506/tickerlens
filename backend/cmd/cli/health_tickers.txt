@@ -1,0 +1,21 @@
+# Tickers `tickerlens health` checks by default. A spread of calendars,
+# share structures and industries; add any ticker whose report looked wrong.
+
+# Mega caps
+AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO NFLX ORCL
+
+# 52/53-week years and odd quarters (16-week Q1 or Q4, January year-ends)
+PEP KR COST WMT HD LOW TGT DG DLTR TJX ROST LULU NKE SBUX DIS
+MU ADBE DE GIS SYY KHC FDX DELL HPQ HPE MDT CRM SNOW
+
+# Consumer staples and restaurants
+KO PG CL KMB MO PM HSY MDLZ MCD YUM CMG
+
+# Energy, health care, industrials
+XOM CVX COP JNJ PFE MRK LLY ABBV UNH TMO ABT BA CAT GE HON LMT RTX UPS UNP
+
+# Tech and growth
+AMD INTC CSCO IBM QCOM TXN INTU NOW PANW UBER ABNB PYPL PLTR COIN RIVN ZM
+
+# Payments, telecoms, autos
+V MA T VZ CMCSA CHTR F GM CVS

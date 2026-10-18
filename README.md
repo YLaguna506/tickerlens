@@ -216,6 +216,12 @@ task cli -- metrics V
 
 Prints every metric, the phase, the scores with their reasons, the valuation bands and the verdict. Add `-json` for everything, including each metric's inputs and formula.
 
+```bash
+task cli -- health
+```
+
+Checks the data of about 90 companies for signs it was read wrongly from their filings: missing or overlapping quarters, quarters that do not add up to the year, impossible negatives, a debt or share count that jumps for one quarter, EPS that disagrees with net income ÷ shares, share counts filed without their scale, and missing scores or valuation. It runs no AI agents. The list (in `backend/cmd/cli/health_tickers.txt`) covers unusual calendars, several share classes, splits and heavy debt; pass tickers to check others (`task cli -- health KR PEP`). Prices are on by default; Tiingo's free tier allows 50 requests an hour, so `-prices=false` checks the filings alone in a few minutes. It exits with status 1 when any ticker has an error.
+
 ## Development
 
 You need Go 1.27+, [golangci-lint](https://golangci-lint.run/welcome/install/) v2, [uv](https://docs.astral.sh/uv/) and Node.js 24.
