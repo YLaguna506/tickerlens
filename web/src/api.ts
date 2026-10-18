@@ -90,6 +90,7 @@ export interface MetricsReport {
   capitalAllocation?: CapitalAllocation;
   industry?: { sic: string; sicDescription: string };
   limitedSupport?: { kind: "bank" | "broker" | "insurer" | "reit"; reason: string; noHealthScore: boolean };
+  insiders?: InsiderSummary;
   phase: Phase;
   growthScore: Score;
   healthScore: Score;
@@ -412,3 +413,33 @@ export const refreshWatchlist = () =>
 
 /** A ticker's recent reports, newest first (without their bodies). */
 export const listReports = (ticker: string) => request<Report[]>(`/api/reports?ticker=${encodeURIComponent(ticker)}`);
+
+export interface InsiderTrade {
+  accession: string;
+  filed: string;
+  name: string;
+  role: string;
+  date: string;
+  code: "P" | "S" | string;
+  shares: number;
+  price: number;
+  acquired: boolean;
+  ownedAfter: number | null;
+  planned: boolean;
+}
+
+/** A year of open-market buying and selling by directors and officers (Form 4). */
+export interface InsiderSummary {
+  from: string;
+  to: string;
+  filings: number;
+  purchases: number;
+  sales: number;
+  buyers: number;
+  sellers: number;
+  boughtUsd: number;
+  soldUsd: number;
+  plannedSoldUsd: number;
+  signal: "buying" | "selling" | "none";
+  trades: InsiderTrade[];
+}

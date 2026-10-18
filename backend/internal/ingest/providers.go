@@ -42,7 +42,7 @@ func NewFetcher(cfg Config, cache fetch.Cache, budget estimates.Budget, logger *
 		Logger:  logger,
 	})
 	secClient := edgar.NewClient(sec, edgar.Options{Cache: cache})
-	f := &Fetcher{SEC: secClient, Fundamentals: secClient, ClassFacts: secClient, Fresh: secClient, Profiles: secClient}
+	f := &Fetcher{SEC: secClient, Fundamentals: secClient, ClassFacts: secClient, Fresh: secClient, Profiles: secClient, Insiders: secClient}
 
 	if cfg.TiingoKey != "" {
 		tiingo := fetch.New(fetch.Options{

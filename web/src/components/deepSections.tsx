@@ -1,14 +1,15 @@
 // Moat, Risk and Management: the panels every design shows. Each renders its
 // content only; a design wraps it in its own section header.
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import type {
+  InsiderSummary,
   MetricsReport,
   MoatSourceAnswer,
   PeerGroup,
   ReportBody,
 } from "../api";
-import { pct, signedPct, titleCase, usd } from "../format";
+import { pct, shortDate, signedPct, titleCase, usd } from "../format";
 import { t, tx } from "../i18n";
 import { isPending } from "../live";
 import { EvidenceList, Skeleton, StepScale, Unavailable } from "./ui";
@@ -455,6 +456,8 @@ export function ManagementPanel({
         )}
       </div>
 
+      {m?.insiders && <InsiderCard s={m.insiders} />}
+
       {ca && (
         <div className="card fade-in space-y-3">
           <p className="font-display font-semibold">
@@ -513,6 +516,82 @@ export function ManagementPanel({
               {tx(n)}
             </p>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Open-market buying and selling by directors and officers over a year. */
+function InsiderCard({ s }: { s: InsiderSummary }) {
+  const planned = s.soldUsd > 0 ? s.plannedSoldUsd / s.soldUsd : 0;
+  const [all, setAll] = useState(false);
+  const shown = all ? s.trades : s.trades.slice(0, 8);
+  return (
+    <div className="card fade-in space-y-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="font-display font-semibold">{t("Insider buying and selling")}</p>
+        <p className="text-xs text-muted">
+          {t("{from} to {to}, from {n} Form 4 filings", { from: shortDate(s.from), to: shortDate(s.to), n: s.filings })}
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl bg-good-soft p-3">
+          <p className="text-xs text-muted">{t("Bought on the open market")}</p>
+          <p className="font-display text-xl font-bold text-good-strong">{s.purchases ? usd(s.boughtUsd) : "–"}</p>
+          <p className="text-xs text-muted">{s.buyers === 1 ? t("by one insider") : s.buyers ? t("by {n} insiders", { n: s.buyers }) : t("no purchases")}</p>
+        </div>
+        <div className="rounded-xl bg-bad-soft p-3">
+          <p className="text-xs text-muted">{t("Sold on the open market")}</p>
+          <p className="font-display text-xl font-bold text-bad">{s.sales ? usd(s.soldUsd) : "–"}</p>
+          <p className="text-xs text-muted">
+            {s.sellers === 1 ? t("by one insider") : s.sellers ? t("by {n} insiders", { n: s.sellers }) : t("no sales")}
+            {s.sales > 0 && planned > 0 && ` · ${t("{x} marked as a pre-arranged plan", { x: pct(planned, 0) })}`}
+          </p>
+        </div>
+      </div>
+      <p className="text-xs text-muted">
+        {t(
+          "Insiders sell for many reasons (taxes, a house, diversifying), often under plans set months ahead. Buying with their own money on the open market is the stronger signal. Grants, option exercises and tax withholding are left out.",
+        )}
+      </p>
+      {s.trades.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[520px] text-sm">
+            <thead className="text-xs text-muted">
+              <tr>
+                <th className="py-1 pr-2 text-left font-semibold">{t("Date")}</th>
+                <th className="py-1 pr-2 text-left font-semibold">{t("Insider")}</th>
+                <th className="py-1 pr-2 text-left font-semibold">{t("Trade")}</th>
+                <th className="py-1 pr-2 text-right font-semibold">{t("Shares")}</th>
+                <th className="py-1 text-right font-semibold">{t("Value")}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {shown.map((tr, i) => (
+                <tr key={`${tr.accession}-${i}`}>
+                  <td className="py-1.5 pr-2 whitespace-nowrap text-muted">{shortDate(tr.date)}</td>
+                  <td className="py-1.5 pr-2">
+                    {titleCase(tr.name)}
+                    {tr.role && <span className="block text-xs text-muted">{tr.role}</span>}
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <span className={`font-semibold ${tr.code === "P" ? "text-good" : "text-bad"}`}>
+                      {tr.code === "P" ? t("Bought") : t("Sold")}
+                    </span>
+                    {tr.planned && <span className="block text-xs text-muted">{t("planned")}</span>}
+                  </td>
+                  <td className="py-1.5 pr-2 text-right tabular-nums">{Math.round(tr.shares).toLocaleString("en-US")}</td>
+                  <td className="py-1.5 text-right tabular-nums">{usd(tr.shares * tr.price)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {s.trades.length > 8 && (
+            <button onClick={() => setAll((a) => !a)} className="mt-2 text-xs font-semibold text-good">
+              {all ? t("Show fewer") : t("Show all {n} trades", { n: s.trades.length })}
+            </button>
+          )}
         </div>
       )}
     </div>

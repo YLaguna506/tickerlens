@@ -13,6 +13,7 @@ import (
 	"github.com/YLaguna506/tickerlens/backend/internal/estimates"
 	"github.com/YLaguna506/tickerlens/backend/internal/financials"
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
+	"github.com/YLaguna506/tickerlens/backend/internal/insiders"
 	"github.com/YLaguna506/tickerlens/backend/internal/phase"
 	"github.com/YLaguna506/tickerlens/backend/internal/prices"
 	"github.com/YLaguna506/tickerlens/backend/internal/scoring"
@@ -72,6 +73,9 @@ type Report struct {
 	// broker-dealers, insurers and REITs, which these metrics do not fit.
 	Industry       *edgar.Profile  `json:"industry,omitempty"`
 	LimitedSupport *LimitedSupport `json:"limitedSupport,omitempty"`
+	// Insiders is the last year of open-market buying and selling by
+	// directors and officers (nil when Form 4s were not read).
+	Insiders *insiders.Summary `json:"insiders,omitempty"`
 	// Capital is how the cash from operations was spent over five years
 	// (nil without enough cash flow history).
 	Capital *CapitalAllocation `json:"capitalAllocation,omitempty"`
@@ -150,6 +154,10 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	r.PriceChange5y = priceChange(b, sp, false)
 	r.TotalReturn5y = priceChange(b, sp, true)
 	r.Earnings = earningsRecord(b.Earnings)
+	if b.InsidersSince != "" {
+		s := insiders.Summarize(b.InsiderTrades, b.InsiderFilings, b.InsidersSince, r.PriceDate)
+		r.Insiders = &s
+	}
 
 	r.Phase = phase.Classify(c.phaseInputs(r))
 	r.GrowthScore = cfg.GrowthScore(map[string]*float64{

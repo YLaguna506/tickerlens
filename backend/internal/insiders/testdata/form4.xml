@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!-- A trimmed Form 4 in the SEC's X0609 schema: an option exercise and a
+     planned sale by an officer who is also a director. -->
+<ownershipDocument>
+    <schemaVersion>X0609</schemaVersion>
+    <documentType>4</documentType>
+    <issuer><issuerCik>0000000001</issuerCik><issuerTradingSymbol>TEST</issuerTradingSymbol></issuer>
+    <reportingOwner>
+        <reportingOwnerId><rptOwnerCik>0000000002</rptOwnerCik><rptOwnerName>DOE JANE</rptOwnerName></reportingOwnerId>
+        <reportingOwnerRelationship>
+            <isDirector>1</isDirector>
+            <isOfficer>1</isOfficer>
+            <isTenPercentOwner>0</isTenPercentOwner>
+            <officerTitle>Chief Executive Officer</officerTitle>
+        </reportingOwnerRelationship>
+    </reportingOwner>
+    <aff10b5One>1</aff10b5One>
+    <nonDerivativeTable>
+        <nonDerivativeTransaction>
+            <transactionDate><value>2026-10-07</value></transactionDate>
+            <transactionCoding><transactionFormType>4</transactionFormType><transactionCode>M</transactionCode></transactionCoding>
+            <transactionAmounts>
+                <transactionShares><value>10000</value></transactionShares>
+                <transactionPricePerShare><value>50</value></transactionPricePerShare>
+                <transactionAcquiredDisposedCode><value>A</value></transactionAcquiredDisposedCode>
+            </transactionAmounts>
+            <postTransactionAmounts><sharesOwnedFollowingTransaction><value>260000</value></sharesOwnedFollowingTransaction></postTransactionAmounts>
+        </nonDerivativeTransaction>
+        <nonDerivativeTransaction>
+            <transactionDate><value>2026-10-07</value></transactionDate>
+            <transactionCoding><transactionFormType>4</transactionFormType><transactionCode>S</transactionCode></transactionCoding>
+            <transactionAmounts>
+                <transactionShares><value>10000</value></transactionShares>
+                <transactionPricePerShare><value>181.25</value></transactionPricePerShare>
+                <transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode>
+            </transactionAmounts>
+            <postTransactionAmounts><sharesOwnedFollowingTransaction><value>250000</value></sharesOwnedFollowingTransaction></postTransactionAmounts>
+        </nonDerivativeTransaction>
+    </nonDerivativeTable>
+</ownershipDocument>

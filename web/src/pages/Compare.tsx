@@ -217,6 +217,28 @@ export function Compare() {
                   <Cell key={i}>{m && m.earnings.quarters > 0 ? t("{beats} of {n} quarters", { beats: m.earnings.beats, n: m.earnings.quarters }) : "–"}</Cell>
                 ))}
               </Row>
+              <Row label={t("Insiders, last 12 months")}>
+                {ms.map((m, i) => {
+                  const s = m?.insiders;
+                  return (
+                    <Cell key={i}>
+                      {s ? (
+                        <span className="text-xs">
+                          <span className="text-good">
+                            {t("bought")} {s.purchases ? usd(s.boughtUsd) : "–"}
+                          </span>{" "}
+                          ·{" "}
+                          <span className="text-bad">
+                            {t("sold")} {s.sales ? usd(s.soldUsd) : "–"}
+                          </span>
+                        </span>
+                      ) : (
+                        "–"
+                      )}
+                    </Cell>
+                  );
+                })}
+              </Row>
               <Row label={t("Cash spent on")}>
                 {ms.map((m, i) => {
                   const ca = m?.capitalAllocation;

@@ -48,6 +48,19 @@ type FreshSource interface {
 		unitFor func(string) string) (edgar.Filing, edgar.FactsByConcept, bool, error)
 }
 
+// InsiderSource reads Form 4 filings: directors' and officers' trades in
+// the company's stock (edgar.Client).
+type InsiderSource interface {
+	InsiderTrades(ctx context.Context, cik, since string, max int) ([]edgar.InsiderTrade, int, error)
+}
+
+// insiderYears is how far back insider trades are read, and maxForm4s caps
+// the filings read (each is a request; NVIDIA files ~80 a year).
+const (
+	insiderDays = 365
+	maxForm4s   = 150
+)
+
 // ProfileSource provides a company's industry code (edgar.Client).
 type ProfileSource interface {
 	Profile(ctx context.Context, cik string) (edgar.Profile, error)
@@ -63,6 +76,7 @@ type Fetcher struct {
 	ClassFacts   ClassFactsSource // optional
 	Fresh        FreshSource      // optional
 	Profiles     ProfileSource    // optional: the industry code
+	Insiders     InsiderSource    // optional: Form 4 insider trades
 	Prices       PriceSource
 	Earnings     EarningsSource
 	PriceYears   int              // history to fetch; default 11
@@ -82,6 +96,11 @@ type Bundle struct {
 	// Failed names the sources behind those warnings ("prices", "earnings",
 	// "per-class-eps"), for callers that track sections.
 	Failed []string `json:"failed,omitempty"`
+	// InsiderTrades are the last year's Form 4 transactions, read from
+	// InsiderFilings filings (nil when not fetched).
+	InsiderTrades  []edgar.InsiderTrade `json:"insiderTrades,omitempty"`
+	InsiderFilings int                  `json:"insiderFilings,omitempty"`
+	InsidersSince  string               `json:"insidersSince,omitempty"`
 	// Industry is the company's SEC industry code (nil if unknown).
 	Industry *edgar.Profile `json:"industry,omitempty"`
 	// Splits are the stock splits from prices and restated filings.
@@ -160,6 +179,7 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 		facts       *edgar.CompanyFacts
 		priceErr    error
 		earningsErr error
+		insiderErr  error
 	)
 	g, gctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
@@ -179,8 +199,20 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 			return nil
 		})
 	}
+	if f.Insiders != nil {
+		b.InsidersSince = now().AddDate(0, 0, -insiderDays).Format(time.DateOnly)
+		g.Go(func() error {
+			b.InsiderTrades, b.InsiderFilings, insiderErr = f.Insiders.InsiderTrades(gctx, co.CIK, b.InsidersSince, maxForm4s)
+			return nil
+		})
+	}
 	if err := g.Wait(); err != nil {
 		return nil, fmt.Errorf("financials for %s: %w", co.Ticker, err)
+	}
+	if insiderErr != nil {
+		// Best effort: the report is complete without it.
+		b.Warnings = append(b.Warnings, "insider trades: "+insiderErr.Error())
+		b.InsidersSince = ""
 	}
 
 	// Only companies whose companyfacts lack recent EPS (several share
