@@ -108,7 +108,8 @@ func (c *Client) recentFilings(ctx context.Context, cik string, forms ...string)
 // InstanceFacts returns the per-share-class EPS and diluted share facts in one
 // filing. Parsed results are cached for good: a filing never changes.
 func (c *Client) InstanceFacts(ctx context.Context, cik string, f Filing) ([]DimFact, error) {
-	cacheKey := "sec:classfacts:v1:" + f.Accession
+	// v2: basic EPS and shares are read too.
+	cacheKey := "sec:classfacts:v2:" + f.Accession
 	if c.opts.Cache != nil {
 		if body, ok, err := c.opts.Cache.Get(ctx, cacheKey); err == nil && ok {
 			var facts []DimFact
@@ -127,7 +128,7 @@ func (c *Client) InstanceFacts(ctx context.Context, cik string, f Filing) ([]Dim
 	if err != nil {
 		return nil, fmt.Errorf("sec xbrl instance %s: %w", f.Accession, err)
 	}
-	all, err := ParseInstance(bytes.NewReader(body), []string{"EarningsPerShareDiluted", "WeightedAverageNumberOfDilutedSharesOutstanding"})
+	all, err := ParseInstance(bytes.NewReader(body), classConcepts)
 	if err != nil {
 		return nil, fmt.Errorf("sec xbrl instance %s: %w", f.Accession, err)
 	}
@@ -200,7 +201,7 @@ const (
 // ClassFacts reads per-share-class EPS and diluted shares from the company's
 // recent 10-K and 10-Q filings. Filings that cannot be read are skipped and
 // reported in notes, so one bad document does not lose the rest.
-func (c *Client) ClassFacts(ctx context.Context, cik string, now time.Time) (eps, shares []Fact, notes []string, err error) {
+func (c *Client) ClassFacts(ctx context.Context, cik, ticker string, now time.Time) (eps, shares []Fact, notes []string, err error) {
 	filings, err := c.Filings(ctx, cik)
 	if err != nil {
 		return nil, nil, nil, err
@@ -221,7 +222,7 @@ func (c *Client) ClassFacts(ctx context.Context, cik string, now time.Time) (eps
 			notes = append(notes, fmt.Sprintf("skipped %s %s: %v", f.Form, f.ReportDate, err))
 			continue
 		}
-		e, s, how := SelectClass(f, facts)
+		e, s, how := SelectClass(f, facts, ClassOf(ticker))
 		eps = append(eps, e...)
 		shares = append(shares, s...)
 		if how != "" {
@@ -235,61 +236,124 @@ func (c *Client) ClassFacts(ctx context.Context, cik string, now time.Time) (eps
 	return eps, shares, notes, nil
 }
 
+// The per-class concepts read from filings. Basic figures stand in when a
+// filing has no diluted ones: Berkshire Hathaway has nothing dilutive and
+// reports basic EPS only.
+var classConcepts = []string{
+	"EarningsPerShareDiluted", "WeightedAverageNumberOfDilutedSharesOutstanding",
+	"EarningsPerShareBasic", "WeightedAverageNumberOfSharesOutstandingBasic",
+}
+
+// ClassOf returns the share class a ticker trades as, from its suffix
+// ("BRK-B" → "B"), or "" for none.
+func ClassOf(ticker string) string {
+	t := strings.ToUpper(ticker)
+	if len(t) > 2 && (t[len(t)-2] == '-' || t[len(t)-2] == '.') {
+		return t[len(t)-1:]
+	}
+	return ""
+}
+
+// classLetter names a class member's class: "A", "B", "C", "common" for
+// plain common stock, or "" for anything else. Members are matched by their
+// ending, so company-specific ones count (Berkshire's EquivalentClassBMember).
+func classLetter(member string) string {
+	switch {
+	case member == "CommonStockMember":
+		return "common"
+	case strings.HasSuffix(member, "ClassAMember"):
+		return "A"
+	case strings.HasSuffix(member, "ClassBMember"):
+		return "B"
+	case strings.HasSuffix(member, "ClassCMember"):
+		return "C"
+	}
+	return ""
+}
+
 // SelectClass picks one EPS value (and matching share count) per period from
 // per-class facts:
 //   - every class has the same EPS (e.g. Alphabet): use it, and sum the share
 //     counts of all classes;
-//   - EPS differs by class (e.g. Visa): use Class A, the publicly traded class;
+//   - EPS differs by class: use the class the ticker trades as (prefer, e.g.
+//     "B" for BRK-B), else Class A (Visa), else the plain common stock beside
+//     a Class B (Hershey);
 //   - otherwise: skip, rather than guess.
-func SelectClass(filing Filing, facts []DimFact) (eps, shares []Fact, note string) {
+//
+// Diluted figures are used where the filing has them, basic ones otherwise.
+func SelectClass(filing Filing, facts []DimFact, prefer string) (eps, shares []Fact, note string) {
 	type period struct{ start, end string }
-	epsBy := map[period]map[string]float64{}
-	sharesBy := map[period]map[string]float64{}
+	byKind := map[string]map[period]map[string]float64{}
 	for _, d := range facts {
 		p := period{d.Start, d.End}
-		m := epsBy
-		if d.Concept == "WeightedAverageNumberOfDilutedSharesOutstanding" {
-			m = sharesBy
+		if byKind[d.Concept] == nil {
+			byKind[d.Concept] = map[period]map[string]float64{}
 		}
-		if m[p] == nil {
-			m[p] = map[string]float64{}
+		if byKind[d.Concept][p] == nil {
+			byKind[d.Concept][p] = map[string]float64{}
 		}
-		m[p][d.Dims[classAxis]] = d.Val
+		byKind[d.Concept][p][d.Dims[classAxis]] = d.Val
 	}
+	dilutedEPS, basicEPS := byKind["EarningsPerShareDiluted"], byKind["EarningsPerShareBasic"]
+	dilutedShares, basicShares := byKind["WeightedAverageNumberOfDilutedSharesOutstanding"], byKind["WeightedAverageNumberOfSharesOutstandingBasic"]
 
-	periods := make([]period, 0, len(epsBy))
-	for p := range epsBy {
-		periods = append(periods, p)
+	periods := map[period]bool{}
+	for p := range dilutedEPS {
+		periods[p] = true
 	}
-	sort.Slice(periods, func(i, j int) bool { return periods[i].end < periods[j].end })
+	for p := range basicEPS {
+		periods[p] = true
+	}
+	ordered := make([]period, 0, len(periods))
+	for p := range periods {
+		ordered = append(ordered, p)
+	}
+	sort.Slice(ordered, func(i, j int) bool { return ordered[i].end < ordered[j].end })
 
 	mk := func(p period, v float64) Fact {
 		return Fact{Start: p.start, End: p.end, Val: v, Accn: filing.Accession, Form: filing.Form, Filed: filing.FilingDate}
 	}
+	order := []string{prefer, "A", "common"}
 	used := map[string]bool{}
-	for _, p := range periods {
-		byClass := epsBy[p]
+	for _, p := range ordered {
+		byClass, sharesBy, basic := dilutedEPS[p], dilutedShares[p], false
+		if len(byClass) == 0 {
+			byClass, sharesBy, basic = basicEPS[p], basicShares[p], true
+		}
+		if len(sharesBy) == 0 && basic {
+			sharesBy = basicShares[p]
+		}
+		suffix := ""
+		if basic {
+			suffix = " (basic EPS: no dilutive securities reported)"
+		}
 		if v, ok := sameValue(byClass); ok {
 			eps = append(eps, mk(p, v))
-			if total, ok := sum(sharesBy[p]); ok {
+			if total, ok := sum(sharesBy); ok {
 				shares = append(shares, mk(p, total))
 			}
-			used["all classes (same EPS)"] = true
+			used["all classes (same EPS)"+suffix] = true
 			continue
 		}
-		// Class A, or the plain common stock beside a Class B (Hershey):
-		// the publicly traded class.
-		for _, class := range []struct{ member, name string }{
-			{"CommonClassAMember", "Class A"},
-			{"CommonStockMember", "common stock"},
-		} {
-			if v, ok := byClass[class.member]; ok {
+	pick:
+		for _, want := range order {
+			if want == "" {
+				continue
+			}
+			for member, v := range byClass {
+				if classLetter(member) != want {
+					continue
+				}
 				eps = append(eps, mk(p, v))
-				if s, ok := sharesBy[p][class.member]; ok {
+				if s, ok := sharesBy[member]; ok {
 					shares = append(shares, mk(p, s))
 				}
-				used[class.name] = true
-				break
+				name := "Class " + want
+				if want == "common" {
+					name = "common stock"
+				}
+				used[name+suffix] = true
+				break pick
 			}
 		}
 	}

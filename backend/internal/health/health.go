@@ -247,7 +247,7 @@ func (c *checker) report(f financials.Financials, r *metrics.Report, prices bool
 	if r.GrowthScore.Value == nil {
 		c.add("score", Warn, "no growth score: %s", strings.Join(r.GrowthScore.Reasons, "; "))
 	}
-	if r.HealthScore.Value == nil {
+	if r.HealthScore.Value == nil && r.LimitedSupport == nil {
 		c.add("score", Warn, "no health score: %s", strings.Join(r.HealthScore.Reasons, "; "))
 	}
 	if !prices {

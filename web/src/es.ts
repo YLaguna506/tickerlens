@@ -488,4 +488,10 @@ export const ES: Record<string, string> = {
   "Tick two or three companies to compare them": "Marca dos o tres empresas para compararlas",
   "Compare ({n})": "Comparar ({n})",
   "Select {ticker} to compare": "Seleccionar {ticker} para comparar",
+  // Limited support
+  "Limited support: {kind}.": "Soporte limitado: {kind}.",
+  "Banks": "Bancos",
+  "Broker-dealers": "Casas de bolsa",
+  "Insurers": "Aseguradoras",
+  "REITs": "REITs (fideicomisos inmobiliarios)",
 };

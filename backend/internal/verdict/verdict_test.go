@@ -147,3 +147,14 @@ func TestConfidence(t *testing.T) {
 		})
 	}
 }
+
+func TestLimitedSupportLowersConfidence(t *testing.T) {
+	f := func(v float64) *float64 { return &v }
+	full := Input{BusinessQuality: f(4), Growth: f(4), FinancialHealth: f(4), Valuation: f(4)}
+	c1, _ := confidence(full)
+	full.LimitedSupport = "bank"
+	c2, reasons := confidence(full)
+	if c1-c2 != 25 || !strings.Contains(strings.Join(reasons, " "), "not banks") {
+		t.Errorf("confidence %d → %d, reasons %v", c1, c2, reasons)
+	}
+}

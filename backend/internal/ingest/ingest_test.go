@@ -126,7 +126,7 @@ func TestFetchUnknownTicker(t *testing.T) {
 
 type fakeClassFacts struct{ calls int }
 
-func (f *fakeClassFacts) ClassFacts(context.Context, string, time.Time) ([]edgar.Fact, []edgar.Fact, []string, error) {
+func (f *fakeClassFacts) ClassFacts(context.Context, string, string, time.Time) ([]edgar.Fact, []edgar.Fact, []string, error) {
 	f.calls++
 	eps := []edgar.Fact{{Start: "2024-10-01", End: "2025-09-30", Val: 10.20, Accn: "a", Form: "10-K", Filed: "2025-11-06"}}
 	shares := []edgar.Fact{{Start: "2024-10-01", End: "2025-09-30", Val: 1966e6, Accn: "a", Form: "10-K", Filed: "2025-11-06"}}

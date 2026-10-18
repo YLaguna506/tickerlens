@@ -160,6 +160,7 @@ func runMetrics(ctx context.Context, args []string, stdout, stderr io.Writer) er
 		ValuationFellBack:  report.Bands != nil && report.Bands.FellBackFrom != "",
 		PhaseLowConfidence: report.Phase.LowConfidence,
 		MissingData:        bundle.Failed,
+		LimitedSupport:     limitedKind(report),
 	}, cfg)
 	if *c.asJSON {
 		return writeJSON(stdout, map[string]any{"metrics": report, "verdict": v})
@@ -228,4 +229,11 @@ func writeJSON(w io.Writer, v any) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(v)
+}
+
+func limitedKind(r metrics.Report) string {
+	if r.LimitedSupport == nil {
+		return ""
+	}
+	return r.LimitedSupport.Kind
 }

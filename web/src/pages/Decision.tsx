@@ -5,7 +5,7 @@ import { MoreSections } from "../components/deepSections";
 import type { ReactNode } from "react";
 import { Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
-import { LangNotice, ReportControls } from "../components/Controls";
+import { LangNotice, LimitedNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, titleCase, wholePrice } from "../format";
 import { t, tx } from "../i18n";
@@ -295,6 +295,7 @@ export function Decision({ id }: { id: string }) {
           </div>
         </header>
         <LangNotice report={report} className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" />
+        <LimitedNotice report={report} className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" />
 
         {isLoading ? (
           <p className="pt-10 text-slate-500">{t("Loading…")}</p>

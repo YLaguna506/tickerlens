@@ -38,7 +38,7 @@ type EarningsSource interface {
 // ClassFactsSource reads per-share-class EPS and shares from filing documents,
 // for companies whose companyfacts lack them (edgar.Client implements it).
 type ClassFactsSource interface {
-	ClassFacts(ctx context.Context, cik string, now time.Time) (eps, shares []edgar.Fact, notes []string, err error)
+	ClassFacts(ctx context.Context, cik, ticker string, now time.Time) (eps, shares []edgar.Fact, notes []string, err error)
 }
 
 // FreshSource reads the latest 10-K/10-Q directly when companyfacts has not
@@ -46,6 +46,11 @@ type ClassFactsSource interface {
 type FreshSource interface {
 	FreshFacts(ctx context.Context, cik, knownThrough string, concepts []string,
 		unitFor func(string) string) (edgar.Filing, edgar.FactsByConcept, bool, error)
+}
+
+// ProfileSource provides a company's industry code (edgar.Client).
+type ProfileSource interface {
+	Profile(ctx context.Context, cik string) (edgar.Profile, error)
 }
 
 // Fetcher gathers a Bundle. Prices and Earnings may be nil when no API key is
@@ -57,6 +62,7 @@ type Fetcher struct {
 	Fundamentals Fundamentals
 	ClassFacts   ClassFactsSource // optional
 	Fresh        FreshSource      // optional
+	Profiles     ProfileSource    // optional: the industry code
 	Prices       PriceSource
 	Earnings     EarningsSource
 	PriceYears   int              // history to fetch; default 11
@@ -76,6 +82,8 @@ type Bundle struct {
 	// Failed names the sources behind those warnings ("prices", "earnings",
 	// "per-class-eps"), for callers that track sections.
 	Failed []string `json:"failed,omitempty"`
+	// Industry is the company's SEC industry code (nil if unknown).
+	Industry *edgar.Profile `json:"industry,omitempty"`
 	// Splits are the stock splits from prices and restated filings.
 	Splits []financials.Split `json:"splits,omitempty"`
 	// Notes explain unusual but successful data handling.
@@ -178,7 +186,7 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 	// Only companies whose companyfacts lack recent EPS (several share
 	// classes) need their filing documents read; for most, this is skipped.
 	if f.ClassFacts != nil && LacksRecentEPS(facts) {
-		eps, shares, notes, err := f.ClassFacts.ClassFacts(ctx, co.CIK, now())
+		eps, shares, notes, err := f.ClassFacts.ClassFacts(ctx, co.CIK, co.Ticker, now())
 		if err != nil {
 			b.Warnings = append(b.Warnings, "per-class EPS: "+err.Error())
 			b.Failed = append(b.Failed, "per-class-eps")
@@ -206,6 +214,12 @@ func (f *Fetcher) Fetch(ctx context.Context, ticker string) (*Bundle, error) {
 
 	// Prices carry the stock splits, which normalization needs to combine
 	// per-share values filed on either side of a split.
+	if f.Profiles != nil {
+		if p, err := f.Profiles.Profile(ctx, co.CIK); err == nil && p.SIC != "" {
+			b.Industry = &p
+		}
+	}
+
 	b.Splits = SplitsFor(b.Prices, facts)
 	b.Financials = financials.Normalize(co, facts, b.Splits)
 

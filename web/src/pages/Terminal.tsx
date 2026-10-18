@@ -5,7 +5,7 @@ import { MoreSections } from "../components/deepSections";
 import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type MetricsReport, type ReportBody, type SegmentShare, type Verdict } from "../api";
-import { LangNotice, ReportControls } from "../components/Controls";
+import { LangNotice, LimitedNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice } from "../format";
 import { t, tx } from "../i18n";
@@ -502,6 +502,7 @@ export function Terminal({ id }: { id: string }) {
         )}
       </header>
       <LangNotice report={report} className="border-b border-t-line px-3 py-2 font-mono text-xs text-t-amber" />
+      <LimitedNotice report={report} className="border-b border-t-line px-3 py-2 font-mono text-xs text-t-amber" />
 
       {isLoading ? (
         <p className="p-6 font-mono text-xs text-t-dim">

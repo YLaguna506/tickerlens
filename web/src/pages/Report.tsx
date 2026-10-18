@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createReport, isFinished, type Report as ReportT } from "../api";
 import { PriceChart } from "../components/charts";
-import { LangNotice, ReportControls } from "../components/Controls";
+import { LangNotice, LimitedNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { BusinessSection, FinancialsSection, PhaseSection, ValuationSection, VerdictSection } from "../components/sections";
 import { ManagementPanel, MoatPanel, RiskPanel } from "../components/deepSections";
@@ -118,6 +118,7 @@ export function Report({ id }: { id: string }) {
         <ReportControls report={report} look="classic" />
       </div>
       <LangNotice report={report} className="card mt-4 border-mid/40 bg-mid-soft text-sm" />
+      <LimitedNotice report={report} className="card mt-4 border-mid/40 bg-mid-soft text-sm" />
       <header className="pt-6 text-center">
         <span className="inline-flex size-16 items-center justify-center rounded-2xl bg-navy font-display text-lg font-extrabold text-white">
           {report.ticker.slice(0, 4)}

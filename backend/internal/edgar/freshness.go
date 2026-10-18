@@ -3,8 +3,12 @@ package edgar
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/YLaguna506/tickerlens/backend/internal/fetch"
@@ -65,9 +69,11 @@ type parsedFiling struct {
 }
 
 // filingFacts parses a filing's instance document, caching the result for
-// good (a filing never changes).
+// good (a filing never changes). Only the given concepts are kept, so the
+// cache key includes them: reading a new concept parses the filing again
+// (Coca-Cola's latest quarter had no debt after its debt concept was added).
 func (c *Client) filingFacts(ctx context.Context, cik string, f Filing, concepts []string) ([]DimFact, DocumentInfo, error) {
-	key := "sec:filingfacts:v1:" + f.Accession
+	key := "sec:filingfacts:v2:" + conceptsHash(concepts) + ":" + f.Accession
 	if c.opts.Cache != nil {
 		if b, ok, err := c.opts.Cache.Get(ctx, key); err == nil && ok {
 			var p parsedFiling
@@ -117,4 +123,12 @@ func MergeFacts(cf *CompanyFacts, add FactsByConcept) {
 		}
 		gaap[concept] = c
 	}
+}
+
+// conceptsHash fingerprints a concept list, in any order.
+func conceptsHash(concepts []string) string {
+	sorted := slices.Clone(concepts)
+	slices.Sort(sorted)
+	sum := sha256.Sum256([]byte(strings.Join(sorted, ",")))
+	return hex.EncodeToString(sum[:6])
 }

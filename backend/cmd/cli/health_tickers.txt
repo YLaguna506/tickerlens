@@ -19,3 +19,6 @@ AMD INTC CSCO IBM QCOM TXN INTU NOW PANW UBER ABNB PYPL PLTR COIN RIVN ZM
 
 # Payments, telecoms, autos
 V MA T VZ CMCSA CHTR F GM CVS
+
+# Limited support: banks, broker-dealers, insurers, REITs
+JPM BAC GS BRK-B AIG O PLD

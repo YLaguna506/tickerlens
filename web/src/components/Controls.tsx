@@ -4,7 +4,7 @@ import { CompareButton, WatchButton } from "./WatchButton";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { createReport, isFinished, listModels, type Report } from "../api";
-import { getLang, setLang, t, useLang, type Lang } from "../i18n";
+import { getLang, setLang, t, tx, useLang, type Lang } from "../i18n";
 import { setModel, useModel } from "../model";
 import { navigate } from "../router";
 import { DesignSwitch } from "./DesignSwitch";
@@ -75,6 +75,20 @@ export function ReportControls({ report, look }: { report?: Report; look: Look }
       <LangSwitch look={look} />
       <DesignSwitch look={look} />
     </>
+  );
+}
+
+const LIMITED_KIND = { bank: "Banks", broker: "Broker-dealers", insurer: "Insurers", reit: "REITs" };
+
+/** Shown for banks, broker-dealers, insurers and REITs, whose accounts the
+ * metrics were not built for. */
+export function LimitedNotice({ report, className }: { report?: Report; className: string }) {
+  const ls = report?.report?.metrics?.limitedSupport;
+  if (!ls) return null;
+  return (
+    <p className={className} role="note">
+      <span className="font-semibold">{t("Limited support: {kind}.", { kind: t(LIMITED_KIND[ls.kind]) })}</span> {tx(ls.reason)}
+    </p>
   );
 }
 

@@ -88,6 +88,8 @@ export interface MetricsReport {
   totalReturn5y: Metric;
   earnings: { quarters: number; beats: number; avgSurprisePercent: number | null; latestQuarter?: string };
   capitalAllocation?: CapitalAllocation;
+  industry?: { sic: string; sicDescription: string };
+  limitedSupport?: { kind: "bank" | "broker" | "insurer" | "reit"; reason: string; noHealthScore: boolean };
   phase: Phase;
   growthScore: Score;
   healthScore: Score;

@@ -106,6 +106,15 @@ const EXACT: Record<string, string> = {
   Buybacks: "Recompras",
   "Net debt repaid": "Deuda neta pagada",
   "Net new borrowing": "Deuda neta nueva",
+  // Limited support (banks, broker-dealers, insurers, REITs).
+  "Banks lend out their depositors' money: deposits are their main debt and interest is their revenue, so debt ratios, margins and free cash flow mean something different here. The financial health score is left out; book value (P/B) and return on equity say more.":
+    "Los bancos prestan el dinero de sus depositantes: los depósitos son su principal deuda y los intereses son sus ingresos, así que las razones de deuda, los márgenes y el flujo de caja libre significan otra cosa aquí. Se omite el puntaje de salud financiera; el valor en libros (P/B) y el retorno sobre el patrimonio dicen más.",
+  "Broker-dealers fund their trading and client accounts with borrowed money, so debt ratios and free cash flow mean something different here. The financial health score is left out.":
+    "Las casas de bolsa financian sus operaciones y las cuentas de sus clientes con dinero prestado, así que las razones de deuda y el flujo de caja libre significan otra cosa aquí. Se omite el puntaje de salud financiera.",
+  "Insurers invest the premiums they hold for future claims (the float) and report reserves for those claims as liabilities, so debt ratios and margins read differently. The financial health score is left out.":
+    "Las aseguradoras invierten las primas que guardan para reclamos futuros (el float) y reportan las reservas para esos reclamos como pasivos, así que las razones de deuda y los márgenes se leen distinto. Se omite el puntaje de salud financiera.",
+  "REITs must pay out most of their income and are judged on funds from operations (FFO), which TickerLens does not compute; depreciation of their properties makes P/E look high.":
+    "Los REITs deben repartir la mayor parte de sus ingresos y se evalúan por fondos de operaciones (FFO), que TickerLens no calcula; la depreciación de sus propiedades hace que el P/E se vea alto.",
   "proxy statements are not available": "las declaraciones para accionistas no están disponibles",
   // Input names.
   buybacks: "recompras",
@@ -210,6 +219,8 @@ const NOUN: Record<string, string> = { Revenue: "ingresos", revenue: "ingresos",
 type Rule = [RegExp, (m: RegExpMatchArray) => string];
 
 /** Backend sentence patterns, tried in order. Groups are numbers or names. */
+const KIND_ES: Record<string, string> = { banks: "bancos", brokers: "casas de bolsa", insurers: "aseguradoras", reits: "REITs" };
+
 const PATTERNS: Rule[] = [
   [/^(Revenue|EPS|FCF) CAGR (\d+)y$/, (m) => `CAGR de ${NOUN[m[1]!]} ${m[2]} años`],
   [/^(EPS|revenue) CAGR (\d+)y: (.+)$/, (m) => `CAGR de ${NOUN[m[1]!]} ${m[2]} años: ${m[3] === "not available" ? "no disponible" : m[3]}`],
@@ -241,6 +252,9 @@ const PATTERNS: Rule[] = [
   [/^leaves out discontinued operations; with them, diluted EPS is (\S+)$/,
     (m) => `excluye las operaciones discontinuadas; con ellas, el EPS diluido es ${m[1]}`],
   [/^(.+) reported for (\d+) of (\d+) years$/, (m) => `${tx(m[1]!)} reportado en ${m[2]} de ${m[3]} años`],
+  [/^not scored: debt ratios do not apply to (banks|brokers|insurers|reits)$/, (m) => `sin puntaje: las razones de deuda no aplican a ${KIND_ES[m[1]!]}`],
+  [/^limited support: the metrics are built for operating companies, not (banks|brokers|insurers|reits)$/,
+    (m) => `soporte limitado: las métricas están hechas para empresas operativas, no para ${KIND_ES[m[1]!]}`],
   [/^sec: no proxy statement \(DEF 14A\) found for CIK (\d+)$/, (m) => `SEC: no se encontró una declaración para accionistas (DEF 14A) para el CIK ${m[1]}`],
   [/^the proxy statement filed (\S+) has no ownership table$/, (m) => `la declaración para accionistas presentada el ${m[1]} no tiene tabla de propiedad`],
   [/^(\S+): history distorted, (.+)$/, (m) => `${m[1]}: historial distorsionado, ${tx(m[2]!)}`],

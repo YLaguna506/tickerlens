@@ -5,7 +5,7 @@ import { MoreSections } from "../components/deepSections";
 import type { ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type MetricsReport, type ReportBody, type Verdict } from "../api";
-import { LangNotice, ReportControls } from "../components/Controls";
+import { LangNotice, LimitedNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, toneFor, usd, wholePrice, yearTicks } from "../format";
 import { t, tx } from "../i18n";
@@ -457,6 +457,7 @@ export function Bento({ id }: { id: string }) {
           </div>
         </header>
         <LangNotice report={report} className="mb-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900" />
+        <LimitedNotice report={report} className="mb-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900" />
 
         {isLoading ? (
           <Tile>

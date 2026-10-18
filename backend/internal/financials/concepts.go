@@ -34,6 +34,7 @@ var fields = []fieldSpec{
 		"RevenueFromContractWithCustomerExcludingAssessedTax",
 		"RevenueFromContractWithCustomerIncludingAssessedTax",
 		"SalesRevenueNet",
+		"RevenuesNetOfInterestExpense", // banks and broker-dealers (JPMorgan, Goldman Sachs)
 	}},
 	{"grossProfit", flow, "USD", []string{"GrossProfit"}},
 	{"operatingIncome", flow, "USD", []string{"OperatingIncomeLoss"}},
@@ -104,13 +105,23 @@ var helpers = []fieldSpec{
 		"LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities", // Chevron
 	}},
 	{"debtCurrentAll", instant, "USD", []string{"DebtCurrent"}}, // current LTD + short-term borrowings + CP
-	{"debtCurrent", instant, "USD", []string{"LongTermDebtCurrent"}},
+	{"debtCurrent", instant, "USD", []string{
+		"LongTermDebtCurrent",
+		"LongTermDebtAndCapitalLeaseObligationsCurrent", // Coca-Cola
+	}},
 	{"debtNoncurrent", instant, "USD", []string{"LongTermDebtNoncurrent"}},
 	// Non-current long-term debt including finance leases (PepsiCo's 10-Qs).
 	{"debtNoncurrentLeases", instant, "USD", []string{"LongTermDebtAndCapitalLeaseObligations"}},
 	{"commercialPaper", instant, "USD", []string{"CommercialPaper"}},
-	{"shortTermBorrowings", instant, "USD", []string{"ShortTermBorrowings"}},
+	{"shortTermBorrowings", instant, "USD", []string{
+		"ShortTermBorrowings",
+		"NotesAndLoansPayable", // Coca-Cola's "loans and notes payable", which include commercial paper
+	}},
 	{"convertibleNoncurrent", instant, "USD", []string{"ConvertibleDebtNoncurrent"}},
+	// Unsecured notes and mortgages, for companies that tag no long-term
+	// debt otherwise (Realty Income).
+	{"notesPayable", instant, "USD", []string{"NotesPayable"}},
+	{"securedDebt", instant, "USD", []string{"SecuredDebt"}},
 	{"convertibleCurrent", instant, "USD", []string{"ConvertibleNotesPayableCurrent"}},
 }
 

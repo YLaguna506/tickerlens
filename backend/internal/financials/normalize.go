@@ -508,6 +508,11 @@ func (r *resolver) totalDebt(end string) (float64, string, bool) {
 		if hasCur {
 			total -= ltdCur.val
 		}
+	case hasSTB && hasCP && stb.val >= cp.val:
+		// They include commercial paper only (Coca-Cola's "loans and notes
+		// payable"); the current portion is in the long-term part.
+		total += stb.val
+		parts = append(parts, stb.source+" (includes commercial paper)")
 	default:
 		use(cp, hasCP)
 		use(stb, hasSTB)
@@ -516,6 +521,12 @@ func (r *resolver) totalDebt(end string) (float64, string, bool) {
 	if !haveLongTerm {
 		use(get("convertibleNoncurrent"))
 		use(get("convertibleCurrent"))
+		// Notes payable plus secured debt (mortgages), only with the notes:
+		// secured debt alone is usually a slice (Deere's securitizations).
+		if np, ok := get("notesPayable"); ok {
+			use(np, true)
+			use(get("securedDebt"))
+		}
 	}
 	if len(parts) == 0 {
 		return 0, "", false

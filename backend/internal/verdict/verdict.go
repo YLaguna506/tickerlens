@@ -39,6 +39,9 @@ type Input struct {
 	PhaseLowConfidence bool     // the lifecycle phase is a weak fit
 	MissingData        []string // data sources that failed (prices, earnings, ...)
 	FailedAnalysis     []string // AI sections that failed (business_overview, ...)
+	// LimitedSupport is the kind of company the metrics do not fit (bank,
+	// broker, insurer, reit), or "".
+	LimitedSupport string
 }
 
 // Component is one score in the business composite.
@@ -172,6 +175,9 @@ func confidence(in Input) (int, []string) {
 	}
 	for _, s := range in.MissingData {
 		take(10, "missing data: "+s)
+	}
+	if in.LimitedSupport != "" {
+		take(25, "limited support: the metrics are built for operating companies, not "+in.LimitedSupport+"s")
 	}
 	for _, s := range in.FailedAnalysis {
 		take(10, "AI analysis failed: "+s)

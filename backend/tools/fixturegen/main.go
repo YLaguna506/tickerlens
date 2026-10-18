@@ -124,7 +124,7 @@ func writeCompany(ctx context.Context, sec *edgar.Client, fetcher *ingest.Fetche
 	}
 
 	if ingest.LacksRecentEPS(facts) {
-		eps, shares, _, err := sec.ClassFacts(ctx, co.CIK, time.Now())
+		eps, shares, _, err := sec.ClassFacts(ctx, co.CIK, co.Ticker, time.Now())
 		if err != nil {
 			return err
 		}

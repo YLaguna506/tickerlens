@@ -41,6 +41,7 @@ func TestSelectClass(t *testing.T) {
 	filing := Filing{Accession: "0001-25-1", Form: "10-K", FilingDate: "2025-11-06"}
 	tests := []struct {
 		name       string
+		prefer     string
 		facts      []DimFact
 		wantEPS    float64
 		wantShares float64
@@ -70,6 +71,37 @@ func TestSelectClass(t *testing.T) {
 			wantEPS: 8.04, wantShares: 12.3e9, wantNote: "all classes (same EPS)",
 		},
 		{
+			name:   "Class B for a Class B ticker, from basic EPS (BRK-B)",
+			prefer: "B",
+			facts: []DimFact{
+				dim("EarningsPerShareBasic", "EquivalentClassAMember", 17868),
+				dim("EarningsPerShareBasic", "EquivalentClassBMember", 11.91),
+				dim("WeightedAverageNumberOfSharesOutstandingBasic", "EquivalentClassAMember", 1436443),
+				dim("WeightedAverageNumberOfSharesOutstandingBasic", "EquivalentClassBMember", 2154664073),
+			},
+			wantEPS: 11.91, wantShares: 2154664073, wantNote: "Class B (basic EPS: no dilutive securities reported)",
+		},
+		{
+			name: "Class A by default, from basic EPS (BRK-A)",
+			facts: []DimFact{
+				dim("EarningsPerShareBasic", "EquivalentClassAMember", 17868),
+				dim("EarningsPerShareBasic", "EquivalentClassBMember", 11.91),
+				dim("WeightedAverageNumberOfSharesOutstandingBasic", "EquivalentClassAMember", 1436443),
+			},
+			wantEPS: 17868, wantShares: 1436443, wantNote: "Class A (basic EPS: no dilutive securities reported)",
+		},
+		{
+			name:   "diluted figures win over basic ones",
+			prefer: "B",
+			facts: []DimFact{
+				dim("EarningsPerShareDiluted", "CommonClassAMember", 2.0),
+				dim("EarningsPerShareDiluted", "CommonClassBMember", 1.0),
+				dim("EarningsPerShareBasic", "CommonClassBMember", 1.1),
+				dim("WeightedAverageNumberOfDilutedSharesOutstanding", "CommonClassBMember", 10e6),
+			},
+			wantEPS: 1.0, wantShares: 10e6, wantNote: "Class B",
+		},
+		{
 			name: "EPS differs: use the common stock beside a Class B (Hershey)",
 			facts: []DimFact{
 				dim("EarningsPerShareDiluted", "CommonStockMember", 2.26),
@@ -91,7 +123,7 @@ func TestSelectClass(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			eps, shares, note := SelectClass(filing, tc.facts)
+			eps, shares, note := SelectClass(filing, tc.facts, tc.prefer)
 			if tc.wantNone {
 				if len(eps) != 0 || note != "" {
 					t.Fatalf("expected nothing, got eps=%+v note=%q", eps, note)
@@ -111,5 +143,13 @@ func TestSelectClass(t *testing.T) {
 				t.Errorf("fact should carry the filing's accession and date: %+v", eps[0])
 			}
 		})
+	}
+}
+
+func TestClassOf(t *testing.T) {
+	for ticker, want := range map[string]string{"BRK-B": "B", "brk.a": "A", "GOOG": "", "V": "", "BF-B": "B"} {
+		if got := ClassOf(ticker); got != want {
+			t.Errorf("ClassOf(%q) = %q, want %q", ticker, got, want)
+		}
 	}
 }

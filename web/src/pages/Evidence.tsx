@@ -5,7 +5,7 @@ import { MoreSections } from "../components/deepSections";
 import { useEffect, useState, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { isFinished, type Bands, type Evidence as Quote, type Metric, type MetricsReport, type ReportBody, type Verdict } from "../api";
-import { LangNotice, ReportControls } from "../components/Controls";
+import { LangNotice, LimitedNotice, ReportControls } from "../components/Controls";
 import { RunDetails } from "../components/RunDetails";
 import { metricValue, monthYear, multiple, multipleTick, pct, price, shortDate, signedPct, titleCase, usd, wholePrice, yearTicks } from "../format";
 import { t, tx } from "../i18n";
@@ -723,6 +723,7 @@ export function Evidence({ id }: { id: string }) {
               <ReportControls report={report} look="evidence" />
             </div>
             <LangNotice report={report} className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" />
+            <LimitedNotice report={report} className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" />
             {report.status === "failed" ? (
               <p className="rounded-2xl bg-rose-50 p-4 text-rose-800">{t("This report could not be built:")} {tx(report.error)}</p>
             ) : (

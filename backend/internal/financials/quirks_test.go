@@ -140,3 +140,34 @@ func TestQuarterFromYearRestatedLater(t *testing.T) {
 		t.Errorf("FY revenue = %v, want the restated 16.78e9", got)
 	}
 }
+
+// Realty Income tags no long-term debt: its debt is unsecured notes plus
+// mortgages. Secured debt alone is only a slice (Deere's securitizations),
+// so it is not used without the notes.
+func TestNotesPayableAndSecuredDebt(t *testing.T) {
+	b := factsBuilder{}.calendarYear("2025", 1e9).
+		add("SecuredDebt", "USD", "", "2025-12-31", 0.5e9, "10-K", "2026-02-15").
+		add("InterestExpense", "USD", "2025-01-01", "2025-12-31", 1e9, "10-K", "2026-02-15")
+	if got := deref(find(b.normalize(), FiscalYear, "2025-12-31").TotalDebt); got != "nil" {
+		t.Errorf("secured debt alone = %v, want unknown", got)
+	}
+	b.add("NotesPayable", "USD", "", "2025-12-31", 25e9, "10-K", "2026-02-15")
+	if got := deref(find(b.normalize(), FiscalYear, "2025-12-31").TotalDebt); got != 25.5e9 {
+		t.Errorf("notes + secured = %v, want 25.5e9", got)
+	}
+}
+
+// Coca-Cola's "loans and notes payable" include its commercial paper but not
+// the current portion of long-term debt.
+func TestShortTermBorrowingsIncludingCommercialPaperOnly(t *testing.T) {
+	f := factsBuilder{}.calendarYear("2025", 12e9).
+		add("LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities", "USD", "", "2025-12-31", 43.941e9, "10-K", "2026-02-15").
+		add("LongTermDebtAndCapitalLeaseObligationsCurrent", "USD", "", "2025-12-31", 1.822e9, "10-K", "2026-02-15").
+		add("CommercialPaper", "USD", "", "2025-12-31", 1.495e9, "10-K", "2026-02-15").
+		add("NotesAndLoansPayable", "USD", "", "2025-12-31", 1.551e9, "10-K", "2026-02-15").
+		normalize()
+	fy := find(f, FiscalYear, "2025-12-31")
+	if got := deref(fy.TotalDebt); got != 45.492e9 {
+		t.Errorf("debt = %v (%s), want 45.492e9 (43.941 + 1.551)", got, fy.Sources["totalDebt"])
+	}
+}

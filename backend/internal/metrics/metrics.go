@@ -9,6 +9,7 @@ import (
 	"math"
 	"sort"
 
+	"github.com/YLaguna506/tickerlens/backend/internal/edgar"
 	"github.com/YLaguna506/tickerlens/backend/internal/estimates"
 	"github.com/YLaguna506/tickerlens/backend/internal/financials"
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
@@ -67,6 +68,10 @@ type Report struct {
 	TotalReturn5y Metric   `json:"totalReturn5y"`
 
 	Earnings EarningsRecord `json:"earnings"`
+	// Industry is the SEC industry code; LimitedSupport is set for banks,
+	// broker-dealers, insurers and REITs, which these metrics do not fit.
+	Industry       *edgar.Profile  `json:"industry,omitempty"`
+	LimitedSupport *LimitedSupport `json:"limitedSupport,omitempty"`
 	// Capital is how the cash from operations was spent over five years
 	// (nil without enough cash flow history).
 	Capital *CapitalAllocation `json:"capitalAllocation,omitempty"`
@@ -112,7 +117,10 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 	}
 	rolling := rollingTTM(f.Quarterly, f.Annual, sp)
 
-	r := Report{Ticker: b.Company.Ticker, Name: b.Company.Name, ScoringVersion: cfg.Version}
+	r := Report{Ticker: b.Company.Ticker, Name: b.Company.Name, ScoringVersion: cfg.Version, Industry: b.Industry}
+	if b.Industry != nil {
+		r.LimitedSupport = limitedSupport(b.Industry.SIC)
+	}
 	c := newCalc(f, rolling, sp)
 	if len(b.Prices) > 0 {
 		last := b.Prices[len(b.Prices)-1]
@@ -151,6 +159,9 @@ func Compute(b *ingest.Bundle, cfg scoring.Config) Report {
 		"EPS CAGR 5y":     find(r.Growth, "epsCagr5y"),
 	})
 	r.HealthScore = cfg.HealthScore(c.healthInputs())
+	if ls := r.LimitedSupport; ls != nil && ls.NoHealthScore {
+		r.HealthScore = scoring.Score{Max: 5, Reasons: []string{"not scored: debt ratios do not apply to " + ls.Kind + "s"}}
+	}
 
 	r.Bands, r.ValuationScore, r.Charts.ValuationTTM, r.Notes = valuationBands(b, cfg, r.Phase, rolling, sp, r.Price)
 

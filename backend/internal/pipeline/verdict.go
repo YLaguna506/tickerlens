@@ -43,6 +43,9 @@ func (j *job) decide(ctx context.Context, bundle *ingest.Bundle, report *metrics
 		PhaseLowConfidence: report.Phase.LowConfidence,
 		MissingData:        bundle.Failed,
 	}
+	if ls := report.LimitedSupport; ls != nil {
+		in.LimitedSupport = ls.Kind
+	}
 	if q := j.body.BusinessQuality; q != nil {
 		in.BusinessQuality = &q.Score
 	}
