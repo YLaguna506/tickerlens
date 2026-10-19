@@ -544,3 +544,67 @@ export const startScreen = (body: { universe: string; tickers?: string; minBusin
   request<ScreenState>("/api/screens", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
 export const cancelScreen = (id: string) => request<{ cancelled: boolean }>(`/api/screens/${id}/cancel`, { method: "POST" });
+
+// --- Backtest ----------------------------------------------------------------------
+
+type H3 = [number | null, number | null, number | null]; // 1, 2 and 3 years
+
+export interface BacktestBucket {
+  key: string;
+  count: [number, number, number];
+  meanReturn: H3;
+  meanExcess: H3;
+  medianExcess: H3;
+  hitRate: H3;
+}
+
+export interface BacktestSignal {
+  input: "business" | "growth" | "health" | "valuation" | "cheapness";
+  ic: H3;
+  t: H3;
+  dates: [number, number, number];
+  verdict: [string, string, string]; // helps | hurts | no clear signal | too little data
+}
+
+export interface BacktestSummary {
+  observations: number;
+  companies: number;
+  dates: string[];
+  all: BacktestBucket;
+  byLabel: BacktestBucket[];
+  byValuation: BacktestBucket[];
+  byBusiness: BacktestBucket[];
+  byZone: BacktestBucket[];
+  byGrowth: BacktestBucket[];
+  byHealth: BacktestBucket[];
+  signals: BacktestSignal[];
+}
+
+export interface BacktestState {
+  backtest: {
+    id: string;
+    universe: "sp500" | "watchlist" | "custom";
+    status: "running" | "done" | "cancelled" | "failed";
+    params: { dates: string[]; scoringVersion: string; benchmark: string };
+    total: number;
+    error?: string;
+    createdAt: string;
+    finishedAt?: string;
+  };
+  running: boolean;
+  progress: { total: number; done: number; failed: number; observations: number };
+  summary: BacktestSummary | null;
+  failures: { ticker: string; error: string }[];
+}
+
+/** The latest backtest, or null before the first one. */
+export const getLatestBacktest = () =>
+  request<BacktestState>("/api/backtests/latest").catch((e) => {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  });
+
+export const startBacktest = (body: { universe: string; sampleSize?: number; tickers?: string }) =>
+  request<BacktestState>("/api/backtests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+
+export const cancelBacktest = (id: string) => request<{ cancelled: boolean }>(`/api/backtests/${id}/cancel`, { method: "POST" });

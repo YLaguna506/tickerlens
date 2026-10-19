@@ -63,11 +63,23 @@ func NewTiingo(f *fetch.Client, baseURL string) *Tiingo {
 // DailyPrices returns daily bars from start until the latest close, oldest first.
 func (t *Tiingo) DailyPrices(ctx context.Context, ticker string, start time.Time) ([]Bar, error) {
 	from := start.Format(time.DateOnly)
+	// End-of-day data changes once per trading day.
+	return t.get(ctx, ticker, from, "tiingo:daily:"+ticker+":"+from, 12*time.Hour)
+}
+
+// History returns daily bars from start, cached for ttl. The backtest uses
+// it with a fixed start and a long ttl: it needs years of history, not
+// today's close, and the free tier allows 500 symbols a month.
+func (t *Tiingo) History(ctx context.Context, ticker string, start time.Time, ttl time.Duration) ([]Bar, error) {
+	from := start.Format(time.DateOnly)
+	return t.get(ctx, ticker, from, "tiingo:history:"+ticker+":"+from, ttl)
+}
+
+func (t *Tiingo) get(ctx context.Context, ticker, from, cacheKey string, ttl time.Duration) ([]Bar, error) {
 	body, err := t.fetch.Get(ctx, fetch.Request{
 		URL:      fmt.Sprintf("%s/tiingo/daily/%s/prices?startDate=%s", t.baseURL, url.PathEscape(ticker), from),
-		CacheKey: "tiingo:daily:" + ticker + ":" + from,
-		// End-of-day data changes once per trading day.
-		TTL: 12 * time.Hour,
+		CacheKey: cacheKey,
+		TTL:      ttl,
 	})
 	var statusErr *fetch.StatusError
 	if errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusNotFound {

@@ -16,10 +16,12 @@ import (
 	"time"
 
 	"github.com/YLaguna506/tickerlens/backend/internal/agentclient"
+	"github.com/YLaguna506/tickerlens/backend/internal/backtest"
 	"github.com/YLaguna506/tickerlens/backend/internal/fetch"
 	"github.com/YLaguna506/tickerlens/backend/internal/httpapi"
 	"github.com/YLaguna506/tickerlens/backend/internal/ingest"
 	"github.com/YLaguna506/tickerlens/backend/internal/pipeline"
+	"github.com/YLaguna506/tickerlens/backend/internal/prices"
 	"github.com/YLaguna506/tickerlens/backend/internal/scoring"
 	"github.com/YLaguna506/tickerlens/backend/internal/screener"
 	"github.com/YLaguna506/tickerlens/backend/internal/store"
@@ -137,19 +139,36 @@ func run(logger *slog.Logger) error {
 	}
 	datasets := fetch.New(fetch.Options{Name: "datasets", Cache: cache, Logger: logger})
 
+	// The backtest runs the verdict (without the AI) as of past dates.
+	tiingo, _ := fetcher.Prices.(*prices.Tiingo)
+	backtests := store.NewBacktests(pool)
+	bt := &backtest.Runner{
+		Source:  backtest.SECAndTiingo{SEC: fetcher.SEC, Tiingo: tiingo},
+		Store:   backtests,
+		Config:  scoringCfg,
+		Logger:  logger,
+		Base:    baseCtx,
+		Workers: 3,
+	}
+	if err := bt.Resume(ctx); err != nil {
+		logger.Warn("could not resume backtests", "err", err)
+	}
+
 	router := httpapi.NewRouter(httpapi.Deps{
-		Logger:    logger,
-		Reports:   reports,
-		Jobs:      runner,
-		Events:    broker,
-		Tickers:   fetcher.SEC,
-		Models:    models,
-		Watchlist: store.NewWatchlist(pool),
-		Screener:  scr,
-		Screens:   screens,
-		Universe:  func(ctx context.Context) []store.ScreenMember { return screener.SP500(ctx, datasets) },
-		Calendar:  fetcher.Calendar,
-		Ready:     pool.Ping,
+		Logger:     logger,
+		Reports:    reports,
+		Jobs:       runner,
+		Events:     broker,
+		Tickers:    fetcher.SEC,
+		Models:     models,
+		Watchlist:  store.NewWatchlist(pool),
+		Screener:   scr,
+		Screens:    screens,
+		Backtester: bt,
+		Backtests:  backtests,
+		Universe:   func(ctx context.Context) []store.ScreenMember { return screener.SP500(ctx, datasets) },
+		Calendar:   fetcher.Calendar,
+		Ready:      pool.Ping,
 	})
 
 	addr := envOr("HTTP_ADDR", ":8080")
@@ -189,6 +208,7 @@ func run(logger *slog.Logger) error {
 	}
 	cancelRequests()
 	scr.Wait() // a cancelled screen stays "scanning"/"pricing" and resumes next start
+	bt.Wait()  // likewise a backtest stays "running"
 	if err := srv.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("shutdown: %w", err)
 	}

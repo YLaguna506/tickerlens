@@ -70,6 +70,9 @@ type Deps struct {
 	Screener Screener
 	Screens  ScreenStore
 	Universe func(ctx context.Context) []store.ScreenMember
+	// Backtester and Backtests are nil without the database.
+	Backtester Backtester
+	Backtests  BacktestStore
 	// Ready reports whether dependencies (Postgres) are reachable.
 	Ready func(ctx context.Context) error
 	// FreshFor is how long a finished report is returned instead of
@@ -112,6 +115,13 @@ func NewRouter(d Deps) http.Handler {
 		mux.HandleFunc("GET /api/screens/latest", a.getScreen)
 		mux.HandleFunc("GET /api/screens/{id}", a.getScreen)
 		mux.HandleFunc("POST /api/screens/{id}/cancel", a.cancelScreen)
+	}
+	if d.Backtester != nil && d.Backtests != nil {
+		mux.HandleFunc("POST /api/backtests", a.startBacktest)
+		mux.HandleFunc("GET /api/backtests/latest", a.getBacktest)
+		mux.HandleFunc("GET /api/backtests/{id}", a.getBacktest)
+		mux.HandleFunc("GET /api/backtests/{id}/observations.csv", a.backtestCSV)
+		mux.HandleFunc("POST /api/backtests/{id}/cancel", a.cancelBacktest)
 	}
 
 	return logRequests(d.Logger, mux)

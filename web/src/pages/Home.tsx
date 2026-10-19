@@ -79,6 +79,9 @@ export function Home() {
           <button onClick={() => navigate("/screener")} className="rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good">
             ⌕ {t("Screener")}
           </button>
+          <button onClick={() => navigate("/backtest")} className="rounded-full border border-line bg-card px-4 py-2 text-sm font-semibold hover:border-good">
+            ↺ {t("Backtest")}
+          </button>
         </span>
         <ModelSwitch look="classic" />
         <LangSwitch look="classic" />
