@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"testing"
@@ -12,7 +13,7 @@ func TestReportLifecycle(t *testing.T) {
 	repo := NewReports(pool)
 	ctx := t.Context()
 	ticker := "TEST" + time.Now().Format("150405.000")
-	t.Cleanup(func() { _, _ = pool.Exec(t.Context(), "DELETE FROM reports WHERE ticker = $1", ticker) })
+	t.Cleanup(func() { _, _ = pool.Exec(context.Background(), "DELETE FROM reports WHERE ticker = $1", ticker) })
 
 	r, err := repo.Create(ctx, ticker, "Test Co", Options{})
 	if err != nil {
@@ -80,7 +81,7 @@ func TestMarkInterrupted(t *testing.T) {
 	pool := openTestDB(t)
 	repo := NewReports(pool)
 	ticker := "INT" + time.Now().Format("150405.000")
-	t.Cleanup(func() { _, _ = pool.Exec(t.Context(), "DELETE FROM reports WHERE ticker = $1", ticker) })
+	t.Cleanup(func() { _, _ = pool.Exec(context.Background(), "DELETE FROM reports WHERE ticker = $1", ticker) })
 
 	running, _ := repo.Create(t.Context(), ticker, "", Options{})
 	_ = repo.SetStage(t.Context(), running.ID, "ingesting")

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"testing"
 )
@@ -15,7 +16,7 @@ func TestScreens(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _, _ = pool.Exec(t.Context(), "DELETE FROM screens WHERE id = $1", sc.ID) })
+	t.Cleanup(func() { _, _ = pool.Exec(context.Background(), "DELETE FROM screens WHERE id = $1", sc.ID) })
 
 	b := 4.1
 	_ = s.SaveResult(ctx, sc.ID, ScreenResult{Ticker: "AAA", Stage: "scanned", Business: &b})

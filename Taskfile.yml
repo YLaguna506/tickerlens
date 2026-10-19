@@ -103,7 +103,8 @@ tasks:
     desc: Run Go tests (Postgres tests run when the stack is up)
     dir: backend
     env:
-      TEST_DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable"
+      # A separate database, created on first use: tests never touch real data.
+      TEST_DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@localhost:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}_test?sslmode=disable"
     cmds:
       - go test ./...
 

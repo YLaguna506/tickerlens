@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -15,9 +16,9 @@ func TestClearTicker(t *testing.T) {
 	ticker, other := "CLR"+stamp, "KEEP"+stamp
 	cik, acc := "000"+strings.ReplaceAll(stamp, ".", ""), "0000000000-26-"+strings.ReplaceAll(stamp, ".", "")
 	t.Cleanup(func() {
-		_, _ = pool.Exec(t.Context(), "DELETE FROM reports WHERE ticker = ANY($1)", []string{ticker, other})
-		_, _ = pool.Exec(t.Context(), "DELETE FROM http_cache WHERE key LIKE '%' || $1 || '%'", strings.ReplaceAll(stamp, ".", ""))
-		_, _ = pool.Exec(t.Context(), "DELETE FROM http_cache WHERE key LIKE '%' || $1 || '%'", stamp)
+		_, _ = pool.Exec(context.Background(), "DELETE FROM reports WHERE ticker = ANY($1)", []string{ticker, other})
+		_, _ = pool.Exec(context.Background(), "DELETE FROM http_cache WHERE key LIKE '%' || $1 || '%'", strings.ReplaceAll(stamp, ".", ""))
+		_, _ = pool.Exec(context.Background(), "DELETE FROM http_cache WHERE key LIKE '%' || $1 || '%'", stamp)
 	})
 
 	done, err := repo.Create(ctx, ticker, "Clear Co", Options{})

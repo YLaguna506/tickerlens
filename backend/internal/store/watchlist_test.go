@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -12,8 +13,8 @@ func TestWatchlist(t *testing.T) {
 	ctx := t.Context()
 	ticker := "W" + time.Now().Format("150405.000")
 	t.Cleanup(func() {
-		_, _ = pool.Exec(t.Context(), "DELETE FROM watchlist WHERE ticker = $1", ticker)
-		_, _ = pool.Exec(t.Context(), "DELETE FROM reports WHERE ticker = $1", ticker)
+		_, _ = pool.Exec(context.Background(), "DELETE FROM watchlist WHERE ticker = $1", ticker)
+		_, _ = pool.Exec(context.Background(), "DELETE FROM reports WHERE ticker = $1", ticker)
 	})
 
 	if err := w.Add(ctx, ticker, "Watch Co"); err != nil {

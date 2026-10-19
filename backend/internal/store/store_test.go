@@ -3,9 +3,11 @@ package store
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -18,6 +20,14 @@ func openTestDB(t *testing.T) *pgxpool.Pool {
 		t.Skip("TEST_DATABASE_URL not set; skipping Postgres test")
 	}
 	pool, err := Open(t.Context(), url)
+	if err != nil && strings.Contains(err.Error(), "does not exist") {
+		// A separate test database keeps tests away from real data (Create
+		// prunes old screens and backtests): create it on first use.
+		if err := createDatabase(t.Context(), url); err != nil {
+			t.Fatalf("create test database: %v", err)
+		}
+		pool, err = Open(t.Context(), url)
+	}
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
@@ -86,4 +96,22 @@ func TestUsageTakeStopsAtLimit(t *testing.T) {
 	if err != nil || !ok {
 		t.Fatalf("next day: ok=%v err=%v", ok, err)
 	}
+}
+
+// createDatabase creates the database named in url, connecting to the
+// server's default "postgres" database to do it.
+func createDatabase(ctx context.Context, url string) error {
+	cfg, err := pgx.ParseConfig(url)
+	if err != nil {
+		return err
+	}
+	name := cfg.Database
+	cfg.Database = "postgres"
+	conn, err := pgx.ConnectConfig(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	defer conn.Close(ctx)
+	_, err = conn.Exec(ctx, "CREATE DATABASE "+pgx.Identifier{name}.Sanitize())
+	return err
 }
