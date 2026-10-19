@@ -124,3 +124,22 @@ func TestBandsKeepDistortedMetricAsLastResort(t *testing.T) {
 		t.Errorf("last reason = %q, want a caution", last)
 	}
 }
+
+// A multiple is not computed on numbers years out of date: when free cash
+// flow is missing from every recent window, P/FCF is not available.
+func TestCurrentIgnoresStaleWindows(t *testing.T) {
+	fcf, shares := 500e6, 100e6
+	ends := []string{"2022-12-31", "2023-03-31", "2023-06-30", "2025-09-30", "2025-12-31", "2026-03-31", "2026-06-30"}
+	var rolling []ttm
+	for _, e := range ends {
+		rolling = append(rolling, ttm{end: e, shares: &shares})
+	}
+	rolling[0].fcf = &fcf // only an old window has it
+	if _, basis, _, _, ok := current("P/FCF", rolling, 100); ok || basis != "no recent TTM data" {
+		t.Errorf("stale window used: ok=%v basis=%q", ok, basis)
+	}
+	rolling[5].fcf = &fcf // one quarter behind the newest: fine
+	if v, _, _, period, ok := current("P/FCF", rolling, 100); !ok || v != 20 || period != "TTM to 2026-03-31" {
+		t.Errorf("recent window: %v %v %s", v, ok, period)
+	}
+}

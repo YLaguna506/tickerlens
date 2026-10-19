@@ -66,6 +66,7 @@ func Normalize(co edgar.Company, facts *edgar.CompanyFacts, splits []Split) Fina
 	if skipped > 0 {
 		out.Warnings = append(out.Warnings, fmt.Sprintf("%d quarters skipped: could not place them in a fiscal year", skipped))
 	}
+	fillFourthQuarters(out.Annual, out.Quarterly)
 
 	if f := shareScale(out); f != 1 {
 		for _, list := range [][]FinancialPeriod{out.Annual, out.Quarterly} {
@@ -93,6 +94,65 @@ func Normalize(co edgar.Company, facts *edgar.CompanyFacts, splits []Split) Fina
 	}
 	out.Warnings = append(out.Warnings, missingFieldWarnings(out)...)
 	return out
+}
+
+// fillFourthQuarters derives a fourth quarter's dollar amounts that the
+// concept series could not: Q4 = fiscal year − (Q1 + Q2 + Q3), when the year
+// and its first three quarters are tagged with different concepts of the
+// same field. Arista tags capital expenditure as PaymentsToAcquireProductive
+// Assets in its 10-K and PaymentsToAcquirePropertyPlantAndEquipment in its
+// 10-Qs, so "year minus nine months" never lines up within one concept, and
+// without Q4 capex no trailing twelve months had free cash flow. Per-share
+// values are left alone: a split between the filings would mix share terms.
+func fillFourthQuarters(annual, quarterly []FinancialPeriod) {
+	for qi := range quarterly {
+		q4 := &quarterly[qi]
+		if q4.FiscalQuarter != 4 {
+			continue
+		}
+		fy := findByEnd(annual, q4.EndDate)
+		if fy == nil {
+			continue
+		}
+		var first [3]*FinancialPeriod
+		for i := range quarterly {
+			p := &quarterly[i]
+			if p.FiscalYear == q4.FiscalYear && p.FiscalQuarter >= 1 && p.FiscalQuarter <= 3 {
+				first[p.FiscalQuarter-1] = p
+			}
+		}
+		if first[0] == nil || first[1] == nil || first[2] == nil {
+			continue
+		}
+		for _, spec := range fields {
+			if spec.kind != flow || spec.unit != "USD" || q4.Get(spec.name) != nil || fy.Get(spec.name) == nil {
+				continue
+			}
+			sum := 0.0
+			known := true
+			for _, p := range first {
+				if v := p.Get(spec.name); v != nil {
+					sum += *v
+				} else {
+					known = false
+				}
+			}
+			if !known {
+				continue
+			}
+			val := round4(*fy.Get(spec.name) - sum)
+			if nonNegative[spec.name] && val < 0 {
+				continue
+			}
+			*q4.field(spec.name) = ptr(val)
+			q4.Sources[spec.name] = fmt.Sprintf("derived: FY%d (%s) minus Q1–Q3 (%s)", fy.FiscalYear, fy.Sources[spec.name], first[2].Sources[spec.name])
+			q4.Filed[spec.name] = fy.Filed[spec.name]
+		}
+		if q4.FreeCashFlow == nil && q4.OperatingCashFlow != nil && q4.Capex != nil {
+			q4.FreeCashFlow = ptr(*q4.OperatingCashFlow - *q4.Capex)
+			q4.Sources["freeCashFlow"] = "derived: operatingCashFlow − capex"
+		}
+	}
 }
 
 // shareScale detects share counts filed without their scale (McDonald's tags

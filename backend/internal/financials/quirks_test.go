@@ -171,3 +171,38 @@ func TestShortTermBorrowingsIncludingCommercialPaperOnly(t *testing.T) {
 		t.Errorf("debt = %v (%s), want 45.492e9 (43.941 + 1.551)", got, fy.Sources["totalDebt"])
 	}
 }
+
+// Arista tags capex as PaymentsToAcquireProductiveAssets in its 10-K and as
+// PaymentsToAcquirePropertyPlantAndEquipment in its 10-Qs: Q4 comes from the
+// year minus the first three quarters, across the two concepts.
+func TestFourthQuarterAcrossConcepts(t *testing.T) {
+	b := factsBuilder{}.calendarYear("2025", 2e9)
+	// Operating cash flow, year-to-date in every filing (makes Q4 exist).
+	for _, p := range []struct {
+		end, form, filed string
+		val              float64
+	}{
+		{"2025-03-31", "10-Q", "2025-05-01", 600e6},
+		{"2025-06-30", "10-Q", "2025-08-01", 1_800e6},
+		{"2025-09-30", "10-Q", "2025-11-01", 3_100e6},
+		{"2025-12-31", "10-K", "2026-02-15", 4_400e6},
+	} {
+		b.add("NetCashProvidedByUsedInOperatingActivities", "USD", "2025-01-01", p.end, p.val, p.form, p.filed)
+	}
+	b.add("PaymentsToAcquirePropertyPlantAndEquipment", "USD", "2025-01-01", "2025-03-31", 28e6, "10-Q", "2025-05-01").
+		add("PaymentsToAcquirePropertyPlantAndEquipment", "USD", "2025-01-01", "2025-06-30", 52e6, "10-Q", "2025-08-01").
+		add("PaymentsToAcquirePropertyPlantAndEquipment", "USD", "2025-01-01", "2025-09-30", 82e6, "10-Q", "2025-11-01").
+		add("PaymentsToAcquireProductiveAssets", "USD", "2025-01-01", "2025-12-31", 120e6, "10-K", "2026-02-15")
+	f := b.normalize()
+
+	q4 := find(f, FiscalQuarter, "2025-12-31")
+	if got := deref(q4.Capex); got != 38e6 {
+		t.Fatalf("Q4 capex = %v, want 120M − 82M = 38M (%s)", got, q4.Sources["capex"])
+	}
+	if got := deref(q4.FreeCashFlow); got != 1_300e6-38e6 {
+		t.Errorf("Q4 free cash flow = %v", got)
+	}
+	if f.TTM == nil || f.TTM.FreeCashFlow == nil || *f.TTM.FreeCashFlow != 4_400e6-120e6 {
+		t.Errorf("TTM free cash flow = %v", f.TTM)
+	}
+}

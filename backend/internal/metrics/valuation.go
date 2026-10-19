@@ -279,7 +279,7 @@ func history(metric string, bars []prices.Bar, rolling []ttm, sp splits, years i
 // current computes today's value of the metric from the most recent TTM
 // window that has the needed numbers.
 func current(metric string, rolling []ttm, price float64) (value float64, basis string, perShare float64, period string, ok bool) {
-	for i := len(rolling) - 1; i >= 0; i-- {
+	for i := len(rolling) - 1; i >= 0 && recent(rolling, i); i-- {
 		t := rolling[i]
 		ps, name, has := perShareBasis(metric, t)
 		if !has {
@@ -290,7 +290,7 @@ func current(metric string, rolling []ttm, price float64) (value float64, basis 
 		}
 		return price / ps, name, ps, "TTM to " + t.end, true
 	}
-	return 0, "no TTM data", 0, "", false
+	return 0, "no recent TTM data", 0, "", false
 }
 
 // multipleOn computes price ÷ per-share basis for one day.

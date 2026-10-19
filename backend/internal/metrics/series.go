@@ -165,14 +165,30 @@ func rollingTTM(quarters []financials.FinancialPeriod, annual []financials.Finan
 	return out
 }
 
-// latestWith returns the most recent TTM window that satisfies ok.
+// latestWith returns the most recent TTM window that satisfies ok, among
+// the recent ones (see recent).
 func latestWith(rolling []ttm, ok func(ttm) bool) (ttm, bool) {
-	for i := len(rolling) - 1; i >= 0; i-- {
+	for i := len(rolling) - 1; i >= 0 && recent(rolling, i); i-- {
 		if ok(rolling[i]) {
 			return rolling[i], true
 		}
 	}
 	return ttm{}, false
+}
+
+// staleAfterDays: a window ending more than this before the newest one is
+// out of date. It allows the latest quarter or two to lack a number; beyond
+// that, a metric is "not available" rather than computed on old figures
+// (Arista's free cash flow was missing from every window for years, and its
+// price was divided by 2022's).
+const staleAfterDays = 200
+
+// recent reports whether rolling[i] ends within staleAfterDays of the
+// newest window.
+func recent(rolling []ttm, i int) bool {
+	end, err1 := time.Parse(time.DateOnly, rolling[i].end)
+	newest, err2 := time.Parse(time.DateOnly, rolling[len(rolling)-1].end)
+	return err1 != nil || err2 != nil || newest.Sub(end) <= staleAfterDays*24*time.Hour
 }
 
 // availableDate approximates when a quarter's results became public: SEC
